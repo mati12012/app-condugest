@@ -13,3 +13,6 @@ CREATE TABLE IF NOT EXISTS alumnos (
 -- Inserta un alumno de prueba
 INSERT INTO alumnos (nombre, correo, licencia, sede) 
 VALUES ('Juan Perez', 'juan@alumno.cl', 'Clase B', 'Sede Centro');
+
+-- Hace commit
+COMMIT;

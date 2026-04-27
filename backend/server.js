@@ -10,13 +10,20 @@ app.use(express.json());
 app.get('/api/alumnos/correo/:correo', async (req, res) => {
     try {
         const { correo } = req.params;
-        const result = await pool.query('SELECT * FROM alumnos WHERE correo = $1', [correo]);
+        console.log("-> Intentando buscar el correo:", correo);
+
+        // Busqueda pero ignorando mayusculas
+        const result = await pool.query('SELECT * FROM alumnos WHERE LOWER(correo) = LOWER($1)', [correo]);
+        
         if (result.rows.length > 0) {
+            console.log("-> Exito: Alumno encontrado en BD");
             res.json(result.rows[0]);
         } else {
+            console.log("-> Fallo: No existe en BD");
             res.status(404).json({ error: "Alumno no encontrado" });
         }
     } catch (err) {
+        console.error("-> ERROR FATAL EN POSTGRESQL:", err.message);
         res.status(500).json({ error: err.message });
     }
 });
@@ -31,10 +38,11 @@ app.post('/api/alumnos', async (req, res) => {
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
+        console.error("-> ERROR AL GUARDAR:", err.message);
         res.status(500).json({ error: err.message });
     }
 });
 
-app.listen(3000, () => {
-    console.log('Servidor corriendo en http://localhost:3000');
+app.listen(3001, () => {
+    console.log('Servidor backend corriendo en http://localhost:3001');
 });
