@@ -1,4 +1,25 @@
 function RequestsPanel() {
+  const requests = [
+    {
+      title: "Reprogramación de clase práctica",
+      description: "Juan Pérez solicita cambio de horario",
+      status: "Urgente",
+      statusClass: "danger",
+    },
+    {
+      title: "Solicitud de vehículo automático",
+      description: "María González - Clase del martes",
+      status: "Pendiente",
+      statusClass: "warning",
+    },
+    {
+      title: "Reserva de sala psicotécnica",
+      description: "5 alumnos para evaluación del jueves",
+      status: "En revisión",
+      statusClass: "info",
+    },
+  ];
+
   return (
     <div className="panel side-panel">
       <div className="panel-header">
@@ -6,23 +27,15 @@ function RequestsPanel() {
         <span>Ver todas</span>
       </div>
 
-      <div className="request-card">
-        <h4>Reprogramación de clase práctica</h4>
-        <p>Juan Pérez solicita cambio de horario</p>
-        <span className="badge danger">Urgente</span>
-      </div>
-
-      <div className="request-card">
-        <h4>Solicitud de vehículo automático</h4>
-        <p>María González - Clase del martes</p>
-        <span className="badge warning">Pendiente</span>
-      </div>
-
-      <div className="request-card">
-        <h4>Reserva de sala psicotécnica</h4>
-        <p>5 alumnos para evaluación del jueves</p>
-        <span className="badge info">En revisión</span>
-      </div>
+      {requests.map((request, index) => (
+        <div className="request-card" key={index}>
+          <h4>{request.title}</h4>
+          <p>{request.description}</p>
+          <span className={`badge ${request.statusClass}`}>
+            {request.status}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }
