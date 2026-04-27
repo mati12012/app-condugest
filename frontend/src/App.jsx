@@ -4,7 +4,7 @@ import Sidebar from './components/Sidebar';
 import AgendaClases from './pages/AgendaClases';
 
 function App() {
-  const [vistaActual, setVistaActual] = useState('dashboard');
+  const [vistaActual, setVistaActual] = useState('dashboard'); // donde dice 'dashboard' es para cambiar la vista por defecto, si quieres que inicie en agenda, pon 'agenda' y así sucesivamente con las otras vistas que quieras agregar.
 
   return (
     <div className="flex min-h-screen bg-slate-50">
