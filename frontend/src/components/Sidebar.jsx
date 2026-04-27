@@ -1,32 +1,69 @@
-function Sidebar() {
-  return (
-    <aside className="sidebar">
-      <div>
-        <div className="brand">
-          <h2>ConduGest</h2>
-          <p>Sistema de gestión</p>
-        </div>
+import React from 'react';
 
-        <nav className="menu">
-          <div className="menu-item">Dashboard</div>
-          <div className="menu-item">Alumnos</div>
-          <div className="menu-item">Clases teóricas</div>
-          <div className="menu-item active">Clases prácticas</div>
-          <div className="menu-item">Profesores</div>
-          <div className="menu-item">Vehículos</div>
-          <div className="menu-item">Salas psicotécnicas</div>
-          <div className="menu-item">Reprogramaciones</div>
-          <div className="menu-item">Reportes</div>
-          <div className="menu-item">Configuración</div>
-        </nav>
+const Sidebar = ({ cambiarVista, vistaActual }) => {
+  return (
+    <aside className="w-64 bg-slate-900 text-white flex flex-col min-h-screen">
+      <div className="p-6 border-b border-slate-800">
+        <h2 className="text-2xl font-bold text-blue-400">ConduGest</h2>
+        <p className="text-sm text-slate-400">Sistema de gestión</p>
       </div>
 
-      <div className="sidebar-footer">
-        <strong>Secretaría Central</strong>
-        <p>En línea</p>
+      <nav className="flex-1 p-4 flex flex-col gap-2">
+        <button
+          onClick={() => cambiarVista('dashboard')}
+          className={`text-left px-4 py-2 rounded transition-colors ${
+            vistaActual === 'dashboard'
+              ? 'bg-slate-800 text-blue-300 font-medium'
+              : 'hover:bg-slate-800'
+          }`}
+        >
+          Dashboard
+        </button>
+
+        <button
+          onClick={() => cambiarVista('agenda')}
+          className={`text-left px-4 py-2 rounded transition-colors ${
+            vistaActual === 'agenda'
+              ? 'bg-slate-800 text-blue-300 font-medium'
+              : 'hover:bg-slate-800'
+          }`}
+        >
+          Agenda
+        </button>
+
+        <button
+          onClick={() => cambiarVista('alumnos')}
+          className={`text-left px-4 py-2 rounded transition-colors ${
+            vistaActual === 'alumnos'
+              ? 'bg-slate-800 text-blue-300 font-medium'
+              : 'hover:bg-slate-800'
+          }`}
+        >
+          Alumnos
+        </button>
+
+        <button className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">
+          Clases teóricas
+        </button>
+        <button className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">
+          Clases prácticas
+        </button>
+        <button className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">
+          Profesores
+        </button>
+        <button className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">
+          Vehículos
+        </button>
+      </nav>
+
+      <div className="p-6 border-t border-slate-800">
+        <strong className="block text-slate-200">Secretaría Central</strong>
+        <p className="text-sm text-green-400 flex items-center gap-2 mt-1">
+          <span className="w-2 h-2 bg-green-400 rounded-full"></span> En línea
+        </p>
       </div>
     </aside>
   );
-}
+};
 
 export default Sidebar;
