@@ -4,7 +4,7 @@ const RegistrarAlumno = () => {
   const [datos, setDatos] = useState({ 
     nombre: '', 
     licencia: 'Clase B', 
-    sede: 'Sede Centro' 
+    sede: 'Sede Concepcion' 
   });
   const [mensaje, setMensaje] = useState('');
   const [cargando, setCargando] = useState(false);
@@ -39,7 +39,7 @@ const RegistrarAlumno = () => {
       
       if (response.ok) {
         setMensaje(`exito: alumno guardado. su correo es ${correoGenerado}`);
-        setDatos({ nombre: '', licencia: 'Clase B', sede: 'Sede Centro' });
+        setDatos({ nombre: '', licencia: 'Clase B', sede: 'Sede Concepcion' });
       } else {
         setMensaje('error: fallo al guardar en la base de datos');
       }
@@ -100,9 +100,9 @@ const RegistrarAlumno = () => {
               value={datos.sede} 
               onChange={e => setDatos({...datos, sede: e.target.value})}
             >
-              <option value="Sede Centro">Sede Centro</option>
-              <option value="Sede Norte">Sede Norte</option>
-              <option value="Sede Sur">Sede Sur</option>
+              <option value="Sede Concepcion">Sede Concepcion</option>
+              <option value="Sede San Pedro">Sede San Pedro</option>
+              <option value="Sede Penco">Sede Penco</option>
             </select>
           </div>
         </div>
