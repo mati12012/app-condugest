@@ -6,10 +6,10 @@ const VistaAlumnos = ({ cambiarVista }) => {
   // por ahora son datos falsos para que la tabla se vea llena
   // despues los cambiaremos por un fetch a la base de datos
   const alumnosLista = [
-    { id: 1, nombre: 'Juan Perez', correo: 'juan.perez@alumnos.condugest.cl', licencia: 'Clase B', sede: 'Sede Centro', estado: 'Activo' },
-    { id: 2, nombre: 'Maria Gonzalez', correo: 'maria.gonzalez@alumnos.condugest.cl', licencia: 'Clase C', sede: 'Sede Norte', estado: 'Inactivo' },
-    { id: 3, nombre: 'Carlos Silva', correo: 'carlos.silva@alumnos.condugest.cl', licencia: 'Clase B', sede: 'Sede Sur', estado: 'Activo' },
-    { id: 4, nombre: 'Ana Rojas', correo: 'ana.rojas@alumnos.condugest.cl', licencia: 'Clase A2', sede: 'Sede Centro', estado: 'Activo' },
+    { id: 1, nombre: 'Juan Perez', correo: 'juan.perez@alumnos.condugest.cl', licencia: 'Clase B', sede: 'Sede Concepcion', estado: 'Activo' },
+    { id: 2, nombre: 'Maria Gonzalez', correo: 'maria.gonzalez@alumnos.condugest.cl', licencia: 'Clase C', sede: 'Sede San Pedro', estado: 'Inactivo' },
+    { id: 3, nombre: 'Carlos Silva', correo: 'carlos.silva@alumnos.condugest.cl', licencia: 'Clase B', sede: 'Sede Penco', estado: 'Activo' },
+    { id: 4, nombre: 'Ana Rojas', correo: 'ana.rojas@alumnos.condugest.cl', licencia: 'Clase A2', sede: 'Sede Concepcion', estado: 'Activo' },
   ];
 
   // solo un filtro simple para la barra de busqueda
