@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import Login from './components/Login';
+import Login from './pages/Login';
 import Sidebar from './components/Sidebar';
-import RegistrarAlumno from './components/RegistrarAlumno';
-import VistaAlumnos from './components/VistaAlumnos';
+import RegistrarAlumno from './pages/RegistrarAlumno';
+import VistaAlumnos from './pages/VistaAlumnos';
 
 function App() {
   // por ahora esta asi para que pase directo

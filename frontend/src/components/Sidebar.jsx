@@ -16,7 +16,7 @@ const Sidebar = ({ cambiarVista }) => {
           onClick={() => cambiarVista('dashboard')} 
           className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors"
         >
-          Dashboard
+          Panel Principal
         </button>
         <button 
           onClick={() => cambiarVista('alumnos')} 
@@ -28,6 +28,9 @@ const Sidebar = ({ cambiarVista }) => {
         <button className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">Clases practicas</button>
         <button className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">Profesores</button>
         <button className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">Vehiculos</button>
+        <button className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">Salas psicotecnicas</button>
+        <button className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">Reprogramacion</button>
+        <button className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">Configuracion</button>
       </nav>
 
       {/* pie de la sidebar con estado del usuario */}
