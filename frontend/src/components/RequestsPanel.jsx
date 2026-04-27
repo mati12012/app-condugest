@@ -1,25 +1,4 @@
-function RequestsPanel() {
-  const requests = [
-    {
-      title: "Reprogramación de clase práctica",
-      description: "Juan Pérez solicita cambio de horario",
-      status: "Urgente",
-      statusClass: "danger",
-    },
-    {
-      title: "Solicitud de vehículo automático",
-      description: "María González - Clase del martes",
-      status: "Pendiente",
-      statusClass: "warning",
-    },
-    {
-      title: "Reserva de sala psicotécnica",
-      description: "5 alumnos para evaluación del jueves",
-      status: "En revisión",
-      statusClass: "info",
-    },
-  ];
-
+function RequestsPanel({ requests }) {
   return (
     <div className="panel side-panel">
       <div className="panel-header">

@@ -1,27 +1,4 @@
-function StatsCards() {
-  const stats = [
-    {
-      value: 248,
-      label: "Alumnos activos",
-      detail: "+12 este mes",
-    },
-    {
-      value: 36,
-      label: "Clases de hoy",
-      detail: "8 completadas",
-    },
-    {
-      value: 14,
-      label: "Profesores asignados",
-      detail: "Todos disponibles",
-    },
-    {
-      value: 9,
-      label: "Solicitudes pendientes",
-      detail: "Requieren atención",
-    },
-  ];
-
+function StatsCards({ stats }) {
   return (
     <section className="stats-grid">
       {stats.map((stat, index) => (
