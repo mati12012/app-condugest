@@ -6,46 +6,39 @@ const Login = ({ onLogin }) => {
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
 
-  const handleLogin = async (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
     setError('');
     setCargando(true);
 
-    // acceso rapido para la secretaria
-    if (correo.includes('secre')) {
-      setTimeout(() => {
+    // solo simula que va al backend y se demora 1 segundito
+    setTimeout(() => {
+      // entra si es secretaria o profesor
+      if (correo.endsWith('@condugest.cl')) {
         onLogin({ rol: 'secretaria', correo });
-      }, 500);
-      return;
-    }
-
-    try {
-      const response = await fetch(`http://localhost:3001/api/alumnos/correo/${correo}`);
-      
-      if (response.ok) {
-        const alumnoInfo = await response.json();
-        onLogin({ rol: 'alumno', ...alumnoInfo });
-      } else {
-        setError('Datos incorrectos o correo no existe');
       }
-    } catch (err) {
-      console.error(err);
-      setError('Fallo la conexion con el servidor');
-    } finally {
-      setCargando(false);
-    }
+      // entra si es estudiante
+      else if (correo.endsWith('@alumnos.condugest.cl')){
+        onLogin({ rol: 'alumno', nombre: 'Alumno Prueba', correo });
+      }
+      // por si ingresan cualquier otro valor
+      else {
+        setError('Credenciales incorrectas o dominio no valido');
+        setCargando(false);
+      }
+    }, 1000);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-200 p-4">
       <div className="bg-white rounded-2xl shadow-xl flex w-full max-w-4xl overflow-hidden">
         
-        {/* seccion visual */}
+        {/* seccion visual de la marca */}
         <div className="w-1/2 bg-blue-800 p-12 text-white flex flex-col justify-center hidden md:flex">
           <h1 className="text-4xl font-extrabold mb-4">ConduGest</h1>
           <p className="text-blue-200 text-lg">
             Sistema de gestion para escuelas de conduccion. 
-            Revisa tu progreso y agenda tus clases.
+            Ingresa con tu correo institucional.
           </p>
         </div>
 
@@ -67,7 +60,7 @@ const Login = ({ onLogin }) => {
               <label className="block text-sm font-medium text-slate-700 mb-1">Correo Electronico</label>
               <input 
                 type="email" 
-                placeholder="ejemplo@alumno.cl" 
+                placeholder="usuario@condugest.cl" 
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
                 value={correo}
                 onChange={(e) => setCorreo(e.target.value)}
