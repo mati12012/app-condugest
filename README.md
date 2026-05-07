@@ -12,8 +12,6 @@ Actualmente, varios procesos se gestionan de forma manual, como el control de cl
 Desarrollar una plataforma web que permita organizar y controlar la operación diaria de la escuela de conducción.
 
 ## Integrantes
-Maria Paz Salazar Valderrama
-Diego Antonio Figueroa Riquelme
 Matias Ignacio Caamaño Chacon
 Felipe Ignacio Riquelme Suárez
 
