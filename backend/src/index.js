@@ -10,18 +10,18 @@ app.use(morgan("dev"));
 
 // Ruta principal de bienvenida
 app.get("/", (req, res) => {
-  res.send("¡Bienvenido a mi API REST con TypeORM!");
+  res.send("¡Bienvenido a la API de Condugest!");
 });
 
 // Inicializa la conexion a la base de datos
 connectDb()
   .then(() => {
-    // Carga todas las rutas de la aplicacion (según la estructura de tu profe)
     routerApi(app);
 
-    // Levanta el servidor Express
     const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
+    const HOST = process.env.HOST || "localhost";
+
+    app.listen(HOST, PORT, () => {
       console.log(`Servidor iniciado en http://${HOST}:${PORT}`);
     });
   })
