@@ -40,10 +40,9 @@ export async function deleteAlumno(id) {
     //Verifica si existe antes de eliminar
     const alumnoExiste = await alumnoRepository.findOneBy({ id_alumno: id });
     if (!alumnoExiste) {
-        return { mensaje: "Alumno no encontrado" };
-    } else {
-        //Si existe, lo elimina
-        await alumnoRepository.delete({ id_alumno: id });
-        return { mensaje: "Alumno eliminado correctamente" };
+        return null; 
     }
+    //Si existe, lo elimina
+    await alumnoRepository.delete({ id_alumno: id });
+    return alumnoExiste;
 }
