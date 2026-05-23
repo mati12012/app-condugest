@@ -1,0 +1,24 @@
+$kind: http-request
+name: Crear alumno
+url: http://146.83.198.35:1314/api/alumnos
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"nombre\": \"Matias Caamano\",\r
+
+    \  \"correo\": \"matias.caamano@alumnos.condugest.cl\",\r
+
+    \  \"licencia\": \"B\",\r
+
+    \  \"sede\": \"Concepción\",\r
+
+    \  \"clases_completadas\": 0,\r
+
+    \  \"total_clases\": 12,\r
+
+    \  \"estado\": \"true\"\r
+
+    }"
+order: 1778868583555
