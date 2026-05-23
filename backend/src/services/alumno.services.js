@@ -25,12 +25,24 @@ export async function getAlumnoById(id) {
 
 // Es como UPDATE alumnos SET ... WHERE id = ?
 export async function updateAlumno(id, data) {
+    // Verifica si existe antes de actualizar
+    const alumnoExiste = await alumnoRepository.findOneBy({ id_alumno: id });
+    if (!alumnoExiste) {
+        return null;
+    }
+    //Y si existe, lo actualiza 
     await alumnoRepository.update({ id_alumno: id }, data);
     return await getAlumnoById(id);
 }
 
 // Es como DELETE FROM alumnos WHERE id = ?
 export async function deleteAlumno(id) {
+    //Verifica si existe antes de eliminar
+    const alumnoExiste = await alumnoRepository.findOneBy({ id_alumno: id });
+    if (!alumnoExiste) {
+        return null; 
+    }
+    //Si existe, lo elimina
     await alumnoRepository.delete({ id_alumno: id });
-    return { mensaje: "Alumno eliminado correctamente" };
+    return alumnoExiste;
 }
