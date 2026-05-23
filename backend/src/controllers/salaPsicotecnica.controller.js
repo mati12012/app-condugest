@@ -9,23 +9,32 @@ import {
 import {
   validateSalaCreate,
   validateSalaUpdate,
+  validateSalaIdParam,
 } from "../validations/salaPsicotecnica.validation.js";
+
+import {
+  handleErrorClient,
+  handleErrorServer,
+  handleSuccess,
+} from "../handlers/responseHandlers.js";
 
 export async function getSalasController(req, res) {
   try {
     const salas = await getAllSalas();
 
-    return res.status(200).json({
-      message: "Salas psicotécnicas obtenidas exitosamente",
-      data: salas,
-      status: "success",
-    });
+    return handleSuccess(
+      res,
+      200,
+      "Salas psicotécnicas obtenidas exitosamente",
+      salas
+    );
   } catch (error) {
-    return res.status(500).json({
-      message: "Error al obtener salas psicotécnicas",
-      errorDetails: error.message,
-      status: "Server error",
-    });
+    return handleErrorServer(
+      res,
+      500,
+      "Error al obtener salas psicotécnicas",
+      error.message
+    );
   }
 }
 
@@ -33,33 +42,40 @@ export async function getSalaController(req, res) {
   try {
     const { id } = req.params;
 
-    if (isNaN(Number(id))) {
-      return res.status(400).json({
-        message: "El ID de la sala debe ser numérico",
-        status: "Client error",
-      });
+    const paramErrors = validateSalaIdParam(req.params);
+
+    if (paramErrors.length > 0) {
+      return handleErrorClient(
+        res,
+        400,
+        "Parámetros inválidos",
+        paramErrors
+      );
     }
 
     const sala = await getSalaById(id);
 
     if (!sala) {
-      return res.status(404).json({
-        message: "Sala psicotécnica no encontrada",
-        status: "Client error",
-      });
+      return handleErrorClient(
+        res,
+        404,
+        "Sala psicotécnica no encontrada"
+      );
     }
 
-    return res.status(200).json({
-      message: "Sala psicotécnica obtenida exitosamente",
-      data: sala,
-      status: "success",
-    });
+    return handleSuccess(
+      res,
+      200,
+      "Sala psicotécnica obtenida exitosamente",
+      sala
+    );
   } catch (error) {
-    return res.status(500).json({
-      message: "Error al obtener sala psicotécnica",
-      errorDetails: error.message,
-      status: "Server error",
-    });
+    return handleErrorServer(
+      res,
+      500,
+      "Error al obtener sala psicotécnica",
+      error.message
+    );
   }
 }
 
@@ -70,26 +86,29 @@ export async function createSalaController(req, res) {
     const validationErrors = validateSalaCreate(salaData);
 
     if (validationErrors.length > 0) {
-      return res.status(400).json({
-        message: "Datos de sala psicotécnica inválidos",
-        errorDetails: validationErrors,
-        status: "Client error",
-      });
+      return handleErrorClient(
+        res,
+        400,
+        "Datos de sala psicotécnica inválidos",
+        validationErrors
+      );
     }
 
     const nuevaSala = await createSala(salaData);
 
-    return res.status(201).json({
-      message: "Sala psicotécnica creada exitosamente",
-      data: nuevaSala,
-      status: "success",
-    });
+    return handleSuccess(
+      res,
+      201,
+      "Sala psicotécnica creada exitosamente",
+      nuevaSala
+    );
   } catch (error) {
-    return res.status(500).json({
-      message: "Error al crear sala psicotécnica",
-      errorDetails: error.message,
-      status: "Server error",
-    });
+    return handleErrorServer(
+      res,
+      500,
+      "Error al crear sala psicotécnica",
+      error.message
+    );
   }
 }
 
@@ -98,43 +117,51 @@ export async function updateSalaController(req, res) {
     const { id } = req.params;
     const salaData = req.body;
 
-    if (isNaN(Number(id))) {
-      return res.status(400).json({
-        message: "El ID de la sala debe ser numérico",
-        status: "Client error",
-      });
+    const paramErrors = validateSalaIdParam(req.params);
+
+    if (paramErrors.length > 0) {
+      return handleErrorClient(
+        res,
+        400,
+        "Parámetros inválidos",
+        paramErrors
+      );
     }
 
     const validationErrors = validateSalaUpdate(salaData);
 
     if (validationErrors.length > 0) {
-      return res.status(400).json({
-        message: "Datos de sala psicotécnica inválidos",
-        errorDetails: validationErrors,
-        status: "Client error",
-      });
+      return handleErrorClient(
+        res,
+        400,
+        "Datos de sala psicotécnica inválidos",
+        validationErrors
+      );
     }
 
     const salaActualizada = await updateSala(id, salaData);
 
     if (!salaActualizada) {
-      return res.status(404).json({
-        message: "Sala psicotécnica no encontrada",
-        status: "Client error",
-      });
+      return handleErrorClient(
+        res,
+        404,
+        "Sala psicotécnica no encontrada"
+      );
     }
 
-    return res.status(200).json({
-      message: "Sala psicotécnica actualizada exitosamente",
-      data: salaActualizada,
-      status: "success",
-    });
+    return handleSuccess(
+      res,
+      200,
+      "Sala psicotécnica actualizada exitosamente",
+      salaActualizada
+    );
   } catch (error) {
-    return res.status(500).json({
-      message: "Error al actualizar sala psicotécnica",
-      errorDetails: error.message,
-      status: "Server error",
-    });
+    return handleErrorServer(
+      res,
+      500,
+      "Error al actualizar sala psicotécnica",
+      error.message
+    );
   }
 }
 
@@ -142,32 +169,39 @@ export async function deleteSalaController(req, res) {
   try {
     const { id } = req.params;
 
-    if (isNaN(Number(id))) {
-      return res.status(400).json({
-        message: "El ID de la sala debe ser numérico",
-        status: "Client error",
-      });
+    const paramErrors = validateSalaIdParam(req.params);
+
+    if (paramErrors.length > 0) {
+      return handleErrorClient(
+        res,
+        400,
+        "Parámetros inválidos",
+        paramErrors
+      );
     }
 
     const salaEliminada = await deleteSala(id);
 
     if (!salaEliminada) {
-      return res.status(404).json({
-        message: "Sala psicotécnica no encontrada",
-        status: "Client error",
-      });
+      return handleErrorClient(
+        res,
+        404,
+        "Sala psicotécnica no encontrada"
+      );
     }
 
-    return res.status(200).json({
-      message: "Sala psicotécnica eliminada exitosamente",
-      data: salaEliminada,
-      status: "success",
-    });
+    return handleSuccess(
+      res,
+      200,
+      "Sala psicotécnica eliminada exitosamente",
+      salaEliminada
+    );
   } catch (error) {
-    return res.status(500).json({
-      message: "Error al eliminar sala psicotécnica",
-      errorDetails: error.message,
-      status: "Server error",
-    });
+    return handleErrorServer(
+      res,
+      500,
+      "Error al eliminar sala psicotécnica",
+      error.message
+    );
   }
 }

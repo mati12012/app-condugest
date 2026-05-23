@@ -4,6 +4,19 @@ import Joi from "joi";
 
 const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s]+$/u;
 
+export const salaIdParamValidation = Joi.object({
+  id: Joi.number()
+    .integer()
+    .positive()
+    .required()
+    .messages({
+      "number.base": "El ID debe ser un número",
+      "number.integer": "El ID debe ser un número entero",
+      "number.positive": "El ID debe ser un número positivo",
+      "any.required": "El ID es obligatorio",
+    }),
+});
+
 export const salaCreateValidation = Joi.object({
   nombre: Joi.string()
     .min(3)
@@ -83,6 +96,17 @@ export const salaUpdateValidation = Joi.object({
 }).min(1).messages({
   "object.min": "Debe enviar al menos un campo para actualizar",
 });
+
+export function validateSalaIdParam(param) {
+  const { error } = salaIdParamValidation.validate(param,{
+    abortEarly: false,
+  });
+
+  if (error) {
+    return error.details.map((err) => err.message);
+  }
+    return [];
+}
 
 export function validateSalaCreate(data) {
   const { error } = salaCreateValidation.validate(data, { abortEarly: false });
