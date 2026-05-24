@@ -141,36 +141,61 @@ function AdministrarSalasPsicotecnicas() {
   }
 
   async function cambiarEstadoSala(sala) {
-    const nuevoEstado = !sala.estado;
+  const nuevoEstado = !sala.estado;
 
-    const confirmar = window.confirm(
-      nuevoEstado
-        ? "¿Seguro que deseas activar esta sala?"
-        : "¿Seguro que deseas desactivar esta sala? No podrá usarse para nuevas reservas."
-    );
+  setError("");
+  setMensaje("");
 
-    if (!confirmar) return;
-
-    setCargando(true);
-    setError("");
-    setMensaje("");
-
+  if (!nuevoEstado) {
     try {
-      const respuesta = await requestApi(`/salas-psicotecnicas/${sala.id_sala}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          estado: nuevoEstado,
-        }),
-      });
+      const respuestaReservas = await requestApi("/reservas-salas");
 
-      setMensaje(respuesta.message || "Estado de sala actualizado");
-      await cargarSalas();
+      const reservasBloqueantes = (respuestaReservas.data || []).filter(
+        (reserva) =>
+          Number(reserva.id_sala) === Number(sala.id_sala) &&
+          (reserva.estado === "reservada" || reserva.estado === "pendiente")
+      );
+
+      if (reservasBloqueantes.length > 0) {
+        setError(
+          `No se puede desactivar esta sala porque tiene ${reservasBloqueantes.length} reserva(s) activa(s) o pendiente(s). Cancela o finaliza esas reservas primero.`
+        );
+        return;
+      }
     } catch (error) {
-      setError(error.message);
-    } finally {
-      setCargando(false);
+      setError(`No se pudo verificar reservas asociadas: ${error.message}`);
+      return;
     }
   }
+
+  const confirmar = window.confirm(
+    nuevoEstado
+      ? "¿Seguro que deseas activar esta sala?"
+      : "¿Seguro que deseas desactivar esta sala? No podrá usarse para nuevas reservas."
+  );
+
+  if (!confirmar) return;
+
+  setCargando(true);
+  setError("");
+  setMensaje("");
+
+  try {
+    const respuesta = await requestApi(`/salas-psicotecnicas/${sala.id_sala}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        estado: nuevoEstado,
+      }),
+    });
+
+    setMensaje(respuesta.message || "Estado de sala actualizado");
+    await cargarSalas();
+  } catch (error) {
+    setError(error.message);
+  } finally {
+    setCargando(false);
+  }
+}
 
   const salasFiltradas = salas.filter((sala) => {
     if (filtroSalas === "activas") {

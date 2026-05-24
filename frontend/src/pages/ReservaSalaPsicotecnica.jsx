@@ -88,7 +88,12 @@ function ReservaSalaPsicotecnica() {
     // Función para obtener el nombre de la sala a partir de su ID
     function obtenerNombreSala(idSala) {
         const sala = salas.find((item) => Number(item.id_sala) === Number(idSala));
-        return sala ? sala.nombre : `Sala ID ${idSala}`;
+
+        if (!sala) {
+            return `Sala ID ${idSala}`;
+        }
+
+        return sala.estado ? sala.nombre : `${sala.nombre} (inactiva)`;
     }
     // Función para formatear la hora en formato HH:MM
     function formatearHora(hora) {
@@ -202,6 +207,8 @@ function ReservaSalaPsicotecnica() {
         return true;
     });
 
+    const salasActivas = salas.filter((sala) => sala.estado === true);
+
     return (
         <section className="w-full">
             <div className="mb-6">
@@ -246,13 +253,18 @@ function ReservaSalaPsicotecnica() {
                                 className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required
                             >
-                                <option value="">Seleccione una sala</option>
-                                {salas.map((sala) => (
+                                <option value="">Seleccione una sala activa</option>
+                                {salasActivas.map((sala) => (
                                     <option key={sala.id_sala} value={sala.id_sala}>
                                         {sala.nombre} - {sala.sede} - Capacidad {sala.capacidad}
                                     </option>
                                 ))}
                             </select>
+                            {salasActivas.length === 0 && (
+  <p className="mt-2 text-xs text-red-500">
+    No existen salas activas disponibles para reservar.
+  </p>
+)}
                         </div>
 
                         <div>
