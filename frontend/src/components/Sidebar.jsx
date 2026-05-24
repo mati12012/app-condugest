@@ -14,8 +14,8 @@ const Sidebar = ({ cambiarVista, vistaActual }) => {
         <button
           onClick={() => cambiarVista('dashboard')}
           className={`text-left px-4 py-2 rounded transition-colors ${vistaActual === 'dashboard'
-              ? 'bg-slate-800 text-blue-300 font-medium'
-              : 'hover:bg-slate-800'
+            ? 'bg-slate-800 text-blue-300 font-medium'
+            : 'hover:bg-slate-800'
             }`}
         >
           Panel Principal
@@ -24,8 +24,8 @@ const Sidebar = ({ cambiarVista, vistaActual }) => {
         <button
           onClick={() => cambiarVista('agenda')}
           className={`text-left px-4 py-2 rounded transition-colors ${vistaActual === 'agenda'
-              ? 'bg-slate-800 text-blue-300 font-medium'
-              : 'hover:bg-slate-800'
+            ? 'bg-slate-800 text-blue-300 font-medium'
+            : 'hover:bg-slate-800'
             }`}
         >
           Agenda
@@ -34,21 +34,11 @@ const Sidebar = ({ cambiarVista, vistaActual }) => {
         <button
           onClick={() => cambiarVista('alumnos')}
           className={`text-left px-4 py-2 rounded transition-colors ${vistaActual === 'alumnos'
-              ? 'bg-slate-800 text-blue-300 font-medium'
-              : 'hover:bg-slate-800'
+            ? 'bg-slate-800 text-blue-300 font-medium'
+            : 'hover:bg-slate-800'
             }`}
         >
           Alumnos
-        </button>
-
-        <button
-          onClick={() => cambiarVista("reservasSalas")}
-          className={`text-left px-4 py-2 rounded transition-colors ${vistaActual === 'reservasSalas'
-              ? 'bg-slate-800 text-blue-300 font-medium'
-              : 'hover:bg-slate-800'
-            }`}
-        >
-          Reservas de salas
         </button>
 
         <button className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">
@@ -67,7 +57,9 @@ const Sidebar = ({ cambiarVista, vistaActual }) => {
           Vehículos
         </button>
 
-        <button className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">
+        <button
+          onClick={() => cambiarVista("salasPsicotecnicas")}
+          className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">
           Salas psicotécnicas
         </button>
 

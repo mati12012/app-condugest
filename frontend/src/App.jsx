@@ -6,6 +6,7 @@ import VistaAlumnos from './pages/VistaAlumnos';
 import DashboardSecretaria from './pages/DashboardSecretaria';
 import AgendaClases from './pages/AgendaClases';
 import ReservaSalaPsicotecnica from "./pages/ReservaSalaPsicotecnica";
+import ModuloSalasPsicotecnicas from "./pages/ModuloSalasPsicotecnicas";
 
 function App() {
   // por ahora esta asi para que pase directo
@@ -40,7 +41,7 @@ function App() {
           {vistaActual === 'agenda' && <AgendaClases />}
           {vistaActual === 'alumnos' && <VistaAlumnos cambiarVista={setVistaActual} />}
           {vistaActual === 'registrar' && <RegistrarAlumno />}
-          {vistaActual === 'reservasSalas' && <ReservaSalaPsicotecnica />}
+          {vistaActual === "salasPsicotecnicas" && <ModuloSalasPsicotecnicas />}
         </div>
       </main>
     </div>

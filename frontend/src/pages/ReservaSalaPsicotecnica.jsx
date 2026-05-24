@@ -385,8 +385,8 @@ function ReservaSalaPsicotecnica() {
                                 type="button"
                                 onClick={() => setFiltroReservas("activas")}
                                 className={`rounded-lg px-3 py-2 text-sm font-medium border ${filtroReservas === "activas"
-                                        ? "bg-blue-600 text-white border-blue-600"
-                                        : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
+                                    ? "bg-blue-600 text-white border-blue-600"
+                                    : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
                                     }`}
                             >
                                 Activas
@@ -396,8 +396,8 @@ function ReservaSalaPsicotecnica() {
                                 type="button"
                                 onClick={() => setFiltroReservas("historial")}
                                 className={`rounded-lg px-3 py-2 text-sm font-medium border ${filtroReservas === "historial"
-                                        ? "bg-blue-600 text-white border-blue-600"
-                                        : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
+                                    ? "bg-blue-600 text-white border-blue-600"
+                                    : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
                                     }`}
                             >
                                 Historial
@@ -407,8 +407,8 @@ function ReservaSalaPsicotecnica() {
                                 type="button"
                                 onClick={() => setFiltroReservas("todas")}
                                 className={`rounded-lg px-3 py-2 text-sm font-medium border ${filtroReservas === "todas"
-                                        ? "bg-blue-600 text-white border-blue-600"
-                                        : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
+                                    ? "bg-blue-600 text-white border-blue-600"
+                                    : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
                                     }`}
                             >
                                 Todas
@@ -474,12 +474,12 @@ function ReservaSalaPsicotecnica() {
                                             <td className="px-3 py-3">
                                                 <span
                                                     className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${reserva.estado === "cancelada"
-                                                            ? "bg-red-100 text-red-700"
-                                                            : reserva.estado === "finalizada"
-                                                                ? "bg-slate-100 text-slate-700"
-                                                                : reserva.estado === "pendiente"
-                                                                    ? "bg-yellow-100 text-yellow-700"
-                                                                    : "bg-green-100 text-green-700"
+                                                        ? "bg-red-100 text-red-700"
+                                                        : reserva.estado === "finalizada"
+                                                            ? "bg-slate-100 text-slate-700"
+                                                            : reserva.estado === "pendiente"
+                                                                ? "bg-yellow-100 text-yellow-700"
+                                                                : "bg-green-100 text-green-700"
                                                         }`}
                                                 >
                                                     {reserva.estado}
@@ -488,17 +488,17 @@ function ReservaSalaPsicotecnica() {
 
                                             <td className="px-3 py-3">
                                                 {reserva.estado === "reservada" || reserva.estado === "pendiente" ? (
-  <button
-    onClick={() => cancelarReserva(reserva.id_reserva)}
-    className="rounded-lg border border-red-300 px-3 py-1 text-xs text-red-600 hover:bg-red-50"
-  >
-    Cancelar
-  </button>
-) : (
-  <span className="text-xs text-slate-400">
-    Sin acción
-  </span>
-)}
+                                                    <button
+                                                        onClick={() => cancelarReserva(reserva.id_reserva)}
+                                                        className="rounded-lg border border-red-300 px-3 py-1 text-xs text-red-600 hover:bg-red-50"
+                                                    >
+                                                        Cancelar
+                                                    </button>
+                                                ) : (
+                                                    <span className="text-xs text-slate-400">
+                                                        Sin acción
+                                                    </span>
+                                                )}
                                             </td>
                                         </tr>
                                     ))
