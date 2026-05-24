@@ -15,5 +15,5 @@ export function routerApi(app) {
   // Aquí registramos la ruta de salas psicotécnicas
   router.use("/salas-psicotecnicas", salaPsicotecnicaRoutes);
   // Aquí registramos la ruta de reservas de salas
-  router.use("/reservas-sala", reservaSalaRoutes);
+  router.use("/reservas-salas", reservaSalaRoutes);
 }
