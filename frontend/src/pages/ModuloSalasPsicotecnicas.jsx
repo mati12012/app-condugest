@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import ReservaSalaPsicotecnica from "./ReservaSalaPsicotecnica";
+import AdministrarSalasPsicotecnicas from "./AdministrarSalasPsicotecnicas";
 
 function ModuloSalasPsicotecnicas() {
   const [pestanaActiva, setPestanaActiva] = useState("reservas");
@@ -41,23 +42,7 @@ function ModuloSalasPsicotecnicas() {
         </button>
       </div>
 
-      {pestanaActiva === "administrar" && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-slate-800">
-            Administración de salas psicotécnicas
-          </h2>
-
-          <p className="text-slate-500 mt-2">
-            En esta sección se podrá crear, editar, activar o desactivar salas
-            psicotécnicas. Esta funcionalidad será implementada en la siguiente
-            etapa.
-          </p>
-
-          <div className="mt-4 rounded-lg bg-blue-50 border border-blue-100 px-4 py-3 text-blue-700 text-sm">
-            Próximo paso: crear el formulario y listado para administrar salas.
-          </div>
-        </div>
-      )}
+      {pestanaActiva === "administrar" && <AdministrarSalasPsicotecnicas />}
 
       {pestanaActiva === "reservas" && <ReservaSalaPsicotecnica />}
     </section>
