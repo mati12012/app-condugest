@@ -18,6 +18,9 @@ import {
   handleSuccess,
 } from "../handlers/responseHandlers.js";
 
+import{
+  getReservasActivasPorSala} from "../services/reservaSala.services.js";
+
 export async function getSalasController(req, res) {
   try {
     const salas = await getAllSalas();
@@ -128,7 +131,19 @@ export async function updateSalaController(req, res) {
       );
     }
 
-    const validationErrors = validateSalaUpdate(salaData);
+    const datosActualizados = {
+      ...salaData,
+    };
+
+    if (datosActualizados.estado === "false") {
+      datosActualizados.estado = false;
+    }
+
+    if (datosActualizados.estado === "true") {
+      datosActualizados.estado = true;
+    }
+
+    const validationErrors = validateSalaUpdate(datosActualizados);
 
     if (validationErrors.length > 0) {
       return handleErrorClient(
@@ -139,15 +154,35 @@ export async function updateSalaController(req, res) {
       );
     }
 
-    const salaActualizada = await updateSala(id, salaData);
+    const salaExistente = await getSalaById(id);
 
-    if (!salaActualizada) {
+    if (!salaExistente) {
       return handleErrorClient(
         res,
         404,
         "Sala psicotécnica no encontrada"
       );
     }
+
+    const quiereDesactivar = datosActualizados.estado === false;
+
+    if (quiereDesactivar) {
+      const reservasActivas = await getReservasActivasPorSala(id);
+
+      if (reservasActivas.length > 0) {
+        return handleErrorClient(
+          res,
+          409,
+          "No se puede desactivar la sala porque tiene reservas activas o pendientes",
+          {
+            cantidad_reservas: reservasActivas.length,
+            reservas: reservasActivas,
+          }
+        );
+      }
+    }
+
+    const salaActualizada = await updateSala(id, datosActualizados);
 
     return handleSuccess(
       res,

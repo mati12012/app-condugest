@@ -104,3 +104,18 @@ export async function buscarChoqueHorario({
 
   return null;
 }
+
+export async function getReservasActivasPorSala(idSala) {
+  const resultado = await AppDataSource.query(
+    `
+    SELECT *
+    FROM reservas_salas
+    WHERE id_sala = $1
+      AND estado IN ('reservada', 'pendiente')
+    ORDER BY fecha ASC, hora_inicio ASC
+    `,
+    [Number(idSala)]
+  );
+
+  return resultado;
+}
