@@ -24,13 +24,21 @@ export const alumnoBodyValidation = Joi.object({
             "string.pattern.base": "El nombre del alumno solo puede contener letras y espacios",
             "any.required": "El nombre del alumno es obligatorio"
         }),
+    rut: Joi.string()
+        .pattern(/^[0-9]+[-|‐]{1}[0-9kK]{1}$/)
+        .required()
+        .messages({
+            "string.base": "El RUT del alumno debe ser una cadena de texto",
+            "string.pattern.base": "El RUT del alumno solo puede contener numeros y guiones",
+            "any.required": "El RUT del alumno es obligatorio"
+        }),
     correo: Joi.string()
         .email()
         .max(100)
         .required()
         .messages({
             "string.base": "El correo del alumno debe ser una cadena de texto",
-            "string.email": "El correo del alumno debe ser un correo electrónico válido",
+            "string.email": "El correo del alumno debe ser un correo valido",
             "string.max": "El correo del alumno no puede exceder los 100 caracteres",
             "any.required": "El correo del alumno es obligatorio"
         }),
