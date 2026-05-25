@@ -30,7 +30,26 @@ export async function updateAlumno(id, data) {
     if (!alumnoExiste) {
         return null;
     }
-    //Y si existe, lo actualiza 
+    //Validar que las clases completadas no superen el total de clases del plan
+    const nuevasClases = data.clases_completadas !== undefined ? data.clases_completadas : alumnoExiste.clases_completadas;
+    const totalClasesPlan = data.total_clases !== undefined ? data.total_clases : alumnoExiste.total_clases;
+
+    // REGLA 1: Bloquear si supera el limite
+    if (nuevasClases > totalClasesPlan) {
+        return { errorNegocio: `No puedes registrar ${nuevasClases} clases si el plan es de solo ${totalClasesPlan} clases.` };
+    }
+
+    // Auto transicion de estados
+    if (nuevasClases === totalClasesPlan && totalClasesPlan > 0) {
+        data.estado = "Finalizado";
+    } else if (nuevasClases > 0 && nuevasClases < totalClasesPlan) {
+        data.estado = "En curso";
+    } else if (nuevasClases === 0) {
+        data.estado = "Matriculado";
+    }
+
+
+    //Y si existe, y pasa las reglas, lo actualiza 
     await alumnoRepository.update({ id_alumno: id }, data);
     return await getAlumnoById(id);
 }
