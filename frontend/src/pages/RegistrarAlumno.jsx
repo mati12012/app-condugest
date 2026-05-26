@@ -3,8 +3,10 @@ import React, { useState } from 'react';
 const RegistrarAlumno = () => {
   const [datos, setDatos] = useState({ 
     nombre: '', 
+    rut: '',
     licencia: 'Clase B', 
-    sede: 'Sede Concepcion' 
+    sede: 'Sede Concepcion' ,
+    total_clases: 10
   });
   const [mensaje, setMensaje] = useState('');
   const [cargando, setCargando] = useState(false);
@@ -14,8 +16,8 @@ const RegistrarAlumno = () => {
     setMensaje('');
     setCargando(true);
 
-    if (datos.nombre.trim() === '') {
-      setMensaje('error: el nombre es obligatorio');
+    if (datos.rut.trim() === '') {
+      setMensaje('error: el RUT es obligatorio');
       setCargando(false);
       return;
     }
@@ -27,7 +29,8 @@ const RegistrarAlumno = () => {
 
     const datosFinales = {
       ...datos,
-      correo: correoGenerado
+      correo: correoGenerado,
+      total_clases: Number(datos.total_clases)
     };
 
     try {
@@ -39,7 +42,7 @@ const RegistrarAlumno = () => {
       
       if (response.ok) {
         setMensaje(`exito: alumno guardado. su correo es ${correoGenerado}`);
-        setDatos({ nombre: '', licencia: 'Clase B', sede: 'Sede Concepcion' });
+        setDatos({ nombre: '', rut: '', licencia: 'Clase B', sede: 'Sede Concepcion', total_clases: 10 });
       } else {
         setMensaje('error: fallo al guardar en la base de datos');
       }
@@ -65,6 +68,18 @@ const RegistrarAlumno = () => {
             {mensaje}
           </div>
         )}
+
+        <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">RUT</label>
+            <input 
+              type="text" 
+              placeholder="Ej: 12345678-9" 
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none" 
+              value={datos.rut} 
+              onChange={e => setDatos({...datos, rut: e.target.value})} 
+              required 
+            />
+          </div>
 
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-2">Nombre Completo</label>
@@ -104,6 +119,18 @@ const RegistrarAlumno = () => {
               <option value="Sede San Pedro">Sede San Pedro</option>
               <option value="Sede Penco">Sede Penco</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Plan contratado (Clases)</label>
+            <input 
+              type="number" 
+              min="1"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none" 
+              value={datos.total_clases} 
+              onChange={e => setDatos({...datos, total_clases: e.target.value})} 
+              required 
+            />
           </div>
         </div>
 
