@@ -111,9 +111,9 @@ function AdministrarSalasPsicotecnicas() {
 
       setMensaje(
         respuesta.message ||
-          (modoEdicion
-            ? "Sala actualizada exitosamente"
-            : "Sala creada exitosamente")
+        (modoEdicion
+          ? "Sala actualizada exitosamente"
+          : "Sala creada exitosamente")
       );
 
       limpiarFormulario();
@@ -141,61 +141,61 @@ function AdministrarSalasPsicotecnicas() {
   }
 
   async function cambiarEstadoSala(sala) {
-  const nuevoEstado = !sala.estado;
+    const nuevoEstado = !sala.estado;
 
-  setError("");
-  setMensaje("");
+    setError("");
+    setMensaje("");
 
-  if (!nuevoEstado) {
-    try {
-      const respuestaReservas = await requestApi("/reservas-salas");
+    if (!nuevoEstado) {
+      try {
+        const respuestaReservas = await requestApi("/reservas-salas");
 
-      const reservasBloqueantes = (respuestaReservas.data || []).filter(
-        (reserva) =>
-          Number(reserva.id_sala) === Number(sala.id_sala) &&
-          (reserva.estado === "reservada" || reserva.estado === "pendiente")
-      );
-
-      if (reservasBloqueantes.length > 0) {
-        setError(
-          `No se puede desactivar esta sala porque tiene ${reservasBloqueantes.length} reserva(s) activa(s) o pendiente(s). Cancela o finaliza esas reservas primero.`
+        const reservasBloqueantes = (respuestaReservas.data || []).filter(
+          (reserva) =>
+            Number(reserva.id_sala) === Number(sala.id_sala) &&
+            (reserva.estado === "reservada" || reserva.estado === "pendiente")
         );
+
+        if (reservasBloqueantes.length > 0) {
+          setError(
+            `No se puede desactivar esta sala porque tiene ${reservasBloqueantes.length} reserva(s) activa(s) o pendiente(s). Cancela o finaliza esas reservas primero.`
+          );
+          return;
+        }
+      } catch (error) {
+        setError(`No se pudo verificar reservas asociadas: ${error.message}`);
         return;
       }
+    }
+
+    const confirmar = window.confirm(
+      nuevoEstado
+        ? "¿Seguro que deseas activar esta sala?"
+        : "¿Seguro que deseas desactivar esta sala? No podrá usarse para nuevas reservas."
+    );
+
+    if (!confirmar) return;
+
+    setCargando(true);
+    setError("");
+    setMensaje("");
+
+    try {
+      const respuesta = await requestApi(`/salas-psicotecnicas/${sala.id_sala}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          estado: nuevoEstado,
+        }),
+      });
+
+      setMensaje(respuesta.message || "Estado de sala actualizado");
+      await cargarSalas();
     } catch (error) {
-      setError(`No se pudo verificar reservas asociadas: ${error.message}`);
-      return;
+      setError(error.message);
+    } finally {
+      setCargando(false);
     }
   }
-
-  const confirmar = window.confirm(
-    nuevoEstado
-      ? "¿Seguro que deseas activar esta sala?"
-      : "¿Seguro que deseas desactivar esta sala? No podrá usarse para nuevas reservas."
-  );
-
-  if (!confirmar) return;
-
-  setCargando(true);
-  setError("");
-  setMensaje("");
-
-  try {
-    const respuesta = await requestApi(`/salas-psicotecnicas/${sala.id_sala}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        estado: nuevoEstado,
-      }),
-    });
-
-    setMensaje(respuesta.message || "Estado de sala actualizado");
-    await cargarSalas();
-  } catch (error) {
-    setError(error.message);
-  } finally {
-    setCargando(false);
-  }
-}
 
   const salasFiltradas = salas.filter((sala) => {
     if (filtroSalas === "activas") {
@@ -258,15 +258,22 @@ function AdministrarSalasPsicotecnicas() {
               <label className="block text-sm font-medium text-slate-600 mb-1">
                 Sede
               </label>
-              <input
-                type="text"
+              <select
                 name="sede"
                 value={formulario.sede}
                 onChange={manejarCambio}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Ej: Sede Concepcion"
+                className={`w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white ${
+                  formulario.sede ? "text-slate-900" : "text-slate-400"
+                }`}
                 required
-              />
+              >
+                <option value="">
+                  Selecciona una sede
+                </option>
+                <option value="Sede Concepcion">Sede Concepcion</option>
+                <option value="Sede San Pedro">Sede San Pedro</option>
+                <option value="Sede Penco">Sede Penco</option>
+              </select>
             </div>
 
             <div>
@@ -309,8 +316,8 @@ function AdministrarSalasPsicotecnicas() {
                 {cargando
                   ? "Procesando..."
                   : modoEdicion
-                  ? "Guardar cambios"
-                  : "Crear sala"}
+                    ? "Guardar cambios"
+                    : "Crear sala"}
               </button>
 
               {modoEdicion && (
@@ -337,8 +344,8 @@ function AdministrarSalasPsicotecnicas() {
                 {filtroSalas === "activas"
                   ? "Salas disponibles para nuevas reservas."
                   : filtroSalas === "inactivas"
-                  ? "Salas desactivadas o fuera de uso."
-                  : "Listado completo de salas psicotécnicas."}
+                    ? "Salas desactivadas o fuera de uso."
+                    : "Listado completo de salas psicotécnicas."}
               </p>
             </div>
 
@@ -346,11 +353,10 @@ function AdministrarSalasPsicotecnicas() {
               <button
                 type="button"
                 onClick={() => setFiltroSalas("activas")}
-                className={`rounded-lg px-3 py-2 text-sm font-medium border ${
-                  filtroSalas === "activas"
+                className={`rounded-lg px-3 py-2 text-sm font-medium border ${filtroSalas === "activas"
                     ? "bg-blue-600 text-white border-blue-600"
                     : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
-                }`}
+                  }`}
               >
                 Activas
               </button>
@@ -358,11 +364,10 @@ function AdministrarSalasPsicotecnicas() {
               <button
                 type="button"
                 onClick={() => setFiltroSalas("inactivas")}
-                className={`rounded-lg px-3 py-2 text-sm font-medium border ${
-                  filtroSalas === "inactivas"
+                className={`rounded-lg px-3 py-2 text-sm font-medium border ${filtroSalas === "inactivas"
                     ? "bg-blue-600 text-white border-blue-600"
                     : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
-                }`}
+                  }`}
               >
                 Inactivas
               </button>
@@ -370,11 +375,10 @@ function AdministrarSalasPsicotecnicas() {
               <button
                 type="button"
                 onClick={() => setFiltroSalas("todas")}
-                className={`rounded-lg px-3 py-2 text-sm font-medium border ${
-                  filtroSalas === "todas"
+                className={`rounded-lg px-3 py-2 text-sm font-medium border ${filtroSalas === "todas"
                     ? "bg-blue-600 text-white border-blue-600"
                     : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
-                }`}
+                  }`}
               >
                 Todas
               </button>
@@ -437,11 +441,10 @@ function AdministrarSalasPsicotecnicas() {
 
                       <td className="px-3 py-3">
                         <span
-                          className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                            sala.estado
+                          className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${sala.estado
                               ? "bg-green-100 text-green-700"
                               : "bg-red-100 text-red-700"
-                          }`}
+                            }`}
                         >
                           {sala.estado ? "Activa" : "Inactiva"}
                         </span>
@@ -460,11 +463,10 @@ function AdministrarSalasPsicotecnicas() {
                           <button
                             type="button"
                             onClick={() => cambiarEstadoSala(sala)}
-                            className={`rounded-lg border px-3 py-1 text-xs ${
-                              sala.estado
+                            className={`rounded-lg border px-3 py-1 text-xs ${sala.estado
                                 ? "border-red-300 text-red-600 hover:bg-red-50"
                                 : "border-green-300 text-green-600 hover:bg-green-50"
-                            }`}
+                              }`}
                           >
                             {sala.estado ? "Desactivar" : "Activar"}
                           </button>

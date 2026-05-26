@@ -10,7 +10,10 @@ import ModuloSalasPsicotecnicas from "./pages/ModuloSalasPsicotecnicas";
 
 function App() {
   // por ahora esta asi para que pase directo
-  const [usuario, setUsuario] = useState(null);
+const [usuario, setUsuario] = useState({
+  rol: 'secretaria',
+  correo: 'test@correo.com'
+});
 
   // para saber que pagina mostrar al lado derecho
   const [vistaActual, setVistaActual] = useState('dashboard');
