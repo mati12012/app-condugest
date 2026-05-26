@@ -22,6 +22,10 @@ function ReservaSalaPsicotecnica() {
     const [error, setError] = useState("");
 
     const [filtroReservas, setFiltroReservas] = useState("activas");
+
+    const [filtroFecha, setFiltroFecha] = useState("");
+    const [filtroSala, setFiltroSala] = useState("");
+    const [filtroEstado, setFiltroEstado] = useState("");
     // Función genérica para hacer solicitudes a la API
     async function requestApi(endpoint, options = {}) {
         const respuesta = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -196,18 +200,42 @@ function ReservaSalaPsicotecnica() {
     }
     // Aplicamos el filtro a las reservas antes de renderizarlas
     const reservasFiltradas = reservas.filter((reserva) => {
+        let coincideTipo = true;
+
         if (filtroReservas === "activas") {
-            return reserva.estado === "reservada" || reserva.estado === "pendiente";
+            coincideTipo =
+                reserva.estado === "reservada" || reserva.estado === "pendiente";
         }
 
         if (filtroReservas === "historial") {
-            return reserva.estado === "cancelada" || reserva.estado === "finalizada";
+            coincideTipo =
+                reserva.estado === "cancelada" || reserva.estado === "finalizada";
         }
 
-        return true;
+        const coincideFecha =
+            !filtroFecha || obtenerFechaReserva(reserva.fecha) === filtroFecha;
+
+        const coincideSala =
+            !filtroSala || Number(reserva.id_sala) === Number(filtroSala);
+
+        const coincideEstado =
+            !filtroEstado || reserva.estado === filtroEstado;
+
+        return coincideTipo && coincideFecha && coincideSala && coincideEstado;
     });
 
     const salasActivas = salas.filter((sala) => sala.estado === true);
+
+    function obtenerFechaReserva(fecha) {
+        if (!fecha) return "";
+        return String(fecha).slice(0, 10);
+    }
+
+    function limpiarFiltrosAvanzados() {
+        setFiltroFecha("");
+        setFiltroSala("");
+        setFiltroEstado("");
+    }
 
     return (
         <section className="w-full">
@@ -261,10 +289,10 @@ function ReservaSalaPsicotecnica() {
                                 ))}
                             </select>
                             {salasActivas.length === 0 && (
-  <p className="mt-2 text-xs text-red-500">
-    No existen salas activas disponibles para reservar.
-  </p>
-)}
+                                <p className="mt-2 text-xs text-red-500">
+                                    No existen salas activas disponibles para reservar.
+                                </p>
+                            )}
                         </div>
 
                         <div>
@@ -436,6 +464,66 @@ function ReservaSalaPsicotecnica() {
                             </button>
                         </div>
                     </div>
+                    <div className="mb-4 grid grid-cols-1 md:grid-cols-4 gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        <div>
+                            <label className="block text-xs font-medium text-slate-500 mb-1">
+                                Filtrar por fecha
+                            </label>
+                            <input
+                                type="date"
+                                value={filtroFecha}
+                                onChange={(evento) => setFiltroFecha(evento.target.value)}
+                                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-medium text-slate-500 mb-1">
+                                Filtrar por sala
+                            </label>
+                            <select
+                                value={filtroSala}
+                                onChange={(evento) => setFiltroSala(evento.target.value)}
+                                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="">Todas las salas</option>
+
+                                {salas.map((sala) => (
+                                    <option key={sala.id_sala} value={sala.id_sala}>
+                                        {sala.nombre}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-medium text-slate-500 mb-1">
+                                Filtrar por estado
+                            </label>
+                            <select
+                                value={filtroEstado}
+                                onChange={(evento) => setFiltroEstado(evento.target.value)}
+                                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="">Todos los estados</option>
+                                <option value="reservada">Reservada</option>
+                                <option value="pendiente">Pendiente</option>
+                                <option value="cancelada">Cancelada</option>
+                                <option value="finalizada">Finalizada</option>
+                            </select>
+                        </div>
+
+                        <div className="flex items-end">
+                            <button
+                                type="button"
+                                onClick={limpiarFiltrosAvanzados}
+                                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-white"
+                            >
+                                Limpiar filtros
+                            </button>
+                        </div>
+                    </div>
+
 
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
@@ -471,7 +559,7 @@ function ReservaSalaPsicotecnica() {
                                             </td>
 
                                             <td className="px-3 py-3 text-slate-600">
-                                                {reserva.fecha}
+                                                {obtenerFechaReserva(reserva.fecha)}
                                             </td>
 
                                             <td className="px-3 py-3 text-slate-600">
