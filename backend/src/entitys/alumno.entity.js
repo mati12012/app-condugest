@@ -40,7 +40,6 @@ const Alumno = new EntitySchema({
         clases_completadas: {
             type: "int",
             default: 0,
-            nullable: false,
         },
         total_clases: {
             type: "int",

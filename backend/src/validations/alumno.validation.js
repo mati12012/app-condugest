@@ -61,11 +61,9 @@ export const alumnoBodyValidation = Joi.object({
     clases_completadas: Joi.number()
         .integer()
         .min(0)
-        .required()
         .messages({
             "number.base": "Las clases completadas del alumno deben ser un número",
-            "number.min": "Las clases completadas del alumno no pueden ser negativas",
-            "any.required": "Las clases completadas del alumno son obligatorias"
+            "number.min": "Las clases completadas del alumno no pueden ser negativas"
         }),
     total_clases: Joi.number()
         .integer()
@@ -78,11 +76,9 @@ export const alumnoBodyValidation = Joi.object({
         }),
     estado: Joi.string()
         .max(50)
-        .required()
         .messages({
             "string.base": "El estado del alumno debe ser una cadena de texto",
             "string.max": "El estado del alumno no puede exceder los 50 caracteres",
-            "any.required": "El estado del alumno es obligatorio"
         })
 });
 
