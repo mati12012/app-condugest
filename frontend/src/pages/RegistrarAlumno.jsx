@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 
 const RegistrarAlumno = () => {
   const [datos, setDatos] = useState({ 
-    nombre: '', 
     rut: '',
+    nombre: '', 
+    apellido: '',
     licencia: 'Clase B', 
     sede: 'Sede Concepcion' ,
     total_clases: 10
@@ -17,38 +18,48 @@ const RegistrarAlumno = () => {
     setCargando(true);
 
     if (datos.rut.trim() === '') {
-      setMensaje('error: el RUT es obligatorio');
+      setMensaje('Error: El RUT es obligatorio');
       setCargando(false);
       return;
     }
 
-    // generamos el correo institucional automaticamente
-    // ejemplo: "Juan Perez" -> "juan.perez@alumnos.condugest.cl"
-    const nombreFormateado = datos.nombre.toLowerCase().replaceAll(' ', '.');
-    const correoGenerado = `${nombreFormateado}@alumnos.condugest.cl`;
+    if (datos.nombre.trim() === '') {
+      setMensaje('Error: El nombre es obligatorio');
+      setCargando(false);
+      return;
+    }
+
+    if (datos.apellido.trim() === '') {
+      setMensaje('Error: El apellido es obligatorio');
+      setCargando(false);
+      return;
+    }
 
     const datosFinales = {
       ...datos,
-      correo: correoGenerado,
       total_clases: Number(datos.total_clases)
     };
 
     try {
-      const response = await fetch('http://localhost:3001/api/alumnos', {
+      console.log("La URL es:", import.meta.env.VITE_BASE_URL);
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/alumnos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datosFinales)
       });
+
+      const respuestaServidor = await response.json();
       
       if (response.ok) {
-        setMensaje(`exito: alumno guardado. su correo es ${correoGenerado}`);
-        setDatos({ nombre: '', rut: '', licencia: 'Clase B', sede: 'Sede Concepcion', total_clases: 10 });
+        const correoCreado = respuestaServidor.data.correo;
+        setMensaje(`Exito: alumno guardado. Su correo institucional es ${correoCreado}`);
+        setDatos({ rut: '', nombre: '', apellido: '', licencia: 'Clase B', sede: 'Sede Concepcion', total_clases: 10 });
       } else {
-        setMensaje('error: fallo al guardar en la base de datos');
+        setMensaje(`Error: ${respuestaServidor.message} ${respuestaServidor.errorDetails ? '- Revisa los datos ingresados' : ''}`);
       }
     } catch (error) {
       console.error(error);
-      setMensaje('error: sin conexion al servidor');
+      setMensaje('Error: Sin conexion al servidor');
     } finally {
       setCargando(false);
     }
@@ -82,18 +93,30 @@ const RegistrarAlumno = () => {
           </div>
 
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">Nombre Completo</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Nombre</label>
           <input 
             type="text" 
-            placeholder="Ej: Matias Gonzalez" 
+            placeholder="Ej: Matias" 
             className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none" 
             value={datos.nombre} 
             onChange={e => setDatos({...datos, nombre: e.target.value})} 
             required 
           />
-          <p className="text-xs text-slate-400 mt-1">El correo institucional se generara automaticamente.</p>
         </div>
         
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Apellido</label>
+          <input 
+            type="text" 
+            placeholder="Ej: Perez"
+            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none" 
+            value={datos.apellido} 
+            onChange={e => setDatos({...datos, apellido: e.target.value})} 
+            required 
+          />
+          <p className="text-xs text-slate-400 mt-1">El correo institucional se generara automaticamente.</p>
+        </div>
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2">Tipo de Licencia</label>

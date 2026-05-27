@@ -31,7 +31,7 @@ const VistaAlumnos = ({ cambiarVista }) => {
           onClick={() => cambiarVista('registrar')} 
           className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-colors"
         >
-          <span>Agregar Nuevo Alumno</span>
+          <span>+ Nuevo Alumno</span>
         </button>
       </div>
 
