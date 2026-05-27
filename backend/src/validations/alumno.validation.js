@@ -24,6 +24,18 @@ export const alumnoBodyValidation = Joi.object({
             "string.pattern.base": "El nombre del alumno solo puede contener letras y espacios",
             "any.required": "El nombre del alumno es obligatorio"
         }),
+    apellido: Joi.string()
+        .min(2)
+        .max(100)
+        .pattern(/^[a-zA-Z\s]+$/)
+        .required()
+        .messages({
+            "string.base": "El apellido del alumno debe ser una cadena de texto",
+            "string.min": "El apellido del alumno debe tener al menos 2 caracteres",
+            "string.max": "El apellido del alumno no puede exceder los 100 caracteres",
+            "string.pattern.base": "El apellido del alumno solo puede contener letras y espacios",
+            "any.required": "El apellido del alumno es obligatorio"
+        }),    
     rut: Joi.string()
         .pattern(/^[0-9]+[-|‐]{1}[0-9kK]{1}$/)
         .required()
@@ -31,16 +43,6 @@ export const alumnoBodyValidation = Joi.object({
             "string.base": "El RUT del alumno debe ser una cadena de texto",
             "string.pattern.base": "El RUT del alumno solo puede contener numeros y guiones",
             "any.required": "El RUT del alumno es obligatorio"
-        }),
-    correo: Joi.string()
-        .email()
-        .max(100)
-        .required()
-        .messages({
-            "string.base": "El correo del alumno debe ser una cadena de texto",
-            "string.email": "El correo del alumno debe ser un correo valido",
-            "string.max": "El correo del alumno no puede exceder los 100 caracteres",
-            "any.required": "El correo del alumno es obligatorio"
         }),
     licencia: Joi.string()
         .max(20)
@@ -58,13 +60,6 @@ export const alumnoBodyValidation = Joi.object({
             "string.max": "La sede del alumno no puede exceder los 50 caracteres",
             "any.required": "La sede del alumno es obligatoria"
         }),
-    clases_completadas: Joi.number()
-        .integer()
-        .min(0)
-        .messages({
-            "number.base": "Las clases completadas del alumno deben ser un número",
-            "number.min": "Las clases completadas del alumno no pueden ser negativas"
-        }),
     total_clases: Joi.number()
         .integer()
         .min(0)
@@ -74,12 +69,9 @@ export const alumnoBodyValidation = Joi.object({
             "number.min": "El total de clases del alumno no pueden ser negativas",
             "any.required": "El total de clases del alumno es obligatorio"
         }),
-    estado: Joi.string()
-        .max(50)
-        .messages({
-            "string.base": "El estado del alumno debe ser una cadena de texto",
-            "string.max": "El estado del alumno no puede exceder los 50 caracteres",
-        })
+    correo: Joi.string().email().max(100),
+    clases_completadas: Joi.number().integer().min(0),
+    estado: Joi.string().max(20)
 });
 
 export function validateAlumnoData(data) {

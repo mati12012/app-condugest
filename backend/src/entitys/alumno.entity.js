@@ -21,6 +21,11 @@ const Alumno = new EntitySchema({
             length: 100,
             nullable: false,
         },
+        apellido: {
+            type: "varchar",
+            length: 100,
+            nullable: false,
+        },
         correo: {
             type: "varchar",
             length: 100,
