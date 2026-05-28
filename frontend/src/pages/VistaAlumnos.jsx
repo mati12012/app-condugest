@@ -139,7 +139,12 @@ const VistaAlumnos = ({ cambiarVista }) => {
                     </td>
                     
                     <td className="p-4">
-                      <button className="text-blue-600 hover:underline text-sm font-medium">Ver perfil</button>
+                      <button 
+                        onClick={() => cambiarVista('perfil', alumno.id_alumno)} 
+                        className="text-blue-600 hover:underline text-sm font-medium"
+                      >
+                        Ver perfil
+                      </button>
                     </td>
                   </tr>
                 ))}
