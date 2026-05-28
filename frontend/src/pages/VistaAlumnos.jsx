@@ -1,26 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const VistaAlumnos = ({ cambiarVista }) => {
+  const [alumnos, setAlumnos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
   const [busqueda, setBusqueda] = useState('');
 
-  // por ahora son datos falsos para que la tabla se vea llena
-  // despues los cambiaremos por un fetch a la base de datos
-  const alumnosLista = [
-    { id: 1, nombre: 'Juan Perez', correo: 'juan.perez@alumnos.condugest.cl', licencia: 'Clase B', sede: 'Sede Concepcion', estado: 'Activo' },
-    { id: 2, nombre: 'Maria Gonzalez', correo: 'maria.gonzalez@alumnos.condugest.cl', licencia: 'Clase C', sede: 'Sede San Pedro', estado: 'Inactivo' },
-    { id: 3, nombre: 'Carlos Silva', correo: 'carlos.silva@alumnos.condugest.cl', licencia: 'Clase B', sede: 'Sede Penco', estado: 'Activo' },
-    { id: 4, nombre: 'Ana Rojas', correo: 'ana.rojas@alumnos.condugest.cl', licencia: 'Clase A2', sede: 'Sede Concepcion', estado: 'Activo' },
-  ];
+  useEffect(() => {
+    obtenerAlumnos();
+  }, []);
 
-  // solo un filtro simple para la barra de busqueda
-  const alumnosFiltrados = alumnosLista.filter(alumno => 
-    alumno.nombre.toLowerCase().includes(busqueda.toLowerCase())
-  );
+  const obtenerAlumnos = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/alumnos`);
+      const respuestaServidor = await response.json();
+
+      if (response.ok) {
+        setAlumnos(respuestaServidor.data);
+      } else {
+        setError(respuestaServidor.message || "Error al obtener alumnos");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Error al conectar con el servidor.");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  //Filtro de busqueda por nombre completo
+  const alumnosFiltrados = alumnos.filter(alumno => {
+    const nombreCompleto = `${alumno.nombre} ${alumno.apellido}`.toLowerCase();
+    return nombreCompleto.includes(busqueda.toLowerCase());
+  });
+
+  //Para las tarjetas de resumenes
+  const totalAlumnos = alumnos.length;
+  const alumnosEnCurso = alumnos.filter(a => a.estado === 'En curso').length;
+  const matriculadosRecientes = alumnos.filter(a => a.estado === 'Matriculado').length;
+
+  const getColorEstado = (estado) => {
+    switch (estado) {
+      case 'Matriculado': return 'bg-blue-100 text-blue-700';
+      case 'En curso': return 'bg-amber-100 text-amber-700';
+      case 'Finalizado': return 'bg-green-100 text-green-700';
+      default: return 'bg-slate-100 text-slate-600';
+    }
+  };
 
   return (
     <div className="space-y-6">
       
-      {/* cabecera principal */}
       <div className="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-slate-200">
         <div>
           <h2 className="text-2xl font-bold text-slate-800">Gestion de Alumnos</h2>
@@ -35,77 +65,95 @@ const VistaAlumnos = ({ cambiarVista }) => {
         </button>
       </div>
 
-      {/* tarjetas resumen*/}
+      {/* Tarjetas de resumenes */}
       <div className="grid grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <p className="text-slate-500 text-sm font-medium">Total Alumnos Activos</p>
-          <p className="text-3xl font-bold text-slate-800 mt-2">248</p>
+          <p className="text-slate-500 text-sm font-medium">Total Alumnos</p>
+          <p className="text-3xl font-bold text-slate-800 mt-2">{totalAlumnos}</p>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <p className="text-slate-500 text-sm font-medium">Matriculas este mes</p>
-          <p className="text-3xl font-bold text-slate-800 mt-2">12</p>
+          <p className="text-slate-500 text-sm font-medium">Clases en Curso</p>
+          <p className="text-3xl font-bold text-amber-600 mt-2">{alumnosEnCurso}</p>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <p className="text-slate-500 text-sm font-medium">Alumnos con problemas</p>
-          <p className="text-3xl font-bold text-red-600 mt-2">3</p>
+          <p className="text-slate-500 text-sm font-medium">Recien Matriculados</p>
+          <p className="text-3xl font-bold text-blue-600 mt-2">{matriculadosRecientes}</p>
         </div>
       </div>
 
-      {/* tabla de alumnos */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        
-        {/* barra de busqueda de la tabla */}
-        <div className="p-4 border-b border-slate-200 bg-slate-50">
-          <input 
-            type="text" 
-            placeholder="Buscar alumno por nombre..." 
-            className="w-full max-w-md px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
-        </div>
+      {/* Mensajes de carga o de error */}
+      {cargando && <div className="p-8 text-center text-slate-500">Cargando base de datos...</div>}
+      {error && <div className="p-4 bg-red-50 text-red-700 border border-red-200 rounded-lg">{error}</div>}
 
-        {/* estructura de la tabla */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-slate-50 text-slate-600 text-sm border-b border-slate-200">
-              <tr>
-                <th className="p-4 font-semibold">Nombre Completo</th>
-                <th className="p-4 font-semibold">Correo Institucional</th>
-                <th className="p-4 font-semibold">Licencia</th>
-                <th className="p-4 font-semibold">Sede</th>
-                <th className="p-4 font-semibold">Estado</th>
-                <th className="p-4 font-semibold">Accion</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200">
-              {alumnosFiltrados.map((alumno) => (
-                <tr key={alumno.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="p-4 text-slate-800 font-medium">{alumno.nombre}</td>
-                  <td className="p-4 text-slate-500">{alumno.correo}</td>
-                  <td className="p-4 text-slate-600">{alumno.licencia}</td>
-                  <td className="p-4 text-slate-600">{alumno.sede}</td>
-                  <td className="p-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${alumno.estado === 'Activo' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
-                      {alumno.estado}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <button className="text-blue-600 hover:underline text-sm font-medium">Ver perfil</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Tabla de alumnos */}
+      {!cargando && !error && (
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
           
-          {alumnosFiltrados.length === 0 && (
-            <div className="p-8 text-center text-slate-500">
-              No se encontraron alumnos con ese nombre.
-            </div>
-          )}
-        </div>
-      </div>
+          {/* Barra de busqueda */}
+          <div className="p-4 border-b border-slate-200 bg-slate-50">
+            <input 
+              type="text" 
+              placeholder="Buscar alumno por nombre o apellido..." 
+              className="w-full max-w-md px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+          </div>
 
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-slate-50 text-slate-600 text-sm border-b border-slate-200">
+                <tr>
+                  <th className="p-4 font-semibold">Alumno / RUT</th>
+                  <th className="p-4 font-semibold">Contacto</th>
+                  <th className="p-4 font-semibold">Sede y Licencia</th>
+                  <th className="p-4 font-semibold">Progreso</th>
+                  <th className="p-4 font-semibold">Estado</th>
+                  <th className="p-4 font-semibold">Accion</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {alumnosFiltrados.map((alumno) => (
+                  <tr key={alumno.id_alumno} className="hover:bg-slate-50 transition-colors">
+                    
+                    <td className="p-4">
+                      <div className="font-bold text-slate-800">{alumno.nombre} {alumno.apellido}</div>
+                      <div className="text-sm text-slate-500 font-mono">{alumno.rut}</div>
+                    </td>
+                    
+                    <td className="p-4 text-slate-600 text-sm">{alumno.correo}</td>
+                    
+                    <td className="p-4">
+                      <div className="font-medium text-slate-800">{alumno.licencia}</div>
+                      <div className="text-sm text-slate-500">{alumno.sede}</div>
+                    </td>
+
+                    <td className="p-4 text-slate-600 font-medium">
+                      {alumno.clases_completadas} / {alumno.total_clases} clases
+                    </td>
+                    
+                    <td className="p-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${getColorEstado(alumno.estado)}`}>
+                        {alumno.estado}
+                      </span>
+                    </td>
+                    
+                    <td className="p-4">
+                      <button className="text-blue-600 hover:underline text-sm font-medium">Ver perfil</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            
+            {alumnosFiltrados.length === 0 && (
+              <div className="p-8 text-center text-slate-500">
+                No se encontraron alumnos registrados.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
