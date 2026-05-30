@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { API_BASE_URL } from "../config/api";
+import { VITE_BASE_URL } from "../config/api";
 
 const estadoInicialFormulario = {
   nombre: "",
@@ -22,7 +22,7 @@ function AdministrarSalasPsicotecnicas() {
   const [filtroSalas, setFiltroSalas] = useState("activas");
 
   async function requestApi(endpoint, options = {}) {
-    const respuesta = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const respuesta = await fetch(`${VITE_BASE_URL}${endpoint}`, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -33,7 +33,7 @@ function AdministrarSalasPsicotecnicas() {
 
     if (!contentType || !contentType.includes("application/json")) {
       throw new Error(
-        `La API no devolvió JSON. Revisa la URL: ${API_BASE_URL}${endpoint}`
+        `La API no devolvió JSON. Revisa la URL: ${VITE_BASE_URL}${endpoint}`
       );
     }
 
