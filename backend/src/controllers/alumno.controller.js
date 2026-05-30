@@ -33,6 +33,14 @@ export async function getAlumnoController(req, res) {
 export async function createAlumnoController(req, res) {
     try {
         const alumnoData = req.body;
+
+        // Generar correo automaticamente
+        if (alumnoData.nombre && alumnoData.apellido) {
+            const nom = alumnoData.nombre.trim().toLowerCase().replaceAll(' ', '');
+            const ape = alumnoData.apellido.trim().toLowerCase().replaceAll(' ', '');
+            alumnoData.correo = `${nom}.${ape}@alumnos.condugest.cl`;
+        }
+        
         const validationErrors = validateAlumnoData(alumnoData);
         if (validationErrors.length > 0) {
             return handleErrorClient(res, 400, "Datos del alumno invalidos", validationErrors);
@@ -56,6 +64,12 @@ export async function updateAlumnoController(req, res) {
 
         const alumnoActualizado = await updateAlumno(id, alumnoData);
 
+        // Para error de superar clases completadas sobre total de clases del plan
+        if (alumnoActualizado && alumnoActualizado.errorNegocio) {
+            return handleErrorClient(res, 400, "Limite de clases excedido", alumnoActualizado.errorNegocio);
+        }
+
+        // Para verificar si el alumno a actualizar existe o no
         if (!alumnoActualizado) {
             return handleErrorClient(res, 404, "Alumno no encontrado");
         }

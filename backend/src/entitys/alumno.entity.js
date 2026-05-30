@@ -10,7 +10,18 @@ const Alumno = new EntitySchema({
             primary: true,
             generated: true,
         },
+        rut: {
+            type: "varchar",
+            length: 12,
+            unique: true,
+            nullable: false,
+        },
         nombre: {
+            type: "varchar",
+            length: 100,
+            nullable: false,
+        },
+        apellido: {
             type: "varchar",
             length: 100,
             nullable: false,
@@ -33,15 +44,16 @@ const Alumno = new EntitySchema({
         },
         clases_completadas: {
             type: "int",
-            nullable: false,
+            default: 0,
         },
         total_clases: {
             type: "int",
             nullable: false,
         },
         estado: {
-            type: "boolean",
-            default: true,
+            type: "varchar",
+            length: 50,
+            default: "Matriculado",
         },
     },
 });

@@ -5,25 +5,33 @@ import RegistrarAlumno from './pages/RegistrarAlumno';
 import VistaAlumnos from './pages/VistaAlumnos';
 import DashboardSecretaria from './pages/DashboardSecretaria';
 import AgendaClases from './pages/AgendaClases';
-import ReservaSalaPsicotecnica from "./pages/ReservaSalaPsicotecnica";
-import ModuloSalasPsicotecnicas from "./pages/ModuloSalasPsicotecnicas";
+import PerfilAlumno from './pages/PerfilAlumno';
+import ReservaSalaPsicotecnica from './pages/ReservaSalaPsicotecnica';
+import ModuloSalasPsicotecnicas from './pages/ModuloSalasPsicotecnicas';
 
 function App() {
   // por ahora esta asi para que pase directo
-const [usuario, setUsuario] = useState({
-  rol: 'secretaria',
-  correo: 'test@correo.com'
-});
+  const [usuario, setUsuario] = useState({
+    rol: 'secretaria',
+    correo: 'test@correo.com'
+  });
 
   // para saber que pagina mostrar al lado derecho
   const [vistaActual, setVistaActual] = useState('dashboard');
+
+  const [alumnoSeleccionado, setAlumnoSeleccionado] = useState(null);
+
+  const manejarCambioVista = (nuevaVista, id = null) => {
+    setVistaActual(nuevaVista);
+    setAlumnoSeleccionado(id);
+  };
 
   if (!usuario) return <Login onLogin={setUsuario} />;
 
   return (
     <div className="flex min-h-screen bg-slate-50">
       {/* barra lateral izquierda */}
-      <Sidebar cambiarVista={setVistaActual} vistaActual={vistaActual} />
+      <Sidebar cambiarVista={manejarCambioVista} vistaActual={vistaActual} />
 
       {/* contenido principal derecho */}
       <main className="flex-1 flex flex-col">
@@ -42,8 +50,9 @@ const [usuario, setUsuario] = useState({
         <div className="flex-1 p-6">
           {vistaActual === 'dashboard' && <DashboardSecretaria />}
           {vistaActual === 'agenda' && <AgendaClases />}
-          {vistaActual === 'alumnos' && <VistaAlumnos cambiarVista={setVistaActual} />}
+          {vistaActual === 'alumnos' && <VistaAlumnos cambiarVista={manejarCambioVista} />}
           {vistaActual === 'registrar' && <RegistrarAlumno />}
+          {vistaActual === 'perfil' && <PerfilAlumno alumnoId={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
           {vistaActual === "salasPsicotecnicas" && <ModuloSalasPsicotecnicas />}
         </div>
       </main>
