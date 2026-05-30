@@ -2,6 +2,9 @@
 import {DataSource} from "typeorm";
 import {DATABASE, DB_USERNAME, HOST, DB_PASSWORD} from "./configEnv.js";
 import Alumno from "../entitys/alumno.entity.js";
+import SalaPsicotecnica from "../entitys/salaPsicotecnica.entity.js";
+import ReservaSala from "../entitys/reservaSala.entity.js";
+import {ProfesorEntity} from "../entitys/profesor.entity.js";
 
 export const AppDataSource = new DataSource({
     type: "postgres",
@@ -10,8 +13,8 @@ export const AppDataSource = new DataSource({
     username: `${DB_USERNAME}`,
     password: `${DB_PASSWORD}`,
     database: `${DATABASE}`,
-    entities: [Alumno],
-    synchronize: true,
+    entities: [Alumno, SalaPsicotecnica, ReservaSala, ProfesorEntity],
+    synchronize: true, // Cambia a false en producción para evitar pérdida de datos
     logging: false,
 });
 

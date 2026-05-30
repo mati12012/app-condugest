@@ -13,33 +13,30 @@ const Sidebar = ({ cambiarVista, vistaActual }) => {
       <nav className="flex-1 p-4 flex flex-col gap-2">
         <button
           onClick={() => cambiarVista('dashboard')}
-          className={`text-left px-4 py-2 rounded transition-colors ${
-            vistaActual === 'dashboard'
-              ? 'bg-slate-800 text-blue-300 font-medium'
-              : 'hover:bg-slate-800'
-          }`}
+          className={`text-left px-4 py-2 rounded transition-colors ${vistaActual === 'dashboard'
+            ? 'bg-slate-800 text-blue-300 font-medium'
+            : 'hover:bg-slate-800'
+            }`}
         >
           Panel Principal
         </button>
 
         <button
           onClick={() => cambiarVista('agenda')}
-          className={`text-left px-4 py-2 rounded transition-colors ${
-            vistaActual === 'agenda'
-              ? 'bg-slate-800 text-blue-300 font-medium'
-              : 'hover:bg-slate-800'
-          }`}
+          className={`text-left px-4 py-2 rounded transition-colors ${vistaActual === 'agenda'
+            ? 'bg-slate-800 text-blue-300 font-medium'
+            : 'hover:bg-slate-800'
+            }`}
         >
           Agenda
         </button>
 
         <button
           onClick={() => cambiarVista('alumnos')}
-          className={`text-left px-4 py-2 rounded transition-colors ${
-            vistaActual === 'alumnos'
-              ? 'bg-slate-800 text-blue-300 font-medium'
-              : 'hover:bg-slate-800'
-          }`}
+          className={`text-left px-4 py-2 rounded transition-colors ${vistaActual === 'alumnos'
+            ? 'bg-slate-800 text-blue-300 font-medium'
+            : 'hover:bg-slate-800'
+            }`}
         >
           Alumnos
         </button>
@@ -60,7 +57,9 @@ const Sidebar = ({ cambiarVista, vistaActual }) => {
           Vehículos
         </button>
 
-        <button className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">
+        <button
+          onClick={() => cambiarVista("salasPsicotecnicas")}
+          className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">
           Salas psicotécnicas
         </button>
 

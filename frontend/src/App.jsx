@@ -6,9 +6,15 @@ import VistaAlumnos from './pages/VistaAlumnos';
 import DashboardSecretaria from './pages/DashboardSecretaria';
 import AgendaClases from './pages/AgendaClases';
 import PerfilAlumno from './pages/PerfilAlumno';
+import ReservaSalaPsicotecnica from './pages/ReservaSalaPsicotecnica';
+import ModuloSalasPsicotecnicas from './pages/ModuloSalasPsicotecnicas';
 
 function App() {
-  const [usuario, setUsuario] = useState(null);
+  // por ahora esta asi para que pase directo
+  const [usuario, setUsuario] = useState({
+    rol: 'secretaria',
+    correo: 'test@correo.com'
+  });
 
   // para saber que pagina mostrar al lado derecho
   const [vistaActual, setVistaActual] = useState('dashboard');
@@ -47,6 +53,7 @@ function App() {
           {vistaActual === 'alumnos' && <VistaAlumnos cambiarVista={manejarCambioVista} />}
           {vistaActual === 'registrar' && <RegistrarAlumno />}
           {vistaActual === 'perfil' && <PerfilAlumno alumnoId={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
+          {vistaActual === "salasPsicotecnicas" && <ModuloSalasPsicotecnicas />}
         </div>
       </main>
     </div>

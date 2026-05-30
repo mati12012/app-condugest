@@ -1,5 +1,8 @@
 import { Router } from "express";
 import alumnoRoutes from "./alumno.routes.js"; // Importamos tu ruta de alumnos
+import salaPsicotecnicaRoutes from "./salaPsicotecnica.routes.js"; // Importamos tu ruta de salas psicotécnicas
+import reservaSalaRoutes from "./reservaSala.routes.js"; // Importamos tu ruta de reservas de salas
+import profesorRoutes from "./profesor.routes.js"; // Importamos tu ruta de profesores
 
 export function routerApi(app) {
   const router = Router();
@@ -9,4 +12,11 @@ export function routerApi(app) {
 
   // Aquí registramos la ruta de alumnos
   router.use("/alumnos", alumnoRoutes);
+  // Aquí registramos la ruta de salas psicotécnicas
+  router.use("/salas-psicotecnicas", salaPsicotecnicaRoutes);
+  // Aquí registramos la ruta de reservas de salas
+  router.use("/reservas-salas", reservaSalaRoutes);
+  // Aquí registramos la ruta de profesores
+  router.use("/profesores", profesorRoutes);
+
 }
