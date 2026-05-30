@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { VITE_BASE_URL } from "../config/api";
 // Estado inicial para el formulario de reserva
 const estadoInicialFormulario = {
     id_sala: "",
@@ -28,7 +27,7 @@ function ReservaSalaPsicotecnica() {
     const [filtroEstado, setFiltroEstado] = useState("");
     // Función genérica para hacer solicitudes a la API
     async function requestApi(endpoint, options = {}) {
-        const respuesta = await fetch(`${VITE_BASE_URL}${endpoint}`, {
+        const respuesta = await fetch(`${import.meta.env.VITE_BASE_URL}${endpoint}`, {
             headers: {
                 "Content-Type": "application/json",
             },
