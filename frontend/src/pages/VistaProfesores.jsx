@@ -148,8 +148,8 @@ const VistaProfesores = ({ cambiarVista }) => {
                 type="button"
                 onClick={() => setFiltroEstado('todos')}
                 className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${filtroEstado === 'todos'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
                   }`}
               >
                 Todos
@@ -159,8 +159,8 @@ const VistaProfesores = ({ cambiarVista }) => {
                 type="button"
                 onClick={() => setFiltroEstado('activos')}
                 className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${filtroEstado === 'activos'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
                   }`}
               >
                 Activos
@@ -170,8 +170,8 @@ const VistaProfesores = ({ cambiarVista }) => {
                 type="button"
                 onClick={() => setFiltroEstado('inactivos')}
                 className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${filtroEstado === 'inactivos'
-                    ? 'bg-red-600 text-white'
-                    : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
+                  ? 'bg-red-600 text-white'
+                  : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
                   }`}
               >
                 Inactivos
@@ -247,6 +247,12 @@ const VistaProfesores = ({ cambiarVista }) => {
                           className="text-blue-600 hover:underline text-sm font-medium"
                         >
                           Ver perfil
+                        </button>
+                        <button
+                          onClick={() => cambiarVista('editarProfesor', profesor.id_profesor)}
+                          className="text-amber-600 hover:underline text-sm font-medium"
+                        >
+                          Editar
                         </button>
 
                         <button

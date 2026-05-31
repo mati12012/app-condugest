@@ -11,6 +11,7 @@ import ModuloSalasPsicotecnicas from './pages/ModuloSalasPsicotecnicas';
 import VistaProfesores from './pages/VistaProfesores';
 import PerfilProfesor from './pages/perfilProfesor';
 import RegistrarProfesor from './pages/RegistrarProfesor';
+import EditarProfesor from './pages/EditarProfesor';
 
 function App() {
   // por ahora esta asi para que pase directo
@@ -64,6 +65,7 @@ function App() {
           {vistaActual === "profesores" && <VistaProfesores cambiarVista={manejarCambioVista} />}
           {vistaActual === 'perfilProfesor' && (<PerfilProfesor profesorId={idSeleccionado} cambiarVista={manejarCambioVista} />)}
           {vistaActual === "registrarProfesor" && <RegistrarProfesor cambiarVista={manejarCambioVista} />}
+          {vistaActual === "editarProfesor" && <EditarProfesor profesorId={idSeleccionado} cambiarVista={manejarCambioVista} />}
         </div>
       </main>
     </div>
