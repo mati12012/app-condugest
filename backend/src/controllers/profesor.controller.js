@@ -24,11 +24,10 @@ import {
 function limpiarDatosProfesor(data) {
   return {
     ...data,
-    correo_personal: data.correo_personal || null,
-    telefono: data.telefono || null,
+
+
   };
 }
-
 export async function getProfesoresController(req, res) {
   try {
     const profesores = await getAllProfesores();

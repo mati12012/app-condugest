@@ -9,7 +9,7 @@ import PerfilAlumno from './pages/PerfilAlumno';
 import ReservaSalaPsicotecnica from './pages/ReservaSalaPsicotecnica';
 import ModuloSalasPsicotecnicas from './pages/ModuloSalasPsicotecnicas';
 import VistaProfesores from './pages/VistaProfesores';
-import PerfilProfesor from './pages/PerfilProfesor';
+import PerfilProfesor from './pages/perfilProfesor';
 import RegistrarProfesor from './pages/RegistrarProfesor';
 
 function App() {
@@ -23,13 +23,14 @@ function App() {
   const [vistaActual, setVistaActual] = useState('dashboard');
 
   const [alumnoSeleccionado, setAlumnoSeleccionado] = useState(null);
-  const[idSeleccionado, setIdSeleccionado] = useState(null);
+  const [idSeleccionado, setIdSeleccionado] = useState(null);
 
 
 
   const manejarCambioVista = (nuevaVista, id = null) => {
     setVistaActual(nuevaVista);
     setAlumnoSeleccionado(id);
+    setIdSeleccionado(id);
   };
 
   if (!usuario) return <Login onLogin={setUsuario} />;
@@ -61,7 +62,7 @@ function App() {
           {vistaActual === 'perfil' && <PerfilAlumno alumnoId={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
           {vistaActual === "salasPsicotecnicas" && <ModuloSalasPsicotecnicas />}
           {vistaActual === "profesores" && <VistaProfesores cambiarVista={manejarCambioVista} />}
-          {vistaActual === "perfilProfesor" && <PerfilProfesor profesorId={idSeleccionado} cambiarVista={manejarCambioVista} />}
+          {vistaActual === 'perfilProfesor' && (<PerfilProfesor profesorId={idSeleccionado} cambiarVista={manejarCambioVista} />)}
           {vistaActual === "registrarProfesor" && <RegistrarProfesor cambiarVista={manejarCambioVista} />}
         </div>
       </main>
