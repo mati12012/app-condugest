@@ -9,7 +9,7 @@ import PerfilAlumno from './pages/PerfilAlumno';
 import ReservaSalaPsicotecnica from './pages/ReservaSalaPsicotecnica';
 import ModuloSalasPsicotecnicas from './pages/ModuloSalasPsicotecnicas';
 import VistaProfesores from './pages/VistaProfesores';
-import PerfilProfesor from './pages/perfilProfesor';
+import PerfilProfesor from './pages/PerfilProfesor';
 import RegistrarProfesor from './pages/RegistrarProfesor';
 import EditarProfesor from './pages/EditarProfesor';
 
@@ -71,5 +71,5 @@ function App() {
     </div>
   );
 }
-
+;
 export default App;
