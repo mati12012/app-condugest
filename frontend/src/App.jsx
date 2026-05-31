@@ -51,7 +51,7 @@ function App() {
           {vistaActual === 'dashboard' && <DashboardSecretaria />}
           {vistaActual === 'agenda' && <AgendaClases />}
           {vistaActual === 'alumnos' && <VistaAlumnos cambiarVista={manejarCambioVista} />}
-          {vistaActual === 'registrar' && <RegistrarAlumno />}
+          {vistaActual === 'registrar' && <RegistrarAlumno cambiarVista={setVistaActual} />}
           {vistaActual === 'perfil' && <PerfilAlumno alumnoId={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
           {vistaActual === "salasPsicotecnicas" && <ModuloSalasPsicotecnicas />}
         </div>

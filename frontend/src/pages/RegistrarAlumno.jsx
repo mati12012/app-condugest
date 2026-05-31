@@ -1,47 +1,51 @@
 import React, { useState } from 'react';
 
-const RegistrarAlumno = () => {
+const RegistrarAlumno = ({ cambiarVista }) => {
   const [datos, setDatos] = useState({ 
     rut: '',
     nombre: '', 
     apellido: '',
     licencia: 'Clase B', 
-    sede: 'Sede Concepcion' ,
+    sede: 'Sede Concepcion',
     total_clases: 10
   });
-  const [mensaje, setMensaje] = useState('');
+  const [mensajeExito, setMensajeExito] = useState('');
   const [cargando, setCargando] = useState(false);
+  const [erroresCampos, setErroresCampos] = useState([]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMensaje('');
+    setMensajeExito('');
+    setErroresCampos([]);
     setCargando(true);
 
     if (datos.rut.trim() === '') {
-      setMensaje('Error: El RUT es obligatorio');
+      setErroresCampos(['El RUT es obligatorio']);
       setCargando(false);
       return;
     }
 
     if (datos.nombre.trim() === '') {
-      setMensaje('Error: El nombre es obligatorio');
+      setErroresCampos(['El nombre es obligatorio']);
       setCargando(false);
       return;
     }
 
     if (datos.apellido.trim() === '') {
-      setMensaje('Error: El apellido es obligatorio');
+      setErroresCampos(['El apellido es obligatorio']);
       setCargando(false);
       return;
     }
 
     const datosFinales = {
       ...datos,
-      total_clases: Number(datos.total_clases)
+      total_clases: Number(datos.total_clases),
+      clases_completadas: 0,
+      estado: 'Matriculado',
+      correo: 'autogenerado@condugest.cl' 
     };
 
     try {
-      console.log("La URL es:", import.meta.env.VITE_BASE_URL);
       const response = await fetch(`${import.meta.env.VITE_BASE_URL}/alumnos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -51,53 +55,90 @@ const RegistrarAlumno = () => {
       const respuestaServidor = await response.json();
       
       if (response.ok) {
-        const correoCreado = respuestaServidor.data.correo;
-        setMensaje(`Exito: alumno guardado. Su correo institucional es ${correoCreado}`);
+        const correoCreado = respuestaServidor.data?.correo || '';
+        setMensajeExito(`¡Alumno guardado con éxito! Correo institucional: ${correoCreado}`);
+        setErroresCampos([]);
         setDatos({ rut: '', nombre: '', apellido: '', licencia: 'Clase B', sede: 'Sede Concepcion', total_clases: 10 });
       } else {
-        setMensaje(`Error: ${respuestaServidor.message} ${respuestaServidor.errorDetails ? '- Revisa los datos ingresados' : ''}`);
+        if (respuestaServidor.errorDetails && respuestaServidor.errorDetails.length > 0) {
+          setErroresCampos(respuestaServidor.errorDetails);
+        } else {
+          setErroresCampos([respuestaServidor.message || 'Error al guardar el alumno.']);
+        }
       }
     } catch (error) {
       console.error(error);
-      setMensaje('Error: Sin conexion al servidor');
+      setErroresCampos(['Error: Sin conexión con el servidor.']);
     } finally {
       setCargando(false);
     }
   };
 
+  // Funcion para saber si un campo especifico fallo y pintarlo de rojo
+  const tieneError = (campo) => erroresCampos.some(err => err.toLowerCase().includes(campo));
+
   return (
     <div className="w-full max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-slate-200">
-      <div className="mb-6 border-b pb-4">
-        <h2 className="text-2xl font-bold text-slate-800">Registrar Nuevo Alumno</h2>
-        <p className="text-slate-500">Ingrese los datos para ingresar a un nuevo estudiante en el sistema.</p>
+      <div className="mb-6 border-b pb-4 flex justify-between items-start">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800">Registrar Nuevo Alumno</h2>
+          <p className="text-slate-500 mt-1">Ingrese los datos para registrar a un nuevo estudiante en el sistema.</p>
+        </div>
+        {/* Botón para Volver Atrás */}
+        <button
+          type="button"
+          onClick={() => cambiarVista('alumnos')}
+          className="text-sm font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg transition-colors"
+        >
+          ← Volver
+        </button>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         
-        {mensaje && (
-          <div className={`p-4 rounded-lg font-medium text-sm ${mensaje.includes('error') ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
-            {mensaje}
+        {mensajeExito && (
+          <div className="bg-green-50 text-green-700 border border-green-200 p-4 rounded-lg font-medium text-sm">
+            {mensajeExito}
+          </div>
+        )}
+
+        {erroresCampos.length > 0 && (
+          <div className="bg-red-50 text-red-700 border border-red-200 p-4 rounded-lg text-sm font-medium">
+            <p className="font-bold mb-1">Por favor corrige los siguientes datos:</p>
+            <ul className="list-disc pl-5 space-y-1">
+              {erroresCampos.map((err, i) => (
+                <li key={i}>{err}</li>
+              ))}
+            </ul>
           </div>
         )}
 
         <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">RUT</label>
-            <input 
-              type="text" 
-              placeholder="Ej: 12345678-9" 
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none" 
-              value={datos.rut} 
-              onChange={e => setDatos({...datos, rut: e.target.value})} 
-              required 
-            />
-          </div>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">RUT</label>
+          <input 
+            type="text" 
+            placeholder="Ej: 12345678-9" 
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none transition-shadow ${
+              tieneError('rut') 
+                ? 'border-red-400 focus:ring-2 focus:ring-red-100 bg-red-50/30' 
+                : 'border-slate-300 focus:ring-2 focus:ring-blue-600'
+            }`}
+            value={datos.rut} 
+            onChange={e => setDatos({...datos, rut: e.target.value})} 
+            required 
+          />
+        </div>
 
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-2">Nombre</label>
           <input 
             type="text" 
             placeholder="Ej: Matias" 
-            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none" 
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none transition-shadow ${
+              tieneError('nombre') 
+                ? 'border-red-400 focus:ring-2 focus:ring-red-100 bg-red-50/30' 
+                : 'border-slate-300 focus:ring-2 focus:ring-blue-600'
+            }`}
             value={datos.nombre} 
             onChange={e => setDatos({...datos, nombre: e.target.value})} 
             required 
@@ -109,12 +150,16 @@ const RegistrarAlumno = () => {
           <input 
             type="text" 
             placeholder="Ej: Perez"
-            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none" 
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none transition-shadow ${
+              tieneError('apellido') 
+                ? 'border-red-400 focus:ring-2 focus:ring-red-100 bg-red-50/30' 
+                : 'border-slate-300 focus:ring-2 focus:ring-blue-600'
+            }`}
             value={datos.apellido} 
             onChange={e => setDatos({...datos, apellido: e.target.value})} 
             required 
           />
-          <p className="text-xs text-slate-400 mt-1">El correo institucional se generara automaticamente.</p>
+          <p className="text-xs text-slate-400 mt-1">El correo institucional se generará automáticamente.</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -144,12 +189,16 @@ const RegistrarAlumno = () => {
             </select>
           </div>
 
-          <div>
+          <div className="col-span-2">
             <label className="block text-sm font-semibold text-slate-700 mb-2">Plan contratado (Clases)</label>
             <input 
               type="number" 
               min="1"
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none" 
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none transition-shadow ${
+                tieneError('clases') || tieneError('plan')
+                  ? 'border-red-400 focus:ring-2 focus:ring-red-100 bg-red-50/30' 
+                  : 'border-slate-300 focus:ring-2 focus:ring-blue-600'
+              }`}
               value={datos.total_clases} 
               onChange={e => setDatos({...datos, total_clases: e.target.value})} 
               required 
@@ -157,12 +206,19 @@ const RegistrarAlumno = () => {
           </div>
         </div>
 
-        <div className="pt-4 border-t mt-6 flex justify-end">
+        <div className="pt-4 border-t mt-6 flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => cambiarVista('alumnos')}
+            className="px-5 py-2.5 rounded-lg font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+          >
+            Cancelar
+          </button>
           <button 
             type="submit" 
             disabled={cargando}
             className={`px-6 py-2.5 rounded-lg font-bold text-white transition-colors
-              ${cargando ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+              ${cargando ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
           >
             {cargando ? 'Guardando...' : 'Confirmar Registro'}
           </button>
