@@ -5,6 +5,7 @@ const VistaProfesores = ({ cambiarVista }) => {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [busqueda, setBusqueda] = useState('');
+  const [filtroEstado, setFiltroEstado] = useState('todos');
 
   useEffect(() => {
     obtenerProfesores();
@@ -62,13 +63,23 @@ const VistaProfesores = ({ cambiarVista }) => {
   const profesoresFiltrados = profesores.filter(profesor => {
     const nombreCompleto = `${profesor.nombre} ${profesor.apellido}`.toLowerCase();
     const rut = profesor.rut?.toLowerCase() || "";
-    const correo = profesor.correo_institucional?.toLowerCase() || "";
+    const correoInstitucional = profesor.correo_institucional?.toLowerCase() || "";
+    const correoPersonal = profesor.correo_personal?.toLowerCase() || "";
 
-    return (
-      nombreCompleto.includes(busqueda.toLowerCase()) ||
-      rut.includes(busqueda.toLowerCase()) ||
-      correo.includes(busqueda.toLowerCase())
-    );
+    const textoBusqueda = busqueda.toLowerCase();
+
+    const coincideBusqueda =
+      nombreCompleto.includes(textoBusqueda) ||
+      rut.includes(textoBusqueda) ||
+      correoInstitucional.includes(textoBusqueda) ||
+      correoPersonal.includes(textoBusqueda);
+
+    const coincideEstado =
+      filtroEstado === 'todos' ||
+      (filtroEstado === 'activos' && profesor.estado === true) ||
+      (filtroEstado === 'inactivos' && profesor.estado === false);
+
+    return coincideBusqueda && coincideEstado;
   });
 
   const totalProfesores = profesores.length;
@@ -123,7 +134,7 @@ const VistaProfesores = ({ cambiarVista }) => {
       {!cargando && !error && (
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
 
-          <div className="p-4 border-b border-slate-200 bg-slate-50">
+          <div className="p-4 border-b border-slate-200 bg-slate-50 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
             <input
               type="text"
               placeholder="Buscar profesor por nombre, RUT o correo..."
@@ -131,6 +142,41 @@ const VistaProfesores = ({ cambiarVista }) => {
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
             />
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setFiltroEstado('todos')}
+                className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${filtroEstado === 'todos'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
+                  }`}
+              >
+                Todos
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFiltroEstado('activos')}
+                className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${filtroEstado === 'activos'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
+                  }`}
+              >
+                Activos
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFiltroEstado('inactivos')}
+                className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${filtroEstado === 'inactivos'
+                    ? 'bg-red-600 text-white'
+                    : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
+                  }`}
+              >
+                Inactivos
+              </button>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -205,9 +251,8 @@ const VistaProfesores = ({ cambiarVista }) => {
 
                         <button
                           onClick={() => cambiarEstadoProfesor(profesor)}
-                          className={`text-sm font-medium hover:underline ${
-                            profesor.estado ? 'text-red-600' : 'text-green-600'
-                          }`}
+                          className={`text-sm font-medium hover:underline ${profesor.estado ? 'text-red-600' : 'text-green-600'
+                            }`}
                         >
                           {profesor.estado ? 'Desactivar' : 'Activar'}
                         </button>
@@ -220,7 +265,7 @@ const VistaProfesores = ({ cambiarVista }) => {
 
             {profesoresFiltrados.length === 0 && (
               <div className="p-8 text-center text-slate-500">
-                No se encontraron profesores registrados.
+                No se encontraron profesores con los filtros aplicados.
               </div>
             )}
           </div>
