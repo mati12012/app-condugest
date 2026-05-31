@@ -14,6 +14,8 @@ import RegistrarProfesor from './pages/RegistrarProfesor';
 import EditarProfesor from './pages/EditarProfesor';
 import RegistrarVehiculo from './pages/RegistrarVehiculo';
 import VistaVehiculos from './pages/VistaVehiculos';
+import VerVehiculo from './pages/VerVehiculo';
+
 
 function App() {
   // por ahora esta asi para que pase directo
@@ -70,6 +72,7 @@ function App() {
           {vistaActual === "editarProfesor" && <EditarProfesor profesorId={idSeleccionado} cambiarVista={manejarCambioVista} />}
           {vistaActual === "registrarVehiculo" && <RegistrarVehiculo cambiarVista={manejarCambioVista} />}          
           {vistaActual === "vehiculos" && <VistaVehiculos cambiarVista={manejarCambioVista} />}
+          {vistaActual === "verVehiculo" && <VerVehiculo vehiculoId={idSeleccionado} cambiarVista={manejarCambioVista} />}
         </div>
       </main>
     </div>

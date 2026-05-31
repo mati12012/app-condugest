@@ -311,10 +311,10 @@ const VistaVehiculos = ({ cambiarVista }) => {
                   <td className="p-4">
                     <div className="flex flex-col gap-2 items-start">
                       <button
-                        onClick={() => cambiarVista('perfilVehiculo', vehiculo.id_vehiculo)}
+                        onClick={() => cambiarVista('verVehiculo', vehiculo.id_vehiculo)}
                         className="text-blue-600 hover:underline text-sm font-medium"
                       >
-                        Ver perfil
+                        Ver Vehículo
                       </button>
 
                       <button
