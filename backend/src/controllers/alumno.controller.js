@@ -59,18 +59,18 @@ export async function createAlumnoController(req, res) {
 export async function updateAlumnoController(req, res) {
     try {
         const { id } = req.params;  
-        const alumnoData = req.body;
-        const validationErrors = validateAlumnoData(alumnoData);
+        const { id_alumno, id: bodyId, ...alumnoDataSeguro } = req.body;
+        const validationErrors = validateAlumnoData(alumnoDataSeguro);
 
         if (validationErrors.length > 0) {
             return handleErrorClient(res, 400, "Datos del alumno invalidos", validationErrors);
         }
 
-        const alumnoActualizado = await updateAlumno(id, alumnoData);
+        const alumnoActualizado = await updateAlumno(id, alumnoDataSeguro);
 
         // Para error de superar clases completadas sobre total de clases del plan
         if (alumnoActualizado && alumnoActualizado.errorNegocio) {
-            return handleErrorClient(res, 400, "Limite de clases excedido", alumnoActualizado.errorNegocio);
+            return handleErrorClient(res, 400, "Límite de clases excedido", [alumnoActualizado.errorNegocio]);
         }
 
         // Para verificar si el alumno a actualizar existe o no
