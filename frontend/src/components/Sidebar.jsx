@@ -56,7 +56,9 @@ const Sidebar = ({ cambiarVista, vistaActual }) => {
           Profesores
         </button>
 
-        <button className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">
+        <button
+          onClick={() => cambiarVista("vehiculos")}
+          className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">
           Vehículos
         </button>
 
