@@ -64,8 +64,8 @@ function App() {
           {vistaActual === 'dashboard' && <DashboardSecretaria />}
           {vistaActual === 'agenda' && <AgendaClases />}
           {vistaActual === 'alumnos' && <VistaAlumnos cambiarVista={manejarCambioVista} />}
-          {vistaActual === 'registrar' && <RegistrarAlumno />}
-          {vistaActual === 'perfil' && <PerfilAlumno alumnoId={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
+          {vistaActual === 'registrar' && <RegistrarAlumno cambiarVista={setVistaActual} />}
+          {vistaActual === 'perfil' && <PerfilAlumno alumnoSeleccionado={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
           {vistaActual === "salasPsicotecnicas" && <ModuloSalasPsicotecnicas />}
           {vistaActual === "profesores" && <VistaProfesores cambiarVista={manejarCambioVista} />}
           {vistaActual === 'perfilProfesor' && (<PerfilProfesor profesorId={idSeleccionado} cambiarVista={manejarCambioVista} />)}

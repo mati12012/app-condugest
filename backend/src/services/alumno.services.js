@@ -40,14 +40,19 @@ export async function updateAlumno(id, data) {
     }
 
     // Auto transicion de estados
-    if (nuevasClases === totalClasesPlan && totalClasesPlan > 0) {
-        data.estado = "Finalizado";
-    } else if (nuevasClases > 0 && nuevasClases < totalClasesPlan) {
-        data.estado = "En curso";
-    } else if (nuevasClases === 0) {
-        data.estado = "Matriculado";
+    // Primero verifica si la secretaria lo esta suspendiendo manualmente
+    if (data.estado === "Suspendido") {
+        data.estado = "Suspendido";
+    } else {
+        // Si no esta suspendido, dejamos que el sistema calcule el progreso real
+        if (nuevasClases === totalClasesPlan && totalClasesPlan > 0) {
+            data.estado = "Finalizado";
+        } else if (nuevasClases > 0 && nuevasClases < totalClasesPlan) {
+            data.estado = "Activo"; 
+        } else if (nuevasClases === 0) {
+            data.estado = "Matriculado";
+        }
     }
-
 
     //Y si existe, y pasa las reglas, lo actualiza 
     await alumnoRepository.update({ id_alumno: parseInt(id) }, data);

@@ -36,8 +36,8 @@ export async function createAlumnoController(req, res) {
 
         // Generar correo automaticamente
         if (alumnoData.nombre && alumnoData.apellido) {
-            const nom = alumnoData.nombre.trim().toLowerCase().replaceAll(' ', '');
-            const ape = alumnoData.apellido.trim().toLowerCase().replaceAll(' ', '');
+            const nom = alumnoData.nombre.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replaceAll(' ', '');
+            const ape = alumnoData.apellido.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replaceAll(' ', '');
             alumnoData.correo = `${nom}.${ape}@alumnos.condugest.cl`;
         }
         
@@ -48,25 +48,29 @@ export async function createAlumnoController(req, res) {
         const nuevoAlumno = await createAlumno(alumnoData);
         return handleSuccess(res, 201, "Alumno creado exitosamente", nuevoAlumno);
     } catch (error) {
-        return handleErrorServer(res, 500, "Error al crear alumno", error.message);
+        const errorMsg = error.message ? error.message.toLowerCase() : "";
+        if (errorMsg.includes("llave duplicada") || errorMsg.includes("unicidad") || errorMsg.includes("duplicate key")) {
+            return handleErrorClient(res, 400, "Error de registro", ["RUT ya registrado en el sistema."]);
+        }
+        return handleErrorClient(res, 400, "Error de sistema", ["No se pudo guardar el alumno. Intente nuevamente."]);
     }
 }
 
 export async function updateAlumnoController(req, res) {
     try {
         const { id } = req.params;  
-        const alumnoData = req.body;
-        const validationErrors = validateAlumnoData(alumnoData);
+        const { id_alumno, id: bodyId, ...alumnoDataSeguro } = req.body;
+        const validationErrors = validateAlumnoData(alumnoDataSeguro);
 
         if (validationErrors.length > 0) {
             return handleErrorClient(res, 400, "Datos del alumno invalidos", validationErrors);
         }
 
-        const alumnoActualizado = await updateAlumno(id, alumnoData);
+        const alumnoActualizado = await updateAlumno(id, alumnoDataSeguro);
 
         // Para error de superar clases completadas sobre total de clases del plan
         if (alumnoActualizado && alumnoActualizado.errorNegocio) {
-            return handleErrorClient(res, 400, "Limite de clases excedido", alumnoActualizado.errorNegocio);
+            return handleErrorClient(res, 400, "Límite de clases excedido", [alumnoActualizado.errorNegocio]);
         }
 
         // Para verificar si el alumno a actualizar existe o no
