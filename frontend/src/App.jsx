@@ -15,6 +15,7 @@ import EditarProfesor from './pages/EditarProfesor';
 import RegistrarVehiculo from './pages/RegistrarVehiculo';
 import VistaVehiculos from './pages/VistaVehiculos';
 import VerVehiculo from './pages/VerVehiculo';
+import EditarVehiculo from './pages/EditarVehiculo';
 
 
 function App() {
@@ -73,6 +74,7 @@ function App() {
           {vistaActual === "registrarVehiculo" && <RegistrarVehiculo cambiarVista={manejarCambioVista} />}          
           {vistaActual === "vehiculos" && <VistaVehiculos cambiarVista={manejarCambioVista} />}
           {vistaActual === "verVehiculo" && <VerVehiculo vehiculoId={idSeleccionado} cambiarVista={manejarCambioVista} />}
+          {vistaActual === "editarVehiculo" && <EditarVehiculo vehiculoId={idSeleccionado} cambiarVista={manejarCambioVista} />}
         </div>
       </main>
     </div>
