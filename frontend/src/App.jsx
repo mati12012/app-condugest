@@ -8,6 +8,15 @@ import AgendaClases from './pages/AgendaClases';
 import PerfilAlumno from './pages/PerfilAlumno';
 import ReservaSalaPsicotecnica from './pages/ReservaSalaPsicotecnica';
 import ModuloSalasPsicotecnicas from './pages/ModuloSalasPsicotecnicas';
+import VistaProfesores from './pages/VistaProfesores';
+import PerfilProfesor from './pages/PerfilProfesor';
+import RegistrarProfesor from './pages/RegistrarProfesor';
+import EditarProfesor from './pages/EditarProfesor';
+import RegistrarVehiculo from './pages/RegistrarVehiculo';
+import VistaVehiculos from './pages/VistaVehiculos';
+import VerVehiculo from './pages/VerVehiculo';
+import EditarVehiculo from './pages/EditarVehiculo';
+
 
 function App() {
   // por ahora esta asi para que pase directo
@@ -20,10 +29,14 @@ function App() {
   const [vistaActual, setVistaActual] = useState('dashboard');
 
   const [alumnoSeleccionado, setAlumnoSeleccionado] = useState(null);
+  const [idSeleccionado, setIdSeleccionado] = useState(null);
+
+
 
   const manejarCambioVista = (nuevaVista, id = null) => {
     setVistaActual(nuevaVista);
     setAlumnoSeleccionado(id);
+    setIdSeleccionado(id);
   };
 
   if (!usuario) return <Login onLogin={setUsuario} />;
@@ -54,6 +67,14 @@ function App() {
           {vistaActual === 'registrar' && <RegistrarAlumno />}
           {vistaActual === 'perfil' && <PerfilAlumno alumnoId={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
           {vistaActual === "salasPsicotecnicas" && <ModuloSalasPsicotecnicas />}
+          {vistaActual === "profesores" && <VistaProfesores cambiarVista={manejarCambioVista} />}
+          {vistaActual === 'perfilProfesor' && (<PerfilProfesor profesorId={idSeleccionado} cambiarVista={manejarCambioVista} />)}
+          {vistaActual === "registrarProfesor" && <RegistrarProfesor cambiarVista={manejarCambioVista} />}
+          {vistaActual === "editarProfesor" && <EditarProfesor profesorId={idSeleccionado} cambiarVista={manejarCambioVista} />}
+          {vistaActual === "registrarVehiculo" && <RegistrarVehiculo cambiarVista={manejarCambioVista} />}          
+          {vistaActual === "vehiculos" && <VistaVehiculos cambiarVista={manejarCambioVista} />}
+          {vistaActual === "verVehiculo" && <VerVehiculo vehiculoId={idSeleccionado} cambiarVista={manejarCambioVista} />}
+          {vistaActual === "editarVehiculo" && <EditarVehiculo vehiculoId={idSeleccionado} cambiarVista={manejarCambioVista} />}
         </div>
       </main>
     </div>
