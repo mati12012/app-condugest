@@ -83,7 +83,7 @@ const validarFormulario = () => {
       telefono:
         datos.telefono.trim() === ''
           ? null
-          : limpiarTelefono(datos.telefono),
+          : datos.telefono.replace(/\s/g, '').replace(/-/g, ''),
       licencia_autorizada: datos.licencia_autorizada.trim(),
       sede: datos.sede.trim(),
       especialidad: datos.especialidad.trim(),
@@ -116,7 +116,11 @@ const validarFormulario = () => {
           estado: true
         });
       } else {
-        setMensaje(`Error: ${obtenerMensajeErrorServidor(respuestaServidor)}`);
+        if (respuestaServidor.errorDetails && respuestaServidor.errorDetails.length > 0) {
+          setMensaje(`Error: ${respuestaServidor.errorDetails.join(', ')}`);
+        } else {
+          setMensaje(`Error: ${respuestaServidor.message || 'Error desconocido al guardar'}`);
+        }
       }
     } catch (error) {
       console.error(error);
