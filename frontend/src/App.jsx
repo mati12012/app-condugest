@@ -16,6 +16,8 @@ import RegistrarVehiculo from './pages/RegistrarVehiculo';
 import VistaVehiculos from './pages/VistaVehiculos';
 import VerVehiculo from './pages/VerVehiculo';
 import EditarVehiculo from './pages/EditarVehiculo';
+import VistaClasesTeoricas from './pages/VistaClasesTeoricas';
+import RegistrarClaseTeorica from './pages/RegistrarClaseTeorica';
 
 
 function App() {
@@ -75,6 +77,8 @@ function App() {
           {vistaActual === "vehiculos" && <VistaVehiculos cambiarVista={manejarCambioVista} />}
           {vistaActual === "verVehiculo" && <VerVehiculo vehiculoId={idSeleccionado} cambiarVista={manejarCambioVista} />}
           {vistaActual === "editarVehiculo" && <EditarVehiculo vehiculoId={idSeleccionado} cambiarVista={manejarCambioVista} />}
+          {vistaActual === 'clasesTeoricas' && <VistaClasesTeoricas cambiarVista={manejarCambioVista} />}
+          {vistaActual === 'registrarClaseTeorica' && <RegistrarClaseTeorica cambiarVista={manejarCambioVista} />}
         </div>
       </main>
     </div>
