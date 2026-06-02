@@ -16,6 +16,7 @@ import RegistrarVehiculo from './pages/RegistrarVehiculo';
 import VistaVehiculos from './pages/VistaVehiculos';
 import VerVehiculo from './pages/VerVehiculo';
 import EditarVehiculo from './pages/EditarVehiculo';
+import RegistrarClasePractica from './pages/RegistrarClasePractica';
 
 
 function App() {
@@ -26,7 +27,7 @@ function App() {
   });
 
   // para saber que pagina mostrar al lado derecho
-  const [vistaActual, setVistaActual] = useState('dashboard');
+  const [vistaActual, setVistaActual] = useState('registrarClasePractica');
 
   const [alumnoSeleccionado, setAlumnoSeleccionado] = useState(null);
   const [idSeleccionado, setIdSeleccionado] = useState(null);
@@ -75,6 +76,7 @@ function App() {
           {vistaActual === "vehiculos" && <VistaVehiculos cambiarVista={manejarCambioVista} />}
           {vistaActual === "verVehiculo" && <VerVehiculo vehiculoId={idSeleccionado} cambiarVista={manejarCambioVista} />}
           {vistaActual === "editarVehiculo" && <EditarVehiculo vehiculoId={idSeleccionado} cambiarVista={manejarCambioVista} />}
+          {vistaActual === "registrarClasePractica" && <RegistrarClasePractica cambiarVista={manejarCambioVista} />}
         </div>
       </main>
     </div>
