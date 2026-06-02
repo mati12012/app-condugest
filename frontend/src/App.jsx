@@ -19,6 +19,7 @@ import EditarVehiculo from './pages/EditarVehiculo';
 import RegistrarClasePractica from './pages/RegistrarClasePractica';
 import VistaClasesPracticas from './pages/VistaClasesPracticas';
 import VerClasePractica from './pages/VerClasePractica';
+import EditarClasePractica from './pages/EditarClasePractica';
 
 
 function App() {
@@ -81,6 +82,7 @@ function App() {
           {vistaActual === "registrarClasePractica" && <RegistrarClasePractica cambiarVista={manejarCambioVista} />}
           {vistaActual === "clasesPracticas" && <VistaClasesPracticas cambiarVista={manejarCambioVista} />}
           {vistaActual === "verClasePractica" && <VerClasePractica claseId={idSeleccionado} cambiarVista={manejarCambioVista} />}
+          {vistaActual === "editarClasePractica" && <EditarClasePractica claseId={idSeleccionado} cambiarVista={manejarCambioVista} />}
         </div>
       </main>
     </div>
