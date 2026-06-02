@@ -5,6 +5,7 @@ import reservaSalaRoutes from "./reservaSala.routes.js"; // Importamos tu ruta d
 import profesorRoutes from "./profesor.routes.js"; // Importamos tu ruta de profesores
 import vehiculoRoutes from "./vehiculo.routes.js"; // Importamos tu ruta de vehículos
 import clasePracticaRoutes from "./clasePractica.routes.js"; // Importamos tu ruta de clases prácticas
+import claseTeoricaRoutes from "./claseTeorica.routes.js"; // Importamos tu ruta de clases teóricas
 
 export function routerApi(app) {
   const router = Router();
@@ -24,5 +25,7 @@ export function routerApi(app) {
   router.use("/vehiculos", vehiculoRoutes);
   // Aquí registramos la ruta de clases prácticas
   router.use("/clases-practicas", clasePracticaRoutes);
+  // Aquí registramos la ruta de clases teóricas
+  router.use("/clases-teoricas", claseTeoricaRoutes);
 
 }
