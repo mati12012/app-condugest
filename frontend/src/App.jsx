@@ -22,6 +22,8 @@ import VerClasePractica from './pages/VerClasePractica';
 import EditarClasePractica from './pages/EditarClasePractica';
 import VistaClasesTeoricas from './pages/VistaClasesTeoricas';
 import RegistrarClaseTeorica from './pages/RegistrarClaseTeorica';
+import VerClaseTeorica from './pages/VerClaseTeorica';
+import EditarClaseTeorica from './pages/EditarClaseTeorica';
 
 
 function App() {
@@ -87,6 +89,8 @@ function App() {
           {vistaActual === "editarClasePractica" && <EditarClasePractica claseId={idSeleccionado} cambiarVista={manejarCambioVista} />}
           {vistaActual === 'clasesTeoricas' && <VistaClasesTeoricas cambiarVista={manejarCambioVista} />}
           {vistaActual === 'registrarClaseTeorica' && <RegistrarClaseTeorica cambiarVista={manejarCambioVista} />}
+          {vistaActual === 'verClaseTeorica' && <VerClaseTeorica idClase={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
+          {vistaActual === 'editarClaseTeorica' && <EditarClaseTeorica idClase={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
         </div>
       </main>
     </div>

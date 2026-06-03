@@ -20,6 +20,10 @@ export async function getAllClasesTeoricas() {
     return await claseRepository.find({ relations: ["profesor"], order: { fecha: "ASC" } });
 }
 
+export async function getClaseTeoricaById(id) {
+    return await claseRepository.findOne({ where: { id_clase_teorica: parseInt(id) }, relations: ["profesor"] });
+}
+
 export async function updateClaseTeorica(id, data) {
     const claseExiste = await claseRepository.findOneBy({ id_clase_teorica: parseInt(id) });
     if (!claseExiste) return null;
@@ -34,10 +38,30 @@ export async function updateClaseTeorica(id, data) {
     return await claseRepository.findOne({ where: { id_clase_teorica: parseInt(id) }, relations: ["profesor"] });
 }
 
-export async function deleteClaseTeorica(id) {
-    const claseExiste = await claseRepository.findOneBy({ id_clase_teorica: parseInt(id) });
-    if (!claseExiste) return null;
+export async function buscarChoqueProfesor({ id_profesor, fecha, hora_inicio, hora_fin, id_clase_excluida = null }) {
+    // Busca en clases teóricas
+    let queryTeorica = `
+        SELECT 'Teórica' as tipo FROM clases_teoricas 
+        WHERE id_profesor = $1 AND fecha = $2 AND estado <> 'Cancelada' 
+        AND hora_inicio < $4 AND hora_fin > $3
+    `;
+    const paramsTeorica = [id_profesor, fecha, hora_inicio, hora_fin];
+    if (id_clase_excluida) {
+        queryTeorica += ` AND id_clase_teorica <> $5`;
+        paramsTeorica.push(id_clase_excluida);
+    }
     
-    await claseRepository.delete({ id_clase_teorica: parseInt(id) });
-    return claseExiste;
+    const choqueTeorica = await AppDataSource.query(queryTeorica, paramsTeorica);
+    if (choqueTeorica.length > 0) return "El profesor ya tiene otra clase teórica en ese horario.";
+
+    // Busca en clases prácticas
+    const choquePractica = await AppDataSource.query(`
+        SELECT 'Práctica' as tipo FROM clases_practicas 
+        WHERE id_profesor = $1 AND fecha = $2 AND estado <> 'Cancelada' 
+        AND hora_inicio < $4 AND hora_fin > $3 LIMIT 1
+    `, [id_profesor, fecha, hora_inicio, hora_fin]);
+
+    if (choquePractica.length > 0) return "El profesor ya tiene una clase práctica asignada en ese horario.";
+    
+    return null;
 }

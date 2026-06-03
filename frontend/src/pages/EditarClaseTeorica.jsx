@@ -1,34 +1,43 @@
 import React, { useState, useEffect } from 'react';
 
-const RegistrarClaseTeorica = ({ cambiarVista }) => {
-  const [datos, setDatos] = useState({ 
-    tema: '',
-    fecha: '', 
-    hora_inicio: '',
-    hora_fin: '', 
-    sede: 'Sede Concepcion',
-    id_profesor: '',
-    estado: 'Programada'
-  });
-  
+const EditarClaseTeorica = ({ idClase, cambiarVista }) => {
+  const [datos, setDatos] = useState(null);
   const [profesores, setProfesores] = useState([]);
+  
   const [mensajeExito, setMensajeExito] = useState('');
-  const [cargando, setCargando] = useState(false);
+  const [cargando, setCargando] = useState(true);
   const [erroresCampos, setErroresCampos] = useState([]);
 
   useEffect(() => {
-    obtenerProfesores();
-  }, []);
+    cargarDatosIniciales();
+  }, [idClase]);
 
-  const obtenerProfesores = async () => {
+  const cargarDatosIniciales = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/profesores`);
-      const respuestaServidor = await response.json();
-      if (response.ok) {
-        setProfesores(respuestaServidor.data);
+      const resProfesores = await fetch(`${import.meta.env.VITE_BASE_URL}/profesores`);
+      const dataProfesores = await resProfesores.json();
+      if (resProfesores.ok) setProfesores(dataProfesores.data);
+
+      const resClase = await fetch(`${import.meta.env.VITE_BASE_URL}/clases-teoricas/${idClase}`);
+      const dataClase = await resClase.json();
+
+      if (resClase.ok) {
+        const c = dataClase.data;
+        setDatos({
+          tema: c.tema,
+          fecha: c.fecha.split('T')[0],
+          hora_inicio: String(c.hora_inicio).slice(0, 5),
+          hora_fin: String(c.hora_fin).slice(0, 5),
+          sede: c.sede,
+          estado: c.estado,
+          id_profesor: c.profesor ? c.profesor.id_profesor : ''
+        });
       }
     } catch (error) {
-      console.error("No se pudieron cargar los profesores", error);
+      console.error(error);
+      setErroresCampos(["Error al cargar los datos."]);
+    } finally {
+      setCargando(false);
     }
   };
 
@@ -38,20 +47,14 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
     setErroresCampos([]);
     setCargando(true);
 
-    if (!datos.id_profesor) {
-      setErroresCampos(['Debe seleccionar un profesor para la clase.']);
-      setCargando(false);
-      return;
-    }
-
     const datosFinales = {
       ...datos,
       id_profesor: Number(datos.id_profesor)
     };
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/clases-teoricas`, {
-        method: 'POST',
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/clases-teoricas/${idClase}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datosFinales)
       });
@@ -59,9 +62,8 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
       const respuestaServidor = await response.json();
       
       if (response.ok) {
-        setMensajeExito("Clase teórica programada exitosamente.");
-        setErroresCampos([]);
-        setDatos({ tema: '', fecha: '', hora_inicio: '', hora_fin: '', id_profesor: '', estado: 'Programada' });
+        setMensajeExito("Clase teórica actualizada exitosamente.");
+        setTimeout(() => cambiarVista('clasesTeoricas'), 1500); 
       } else {
         if (respuestaServidor.errorDetails) {
           const erroresArray = Array.isArray(respuestaServidor.errorDetails) 
@@ -69,7 +71,7 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
             : [respuestaServidor.errorDetails];
           setErroresCampos(erroresArray);
         } else {
-          setErroresCampos([respuestaServidor.message || 'Error al guardar la clase.']);
+          setErroresCampos([respuestaServidor.message || 'Error al actualizar la clase.']);
         }
       }
     } catch (error) {
@@ -82,17 +84,19 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
 
   const tieneError = (campo) => erroresCampos.some(err => err.toLowerCase().includes(campo));
 
+  if (!datos) return <div className="p-8 text-center text-slate-500">Cargando formulario...</div>;
+
   return (
     <div className="w-full max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-slate-200">
       <div className="mb-6 border-b pb-4 flex justify-between items-start">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Programar Clase Teórica</h2>
-          <p className="text-slate-500 mt-1">Ingrese los detalles para agendar una nueva clase.</p>
+          <h2 className="text-2xl font-bold text-slate-800">Editar Clase Teórica</h2>
+          <p className="text-slate-500 mt-1">Modifique los detalles de la sesión.</p>
         </div>
         <button
           type="button"
           onClick={() => cambiarVista('clasesTeoricas')}
-          className="text-sm font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg transition-colors"
+          className="text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg transition-colors"
         >
           Volver
         </button>
@@ -107,11 +111,9 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
 
         {erroresCampos.length > 0 && (
           <div className="bg-red-50 text-red-700 border border-red-200 p-4 rounded-lg text-sm font-medium">
-            <p className="font-bold mb-1">Por favor corrige los siguientes datos:</p>
+            <p className="font-bold mb-1">Por favor corrige los siguientes errores:</p>
             <ul className="list-disc pl-5 space-y-1">
-              {erroresCampos.map((err, i) => (
-                <li key={i}>{err}</li>
-              ))}
+              {erroresCampos.map((err, i) => <li key={i}>{err}</li>)}
             </ul>
           </div>
         )}
@@ -120,16 +122,13 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
           <label className="block text-sm font-semibold text-slate-700 mb-2">Tema de la clase</label>
           <input 
             type="text" 
-            placeholder="Ej: Leyes del tránsito y señaléticas" 
-            className={`w-full px-4 py-2 border rounded-lg focus:outline-none transition-shadow ${
-              tieneError('tema') ? 'border-red-400 focus:ring-2 focus:ring-red-100 bg-red-50/30' : 'border-slate-300 focus:ring-2 focus:ring-blue-600'
-            }`}
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none transition-shadow ${tieneError('tema') ? 'border-red-400 bg-red-50' : 'border-slate-300'}`}
             value={datos.tema} 
             onChange={e => setDatos({...datos, tema: e.target.value})} 
             required 
           />
         </div>
-
+        
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2">Sede o Modalidad</label>
@@ -154,12 +153,9 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
               required
             >
               <option value="">Seleccione un profesor...</option>
-              {profesores
-                .filter(prof => prof.estado === true)
-                .filter(prof => datos.sede === 'Online' || prof.sede === datos.sede)
-                .map(prof => (
+              {profesores.map(prof => (
                 <option key={prof.id_profesor} value={prof.id_profesor}>
-                  {prof.nombre} {prof.apellido}
+                  {prof.nombre} {prof.apellido} {!prof.estado ? '(Inactivo)' : ''}
                 </option>
               ))}
             </select>
@@ -171,9 +167,7 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
             <label className="block text-sm font-semibold text-slate-700 mb-2">Fecha</label>
             <input 
               type="date" 
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none transition-shadow ${
-                tieneError('fecha') ? 'border-red-400 focus:ring-2 focus:ring-red-100 bg-red-50/30' : 'border-slate-300 focus:ring-2 focus:ring-blue-600'
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none transition-shadow ${tieneError('fecha') ? 'border-red-400 bg-red-50' : 'border-slate-300'}`}
               value={datos.fecha} 
               onChange={e => setDatos({...datos, fecha: e.target.value})} 
               required 
@@ -184,9 +178,7 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
             <label className="block text-sm font-semibold text-slate-700 mb-2">Hora Inicio</label>
             <input 
               type="time" 
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none transition-shadow ${
-                tieneError('inicio') ? 'border-red-400 focus:ring-2 focus:ring-red-100 bg-red-50/30' : 'border-slate-300 focus:ring-2 focus:ring-blue-600'
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none transition-shadow ${tieneError('inicio') ? 'border-red-400 bg-red-50' : 'border-slate-300'}`}
               value={datos.hora_inicio} 
               onChange={e => setDatos({...datos, hora_inicio: e.target.value})} 
               required 
@@ -197,9 +189,7 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
             <label className="block text-sm font-semibold text-slate-700 mb-2">Hora Fin</label>
             <input 
               type="time" 
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none transition-shadow ${
-                tieneError('fin') ? 'border-red-400 focus:ring-2 focus:ring-red-100 bg-red-50/30' : 'border-slate-300 focus:ring-2 focus:ring-blue-600'
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none transition-shadow ${tieneError('fin') ? 'border-red-400 bg-red-50' : 'border-slate-300'}`}
               value={datos.hora_fin} 
               onChange={e => setDatos({...datos, hora_fin: e.target.value})} 
               required 
@@ -218,10 +208,9 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
           <button 
             type="submit" 
             disabled={cargando}
-            className={`px-6 py-2.5 rounded-lg font-bold text-white transition-colors
-              ${cargando ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+            className={`px-6 py-2.5 rounded-lg font-bold text-white transition-colors ${cargando ? 'bg-amber-400 cursor-not-allowed' : 'bg-amber-500 hover:bg-amber-600'}`}
           >
-            {cargando ? 'Guardando...' : 'Programar Clase'}
+            {cargando ? 'Guardando...' : 'Guardar Cambios'}
           </button>
         </div>
       </form>
@@ -229,4 +218,4 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
   );
 };
 
-export default RegistrarClaseTeorica;
+export default EditarClaseTeorica;

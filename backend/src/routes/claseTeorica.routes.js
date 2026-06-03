@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { getClasesTeoricasController, createClaseTeoricaController, updateClaseTeoricaController, deleteClaseTeoricaController } from "../controllers/claseTeorica.controller.js";
+import { getClasesTeoricasController, getClaseTeoricaController, createClaseTeoricaController, updateClaseTeoricaController} from "../controllers/claseTeorica.controller.js";
 
 const router = Router();
 
 router.get("/", getClasesTeoricasController);
+router.get("/:id", getClaseTeoricaController);
 router.post("/", createClaseTeoricaController);
-router.put("/:id", updateClaseTeoricaController);
-router.delete("/:id", deleteClaseTeoricaController);
+router.patch("/:id", updateClaseTeoricaController);
 
 export default router;

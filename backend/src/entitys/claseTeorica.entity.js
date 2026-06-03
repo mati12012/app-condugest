@@ -27,6 +27,12 @@ const ClaseTeorica = new EntitySchema({
             type: "time",
             nullable: false,
         },
+        sede: {
+            type: "varchar",
+            length: 50,
+            nullable: false,
+            default: "Sede Concepción",
+        },
         estado: {
             type: "varchar",
             length: 50,

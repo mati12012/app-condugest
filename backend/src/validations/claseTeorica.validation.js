@@ -16,11 +16,24 @@ export const claseTeoricaBodyValidation = Joi.object({
     hora_fin: Joi.string().pattern(/^([01]\d|2[0-3]):([0-5]\d)$/).required().messages({
         "string.pattern.base": "La hora de fin debe tener el formato HH:MM (ej: 11:00)."
     }),
+    sede: Joi.string().required().messages({
+        "string.empty": "La sede o modalidad es obligatoria."
+    }),
     id_profesor: Joi.number().integer().positive().required().messages({
         "number.base": "Debe asignar un profesor válido a la clase."
     }),
     estado: Joi.string().valid("Programada", "Realizada", "Cancelada").required()
 });
+
+// Función para validar que la hora de fin sea mayor que la hora de inicio
+export function horaFinEsMayor(horaInicio, horaFin) {
+    const inicioLimpio = String(horaInicio).slice(0, 5);
+    const finLimpio = String(horaFin).slice(0, 5);
+    
+    const inicio = new Date(`1970-01-01T${inicioLimpio}:00`);
+    const fin = new Date(`1970-01-01T${finLimpio}:00`);
+    return fin > inicio;
+}
 
 export function validateClaseTeoricaData(data) {
     const { error } = claseTeoricaBodyValidation.validate(data, { abortEarly: false });
