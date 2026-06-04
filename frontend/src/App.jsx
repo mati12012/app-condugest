@@ -3,7 +3,6 @@ import Login from './pages/Login';
 import Sidebar from './components/Sidebar';
 import RegistrarAlumno from './pages/RegistrarAlumno';
 import VistaAlumnos from './pages/VistaAlumnos';
-import DashboardSecretaria from './pages/DashboardSecretaria';
 import PerfilAlumno from './pages/PerfilAlumno';
 import ReservaSalaPsicotecnica from './pages/ReservaSalaPsicotecnica';
 import ModuloSalasPsicotecnicas from './pages/ModuloSalasPsicotecnicas';
@@ -22,6 +21,7 @@ import EditarClasePractica from './pages/EditarClasePractica';
 import VistaClasesTeoricas from './pages/VistaClasesTeoricas';
 import RegistrarClaseTeorica from './pages/RegistrarClaseTeorica';
 import VistaAgenda from './pages/VistaAgenda';
+import PanelPrincipal from './pages/PanelPrincipal';
 
 
 function App() {
@@ -67,7 +67,7 @@ function App() {
 
         {/* aqui cambia la pantalla segun la vista actual */}
         <div className="flex-1 p-6">
-          {vistaActual === 'dashboard' && <DashboardSecretaria />}
+          {vistaActual === 'dashboard' && <PanelPrincipal cambiarVista={manejarCambioVista} />}
           {vistaActual === 'alumnos' && <VistaAlumnos cambiarVista={manejarCambioVista} />}
           {vistaActual === 'registrar' && <RegistrarAlumno cambiarVista={setVistaActual} />}
           {vistaActual === 'perfil' && <PerfilAlumno alumnoSeleccionado={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
@@ -87,13 +87,8 @@ function App() {
           {vistaActual === 'clasesTeoricas' && <VistaClasesTeoricas cambiarVista={manejarCambioVista} />}
           {vistaActual === 'registrarClaseTeorica' && <RegistrarClaseTeorica cambiarVista={manejarCambioVista} />}
           {vistaActual === 'agenda' && <VistaAgenda cambiarVista={manejarCambioVista} />}
-          {vistaActual === 'verClasePracticaAgenda' && (
-            <VerClasePractica
-              claseId={idSeleccionado}
-              cambiarVista={manejarCambioVista}
-              volverA="agenda"
-            />
-          )}
+          {vistaActual === 'verClasePracticaAgenda' && (<VerClasePractica claseId={idSeleccionado}cambiarVista={manejarCambioVista}volverA="agenda"/>)}
+
         </div>
       </main>
     </div>
