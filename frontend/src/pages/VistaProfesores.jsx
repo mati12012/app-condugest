@@ -6,10 +6,15 @@ const VistaProfesores = ({ cambiarVista }) => {
   const [error, setError] = useState(null);
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('todos');
+  const [paginaActual, setPaginaActual] = useState(1);
+  const registrosPorPagina = 5;
 
   useEffect(() => {
     obtenerProfesores();
   }, []);
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [busqueda, filtroEstado]);
 
   const obtenerProfesores = async () => {
     try {
@@ -81,6 +86,16 @@ const VistaProfesores = ({ cambiarVista }) => {
 
     return coincideBusqueda && coincideEstado;
   });
+
+  const totalPaginas = Math.ceil(profesoresFiltrados.length / registrosPorPagina);
+
+const indiceUltimoRegistro = paginaActual * registrosPorPagina;
+const indicePrimerRegistro = indiceUltimoRegistro - registrosPorPagina;
+
+const profesoresPaginados = profesoresFiltrados.slice(
+  indicePrimerRegistro,
+  indiceUltimoRegistro
+);
 
   const totalProfesores = profesores.length;
   const profesoresActivos = profesores.filter(p => p.estado === true).length;
@@ -193,7 +208,7 @@ const VistaProfesores = ({ cambiarVista }) => {
               </thead>
 
               <tbody className="divide-y divide-slate-200">
-                {profesoresFiltrados.map((profesor) => (
+                {profesoresPaginados.map((profesor) => (
                   <tr key={profesor.id_profesor} className="hover:bg-slate-50 transition-colors">
 
                     <td className="p-4">
@@ -274,6 +289,37 @@ const VistaProfesores = ({ cambiarVista }) => {
                 No se encontraron profesores con los filtros aplicados.
               </div>
             )}
+            {profesoresFiltrados.length > 0 && (
+  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-4 border-t border-slate-200 bg-white">
+    <p className="text-sm text-slate-500">
+      Mostrando {indicePrimerRegistro + 1} - {Math.min(indiceUltimoRegistro, profesoresFiltrados.length)} de {profesoresFiltrados.length} profesores
+    </p>
+
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        disabled={paginaActual === 1}
+        onClick={() => setPaginaActual(paginaActual - 1)}
+        className="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 font-bold hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-600 disabled:hover:border-slate-300"
+      >
+        Anterior
+      </button>
+
+      <span className="text-sm font-semibold text-slate-600">
+        Página {paginaActual} de {totalPaginas || 1}
+      </span>
+
+      <button
+        type="button"
+        disabled={paginaActual === totalPaginas || totalPaginas === 0}
+        onClick={() => setPaginaActual(paginaActual + 1)}
+        className="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 font-bold hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-600 disabled:hover:border-slate-300"
+      >
+        Siguiente
+      </button>
+    </div>
+  </div>
+)}
           </div>
         </div>
       )}
