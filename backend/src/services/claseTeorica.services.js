@@ -11,7 +11,8 @@ export async function createClaseTeorica(data) {
         hora_inicio: data.hora_inicio,
         hora_fin: data.hora_fin,
         estado: data.estado,
-        profesor: data.id_profesor 
+        profesor: data.id_profesor,
+        sede: data.sede
     });
     return await claseRepository.save(nuevaClase);
 }

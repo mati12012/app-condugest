@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { formatearFechaVisual } from '../utils/formatearFecha';
+import { formatearFechaVisual } from '../../utils/formatearFecha';
 
 const VistaAgenda = ({ cambiarVista }) => {
     const obtenerFechaHoy = () => {

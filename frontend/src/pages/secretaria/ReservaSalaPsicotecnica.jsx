@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { formatearFechaVisual } from "../utils/formatearFecha";
+import { formatearFechaVisual } from "../../utils/formatearFecha";
 // Estado inicial para el formulario de reserva
 const estadoInicialFormulario = {
     id_sala: "",

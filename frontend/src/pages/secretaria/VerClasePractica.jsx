@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { formatearFechaVisual } from '../utils/formatearFecha';
+import { formatearFechaVisual } from '../../utils/formatearFecha';
 
 const VerClasePractica = ({ claseId, cambiarVista, volverA = 'clasesPracticas' }) => {
   const [clase, setClase] = useState(null);
