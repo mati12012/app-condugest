@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import {formatearFechaVisual} from '../utils/formatearFecha';
 
 const VistaClasesPracticas = ({ cambiarVista }) => {
   const [clases, setClases] = useState([]);
@@ -112,7 +113,7 @@ const VistaClasesPracticas = ({ cambiarVista }) => {
     const profesor = `${clase.profesor_nombre || ''} ${clase.profesor_apellido || ''}`.toLowerCase();
     const vehiculo = `${clase.vehiculo_patente || ''} ${clase.vehiculo_marca || ''} ${clase.vehiculo_modelo || ''}`.toLowerCase();
     const sede = clase.sede?.toLowerCase() || '';
-    const fecha = formatearFecha(clase.fecha).toLowerCase();
+    const fecha = formatearFechaVisual(clase.fecha).toLowerCase();
 
     const coincideBusqueda =
       alumno.includes(textoBusqueda) ||
@@ -330,7 +331,7 @@ const clasesPaginadas = clasesFiltradas.slice(
 
                   <td className="p-4">
                     <p className="font-bold text-slate-800">
-                      {formatearFecha(clase.fecha)}
+                      {formatearFechaVisual(clase.fecha)}
                     </p>
                     <p className="text-sm text-slate-500">
                       {formatearHora(clase.hora_inicio)} - {formatearHora(clase.hora_fin)}

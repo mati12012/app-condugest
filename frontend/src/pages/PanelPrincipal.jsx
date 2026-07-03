@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { formatearFechaVisual } from '../utils/formatearFecha';
 
 const PanelPrincipal = ({ cambiarVista }) => {
   const [alumnos, setAlumnos] = useState([]);
@@ -176,7 +177,7 @@ const PanelPrincipal = ({ cambiarVista }) => {
     const eventosPracticos = clasesPracticas.map((clase) => ({
       id: `practica-${clase.id_clase_practica}`,
       tipo: 'Práctica',
-      fecha: formatearFechaInput(clase.fecha),
+      fecha: formatearFechaVisual(clase.fecha),
       hora_inicio: clase.hora_inicio,
       hora_fin: clase.hora_fin,
       responsable: `${clase.profesor_nombre || ''} ${clase.profesor_apellido || ''}`.trim(),
@@ -193,7 +194,7 @@ const PanelPrincipal = ({ cambiarVista }) => {
       return {
         id: `psicotecnica-${reserva.id_reserva}`,
         tipo: 'Psicotécnica',
-        fecha: formatearFechaInput(reserva.fecha),
+        fecha: formatearFechaVisual(reserva.fecha),
         hora_inicio: reserva.hora_inicio,
         hora_fin: reserva.hora_fin,
         responsable: sala?.nombre || `Sala ${reserva.id_sala}`,

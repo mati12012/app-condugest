@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-
+import { formatearFechaVisual } from '../utils/formatearFecha';
 const EditarClasePractica = ({ claseId, cambiarVista }) => {
   const [datos, setDatos] = useState({
     id_alumno: '',
@@ -82,7 +82,7 @@ const EditarClasePractica = ({ claseId, cambiarVista }) => {
         id_alumno: clase.id_alumno || '',
         id_profesor: clase.id_profesor || '',
         id_vehiculo: clase.id_vehiculo || '',
-        fecha: formatearFechaInput(clase.fecha),
+        fecha: formatearFechaVisual(clase.fecha),
         hora_inicio: formatearHoraInput(clase.hora_inicio),
         hora_fin: formatearHoraInput(clase.hora_fin),
         sede: clase.sede || 'Sede Concepcion',
