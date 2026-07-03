@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { apiFetch } from "../../utils/apiFetch";
 import { formatearFechaVisual } from "../../utils/formatearFecha";
 // Estado inicial para el formulario de reserva
 const estadoInicialFormulario = {
@@ -28,7 +29,7 @@ function ReservaSalaPsicotecnica() {
     const [filtroEstado, setFiltroEstado] = useState("");
     // Función genérica para hacer solicitudes a la API
     async function requestApi(endpoint, options = {}) {
-        const respuesta = await fetch(`${import.meta.env.VITE_BASE_URL}${endpoint}`, {
+        const respuesta = await apiFetch(`${import.meta.env.VITE_BASE_URL}${endpoint}`, {
             headers: {
                 "Content-Type": "application/json",
             },

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { apiFetch } from "../../utils/apiFetch";
 
 const PerfilAlumno = ({ alumnoSeleccionado, cambiarVista }) => {
   // Estados para manejar los datos y la interfaz
@@ -29,7 +30,7 @@ const PerfilAlumno = ({ alumnoSeleccionado, cambiarVista }) => {
     try {
       // Usamos el ID del alumno 
       const id = alumno.id_alumno;
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/alumnos/${id}`, {
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/alumnos/${id}`, {
         method: 'DELETE',
       });
 
@@ -65,7 +66,7 @@ const PerfilAlumno = ({ alumnoSeleccionado, cambiarVista }) => {
         clases_completadas: Number(editForm.clases_completadas)
       };
 
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/alumnos/${id}`, {
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/alumnos/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datosFinales)

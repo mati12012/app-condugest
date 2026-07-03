@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch } from "../../utils/apiFetch";
 import { formatearFechaVisual } from '../../utils/formatearFecha';
 const EditarClasePractica = ({ claseId, cambiarVista }) => {
   const [datos, setDatos] = useState({
@@ -49,10 +50,10 @@ const EditarClasePractica = ({ claseId, cambiarVista }) => {
       setMensaje('');
 
       const [resClase, resAlumnos, resProfesores, resVehiculos] = await Promise.all([
-        fetch(`${import.meta.env.VITE_BASE_URL}/clases-practicas/${claseId}`),
-        fetch(`${import.meta.env.VITE_BASE_URL}/alumnos`),
-        fetch(`${import.meta.env.VITE_BASE_URL}/profesores`),
-        fetch(`${import.meta.env.VITE_BASE_URL}/vehiculos`)
+        apiFetch(`${import.meta.env.VITE_BASE_URL}/clases-practicas/${claseId}`),
+        apiFetch(`${import.meta.env.VITE_BASE_URL}/alumnos`),
+        apiFetch(`${import.meta.env.VITE_BASE_URL}/profesores`),
+        apiFetch(`${import.meta.env.VITE_BASE_URL}/vehiculos`)
       ]);
 
       const dataClase = await resClase.json();
@@ -207,7 +208,7 @@ const EditarClasePractica = ({ claseId, cambiarVista }) => {
     };
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/clases-practicas/${claseId}`, {
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/clases-practicas/${claseId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datosActualizados)

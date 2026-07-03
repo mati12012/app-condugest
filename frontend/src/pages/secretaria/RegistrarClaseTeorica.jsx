@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from "../../utils/apiFetch";
 
 const RegistrarClaseTeorica = ({ cambiarVista }) => {
   const [datos, setDatos] = useState({ 
@@ -22,7 +23,7 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
 
   const obtenerProfesores = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/profesores`);
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/profesores`);
       const respuestaServidor = await response.json();
       if (response.ok) {
         setProfesores(respuestaServidor.data);
@@ -50,7 +51,7 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
     };
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/clases-teoricas`, {
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/clases-teoricas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datosFinales)

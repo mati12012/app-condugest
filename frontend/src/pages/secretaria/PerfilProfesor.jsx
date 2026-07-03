@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from "../../utils/apiFetch";
 
 const PerfilProfesor = ({ profesorId, cambiarVista }) => {
   const [profesor, setProfesor] = useState(null);
@@ -8,7 +9,7 @@ const PerfilProfesor = ({ profesorId, cambiarVista }) => {
   useEffect(() => {
     const obtenerDetalleProfesor = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/profesores/${profesorId}`);
+        const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/profesores/${profesorId}`);
         const respuestaServidor = await response.json();
 
         if (response.ok) {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from "../../utils/apiFetch";
 
 const VistaClasesTeoricas = ({ cambiarVista }) => {
   const [clases, setClases] = useState([]);
@@ -15,7 +16,7 @@ const VistaClasesTeoricas = ({ cambiarVista }) => {
   const obtenerClases = async () => {
     try {
       setCargando(true);
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/clases-teoricas`);
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/clases-teoricas`);
       const respuestaServidor = await response.json();
 
       if (response.ok) {
@@ -50,7 +51,7 @@ const VistaClasesTeoricas = ({ cambiarVista }) => {
 
   const cambiarEstadoClase = async (id, nuevoEstado) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/clases-teoricas/${id}`, {
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/clases-teoricas/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado: nuevoEstado })

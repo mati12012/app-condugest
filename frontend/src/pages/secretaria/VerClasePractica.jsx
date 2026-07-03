@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch } from "../../utils/apiFetch";
 import { formatearFechaVisual } from '../../utils/formatearFecha';
 
 const VerClasePractica = ({ claseId, cambiarVista, volverA = 'clasesPracticas' }) => {
@@ -15,7 +16,7 @@ const VerClasePractica = ({ claseId, cambiarVista, volverA = 'clasesPracticas' }
       setCargando(true);
       setError('');
 
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/clases-practicas/${claseId}`);
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/clases-practicas/${claseId}`);
       const respuestaServidor = await response.json();
 
       if (response.ok) {

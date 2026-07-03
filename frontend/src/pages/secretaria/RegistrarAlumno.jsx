@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { apiFetch } from "../../utils/apiFetch";
 
 const RegistrarAlumno = ({ cambiarVista }) => {
   const [datos, setDatos] = useState({ 
@@ -46,7 +47,7 @@ const RegistrarAlumno = ({ cambiarVista }) => {
     };
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/alumnos`, {
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/alumnos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datosFinales)

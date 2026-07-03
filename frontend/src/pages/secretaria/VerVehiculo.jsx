@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch } from "../../utils/apiFetch";
 
 const VerVehiculo = ({ vehiculoId, cambiarVista }) => {
   const [vehiculo, setVehiculo] = useState(null);
@@ -14,7 +15,7 @@ const VerVehiculo = ({ vehiculoId, cambiarVista }) => {
       setCargando(true);
       setError('');
 
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/vehiculos/${vehiculoId}`);
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/vehiculos/${vehiculoId}`);
       const respuestaServidor = await response.json();
 
       if (response.ok) {

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { apiFetch } from "../../utils/apiFetch";
 
 const estadoInicialFormulario = {
   nombre: "",
@@ -21,7 +22,7 @@ function AdministrarSalasPsicotecnicas() {
   const [filtroSalas, setFiltroSalas] = useState("activas");
 
   async function requestApi(endpoint, options = {}) {
-    const respuesta = await fetch(`${import.meta.env.VITE_BASE_URL}${endpoint}`, {
+    const respuesta = await apiFetch(`${import.meta.env.VITE_BASE_URL}${endpoint}`, {
       headers: {
         "Content-Type": "application/json",
       },

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from "../../utils/apiFetch";
 
 const VistaProfesores = ({ cambiarVista }) => {
   const [profesores, setProfesores] = useState([]);
@@ -18,7 +19,7 @@ const VistaProfesores = ({ cambiarVista }) => {
 
   const obtenerProfesores = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/profesores`);
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/profesores`);
       const respuestaServidor = await response.json();
 
       if (response.ok) {
@@ -46,7 +47,7 @@ const VistaProfesores = ({ cambiarVista }) => {
     if (!confirmar) return;
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/profesores/${profesor.id_profesor}`, {
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/profesores/${profesor.id_profesor}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado: nuevoEstado })

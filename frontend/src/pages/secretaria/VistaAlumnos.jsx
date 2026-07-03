@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from "../../utils/apiFetch";
 
 const VistaAlumnos = ({ cambiarVista }) => {
   const [alumnos, setAlumnos] = useState([]);
@@ -19,7 +20,7 @@ const VistaAlumnos = ({ cambiarVista }) => {
 
   const obtenerAlumnos = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/alumnos`);
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/alumnos`);
       const respuestaServidor = await response.json();
 
       if (response.ok) {

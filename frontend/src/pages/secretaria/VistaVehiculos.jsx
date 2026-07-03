@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch } from "../../utils/apiFetch";
 
 const VistaVehiculos = ({ cambiarVista }) => {
   const [vehiculos, setVehiculos] = useState([]);
@@ -21,7 +22,7 @@ const VistaVehiculos = ({ cambiarVista }) => {
     try {
       setCargando(true);
 
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/vehiculos`);
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/vehiculos`);
       const respuestaServidor = await response.json();
 
       if (response.ok) {
@@ -56,7 +57,7 @@ const VistaVehiculos = ({ cambiarVista }) => {
 
   const cambiarEstadoOperativo = async (vehiculo, nuevoEstado) => {
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `${import.meta.env.VITE_BASE_URL}/vehiculos/${vehiculo.id_vehiculo}`,
         {
           method: 'PATCH',

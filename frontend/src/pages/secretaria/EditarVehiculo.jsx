@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch } from "../../utils/apiFetch";
 
 const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
   const [datos, setDatos] = useState({
@@ -27,7 +28,7 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
       setCargando(true);
       setMensaje('');
 
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/vehiculos/${vehiculoId}`);
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/vehiculos/${vehiculoId}`);
       const respuestaServidor = await response.json();
 
       if (response.ok) {
@@ -156,7 +157,7 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
     };
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/vehiculos/${vehiculoId}`, {
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/vehiculos/${vehiculoId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datosActualizados)

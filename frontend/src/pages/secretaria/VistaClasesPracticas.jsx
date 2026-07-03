@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch } from "../../utils/apiFetch";
 import {formatearFechaVisual} from '../../utils/formatearFecha';
 
 const VistaClasesPracticas = ({ cambiarVista }) => {
@@ -23,7 +24,7 @@ const VistaClasesPracticas = ({ cambiarVista }) => {
     try {
       setCargando(true);
 
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/clases-practicas`);
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/clases-practicas`);
       const respuestaServidor = await response.json();
 
       if (response.ok) {
@@ -76,7 +77,7 @@ const VistaClasesPracticas = ({ cambiarVista }) => {
 
   const cambiarEstadoClase = async (clase, nuevoEstado) => {
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `${import.meta.env.VITE_BASE_URL}/clases-practicas/${clase.id_clase_practica}`,
         {
           method: 'PATCH',

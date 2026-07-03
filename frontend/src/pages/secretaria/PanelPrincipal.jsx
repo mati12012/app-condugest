@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { apiFetch } from "../../utils/apiFetch";
 import { formatearFechaVisual } from '../../utils/formatearFecha';
 
 const PanelPrincipal = ({ cambiarVista }) => {
@@ -44,11 +45,11 @@ const PanelPrincipal = ({ cambiarVista }) => {
         resReservasSalas,
         resSalas
       ] = await Promise.all([
-        fetch(`${import.meta.env.VITE_BASE_URL}/alumnos`),
-        fetch(`${import.meta.env.VITE_BASE_URL}/profesores`),
-        fetch(`${import.meta.env.VITE_BASE_URL}/clases-practicas`),
-        fetch(`${import.meta.env.VITE_BASE_URL}/reservas-salas`),
-        fetch(`${import.meta.env.VITE_BASE_URL}/salas-psicotecnicas`)
+        apiFetch(`${import.meta.env.VITE_BASE_URL}/alumnos`),
+        apiFetch(`${import.meta.env.VITE_BASE_URL}/profesores`),
+        apiFetch(`${import.meta.env.VITE_BASE_URL}/clases-practicas`),
+        apiFetch(`${import.meta.env.VITE_BASE_URL}/reservas-salas`),
+        apiFetch(`${import.meta.env.VITE_BASE_URL}/salas-psicotecnicas`)
       ]);
 
       const dataAlumnos = await resAlumnos.json();

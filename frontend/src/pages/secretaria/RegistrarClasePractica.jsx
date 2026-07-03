@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch } from "../../utils/apiFetch";
 
 const RegistrarClasePractica = ({ cambiarVista }) => {
   const [datos, setDatos] = useState({
@@ -31,9 +32,9 @@ const RegistrarClasePractica = ({ cambiarVista }) => {
       setMensaje('');
 
       const [resAlumnos, resProfesores, resVehiculos] = await Promise.all([
-        fetch(`${import.meta.env.VITE_BASE_URL}/alumnos`),
-        fetch(`${import.meta.env.VITE_BASE_URL}/profesores`),
-        fetch(`${import.meta.env.VITE_BASE_URL}/vehiculos`)
+        apiFetch(`${import.meta.env.VITE_BASE_URL}/alumnos`),
+        apiFetch(`${import.meta.env.VITE_BASE_URL}/profesores`),
+        apiFetch(`${import.meta.env.VITE_BASE_URL}/vehiculos`)
       ]);
 
       const dataAlumnos = await resAlumnos.json();
@@ -178,7 +179,7 @@ const RegistrarClasePractica = ({ cambiarVista }) => {
     };
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/clases-practicas`, {
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/clases-practicas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datosFinales)

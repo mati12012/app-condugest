@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { verificarToken, permitirRoles } from "../middlewares/auth.middleware.js";
 import alumnoRoutes from "./alumno.routes.js"; // Importamos tu ruta de alumnos
 import salaPsicotecnicaRoutes from "./salaPsicotecnica.routes.js"; // Importamos tu ruta de salas psicotécnicas
 import reservaSalaRoutes from "./reservaSala.routes.js"; // Importamos tu ruta de reservas de salas
@@ -10,24 +11,25 @@ import authRoutes from "./auth.routes.js"; // Importamos tu ruta de autenticaci�
 
 export function routerApi(app) {
   const router = Router();
+  const soloSecretaria = [verificarToken, permitirRoles("secretaria")];
   
   // Le decimos que todas nuestras rutas empezarán con /api
   app.use("/api", router);
 
   // Aquí registramos la ruta de alumnos
-  router.use("/alumnos", alumnoRoutes);
+  router.use("/alumnos", soloSecretaria, alumnoRoutes);
   // Aquí registramos la ruta de salas psicotécnicas
-  router.use("/salas-psicotecnicas", salaPsicotecnicaRoutes);
+  router.use("/salas-psicotecnicas", soloSecretaria, salaPsicotecnicaRoutes);
   // Aquí registramos la ruta de reservas de salas
-  router.use("/reservas-salas", reservaSalaRoutes);
+  router.use("/reservas-salas", soloSecretaria, reservaSalaRoutes);
   // Aquí registramos la ruta de profesores
-  router.use("/profesores", profesorRoutes);
+  router.use("/profesores", soloSecretaria, profesorRoutes);
   // Aquí registramos la ruta de vehículos
-  router.use("/vehiculos", vehiculoRoutes);
+  router.use("/vehiculos", soloSecretaria, vehiculoRoutes);
   // Aquí registramos la ruta de clases prácticas
-  router.use("/clases-practicas", clasePracticaRoutes);
+  router.use("/clases-practicas", soloSecretaria, clasePracticaRoutes);
   // Aquí registramos la ruta de clases teóricas
-  router.use("/clases-teoricas", claseTeoricaRoutes);
+  router.use("/clases-teoricas", soloSecretaria, claseTeoricaRoutes);
   // Aquí registramos la ruta de autenticación
   router.use("/auth", authRoutes);
 

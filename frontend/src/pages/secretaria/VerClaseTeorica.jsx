@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from "../../utils/apiFetch";
 
 const VerClaseTeorica = ({ idClase, cambiarVista }) => {
   const [clase, setClase] = useState(null);
@@ -11,7 +12,7 @@ const VerClaseTeorica = ({ idClase, cambiarVista }) => {
 
   const obtenerClase = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/clases-teoricas/${idClase}`);
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/clases-teoricas/${idClase}`);
       const respuestaServidor = await response.json();
 
       if (response.ok) {

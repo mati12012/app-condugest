@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from "../../utils/apiFetch";
 
 const EditarClaseTeorica = ({ idClase, cambiarVista }) => {
   const [datos, setDatos] = useState(null);
@@ -14,11 +15,11 @@ const EditarClaseTeorica = ({ idClase, cambiarVista }) => {
 
   const cargarDatosIniciales = async () => {
     try {
-      const resProfesores = await fetch(`${import.meta.env.VITE_BASE_URL}/profesores`);
+      const resProfesores = await apiFetch(`${import.meta.env.VITE_BASE_URL}/profesores`);
       const dataProfesores = await resProfesores.json();
       if (resProfesores.ok) setProfesores(dataProfesores.data);
 
-      const resClase = await fetch(`${import.meta.env.VITE_BASE_URL}/clases-teoricas/${idClase}`);
+      const resClase = await apiFetch(`${import.meta.env.VITE_BASE_URL}/clases-teoricas/${idClase}`);
       const dataClase = await resClase.json();
 
       if (resClase.ok) {
@@ -53,7 +54,7 @@ const EditarClaseTeorica = ({ idClase, cambiarVista }) => {
     };
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/clases-teoricas/${idClase}`, {
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/clases-teoricas/${idClase}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datosFinales)

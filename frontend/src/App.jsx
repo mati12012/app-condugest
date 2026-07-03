@@ -99,7 +99,7 @@ function App() {
     setVistaActual("login");
   };
 
-  if (!usuario || vistaActual === "login") {
+  if (!usuario || !token || vistaActual === "login") {
     return <Login onLogin={manejarLogin} />;
   }
 
