@@ -21,3 +21,16 @@ export function generarCorreoBaseProfesor(nombre, apellido) {
 
   return `${nombreNormalizado}.${apellidoNormalizado}`;
 }
+
+export function obtenerDominioAlumno() {
+  return process.env.DOMINIO_ALUMNOS || "alumnos.condugest.cl";
+}
+
+export function generarCorreoBaseAlumno(nombre, apellido) {
+  const nombreNormalizado = normalizarTextoCorreo(nombre);
+  const apellidoNormalizado = normalizarTextoCorreo(apellido);
+
+  return `${nombreNormalizado}.${apellidoNormalizado}`
+    .replace(/\.+/g, ".")
+    .replace(/^\.|\.$/g, "");
+}

@@ -1,11 +1,36 @@
-import e from "express";
 import { AppDataSource } from "../config/configDb.js";
 import Alumno from "../entitys/alumno.entity.js";
-import bcrypt from "bcrypt";
+import {
+    obtenerDominioAlumno,
+    generarCorreoBaseAlumno
+} from "../helpers/correoInstitucional.helper.js";
 
 
 const alumnoRepository = AppDataSource.getRepository(Alumno);
+export async function existeCorreoAlumno(correo) {
+    const alumno = await alumnoRepository.findOne({
+        where: {
+            correo,
+        },
+    });
 
+    return Boolean(alumno);
+}
+
+export async function generarCorreoAlumnoUnico(nombre, apellido) {
+    const dominio = obtenerDominioAlumno();
+    const base = generarCorreoBaseAlumno(nombre, apellido);
+
+    let correo = `${base}@${dominio}`;
+    let contador = 2;
+
+    while (await existeCorreoAlumno(correo)) {
+        correo = `${base}${contador}@${dominio}`;
+        contador++;
+    }
+
+    return correo;
+}
 
 // Es como INSERT INTO alumnos
 export async function createAlumno(data) {

@@ -3,12 +3,14 @@ import {
     getAllAlumnos,
     getAlumnoById,
     updateAlumno,
-    deleteAlumno
+    deleteAlumno,
+    generarCorreoAlumnoUnico
 } from "../services/alumno.services.js";
-import {validateAlumnoData} from "../validations/alumno.validation.js";
+import { validateAlumnoData } from "../validations/alumno.validation.js";
 import { handleErrorClient, handleErrorServer, handleSuccess } from "../handlers/responseHandlers.js";
+import { crearUsuarioAuth } from "../services/auth.services.js";
 
-export async function getAlumnosController(req, res) { 
+export async function getAlumnosController(req, res) {
     try {
         const alumnos = await getAllAlumnos();
         return handleSuccess(res, 200, "Alumnos obtenidos exitosamente", alumnos);
@@ -34,19 +36,35 @@ export async function createAlumnoController(req, res) {
     try {
         const alumnoData = req.body;
 
-        // Generar correo automaticamente
         if (alumnoData.nombre && alumnoData.apellido) {
-            const nom = alumnoData.nombre.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replaceAll(' ', '');
-            const ape = alumnoData.apellido.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replaceAll(' ', '');
-            alumnoData.correo = `${nom}.${ape}@alumnos.condugest.cl`;
+            alumnoData.correo = await generarCorreoAlumnoUnico(
+                alumnoData.nombre,
+                alumnoData.apellido
+            );
         }
-        
+
         const validationErrors = validateAlumnoData(alumnoData);
         if (validationErrors.length > 0) {
             return handleErrorClient(res, 400, "Datos del alumno invalidos", validationErrors);
         }
         const nuevoAlumno = await createAlumno(alumnoData);
-        return handleSuccess(res, 201, "Alumno creado exitosamente", nuevoAlumno);
+
+        await crearUsuarioAuth({
+            correo: nuevoAlumno.correo,
+            password: "Alumno1234",
+            rol: "alumno",
+            id_profesor: null,
+            id_alumno: nuevoAlumno.id_alumno,
+            estado: true,
+            debe_cambiar_password: true,
+        });
+
+        return handleSuccess(
+            res,
+            201,
+            "Alumno creado exitosamente. Usuario de acceso generado con contraseña inicial Alumno1234.",
+            nuevoAlumno
+        );
     } catch (error) {
         const errorMsg = error.message ? error.message.toLowerCase() : "";
         if (errorMsg.includes("llave duplicada") || errorMsg.includes("unicidad") || errorMsg.includes("duplicate key")) {
@@ -58,7 +76,7 @@ export async function createAlumnoController(req, res) {
 
 export async function updateAlumnoController(req, res) {
     try {
-        const { id } = req.params;  
+        const { id } = req.params;
         const { id_alumno, id: bodyId, ...alumnoDataSeguro } = req.body;
         const validationErrors = validateAlumnoData(alumnoDataSeguro);
 
