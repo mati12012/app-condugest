@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { formatearFechaVisual } from '../utils/formatearFecha';
 
 const VistaAgenda = ({ cambiarVista }) => {
     const obtenerFechaHoy = () => {
@@ -195,7 +196,7 @@ const VistaAgenda = ({ cambiarVista }) => {
             id_origen: clase.id_clase_practica,
             tipo: 'practica',
             titulo: 'Práctica',
-            fecha: formatearFechaInput(clase.fecha),
+            fecha: formatearFechaVisual(clase.fecha),
             hora_inicio: clase.hora_inicio,
             hora_fin: clase.hora_fin,
             estado: clase.estado,
@@ -215,7 +216,7 @@ const VistaAgenda = ({ cambiarVista }) => {
                 id_origen: reserva.id_reserva,
                 tipo: 'psicotecnica',
                 titulo: 'Psicotécnica',
-                fecha: formatearFechaInput(reserva.fecha),
+                fecha: formatearFechaVisual(reserva.fecha),
                 hora_inicio: reserva.hora_inicio,
                 hora_fin: reserva.hora_fin,
                 estado: reserva.estado,

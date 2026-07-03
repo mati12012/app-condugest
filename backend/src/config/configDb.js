@@ -17,7 +17,7 @@ export const AppDataSource = new DataSource({
     password: `${DB_PASSWORD}`,
     database: `${DATABASE}`,
     entities: [Alumno, SalaPsicotecnica, ReservaSala, ProfesorEntity, Vehiculo, ClasePractica, ClaseTeorica],
-    synchronize: true, // Cambia a false en producción para evitar pérdida de datos
+    synchronize: true, // Cambiar a false en producción para evitar pérdida de datos
     logging: false,
 });
 

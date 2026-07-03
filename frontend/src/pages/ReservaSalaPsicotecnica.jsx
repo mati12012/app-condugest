@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { formatearFechaVisual } from "../utils/formatearFecha";
 // Estado inicial para el formulario de reserva
 const estadoInicialFormulario = {
     id_sala: "",
@@ -558,7 +559,7 @@ function ReservaSalaPsicotecnica() {
                                             </td>
 
                                             <td className="px-3 py-3 text-slate-600">
-                                                {obtenerFechaReserva(reserva.fecha)}
+                                                {formatearFechaVisual(reserva.fecha)}
                                             </td>
 
                                             <td className="px-3 py-3 text-slate-600">

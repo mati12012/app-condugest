@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { formatearFechaVisual } from '../utils/formatearFecha';
 
 const VerClasePractica = ({ claseId, cambiarVista, volverA = 'clasesPracticas' }) => {
   const [clase, setClase] = useState(null);
@@ -106,7 +107,7 @@ const VerClasePractica = ({ claseId, cambiarVista, volverA = 'clasesPracticas' }
             </h2>
 
             <p className="text-slate-500 mt-1">
-              {formatearFecha(clase.fecha)} · {formatearHora(clase.hora_inicio)} - {formatearHora(clase.hora_fin)}
+              {formatearFechaVisual(clase.fecha)} · {formatearHora(clase.hora_inicio)} - {formatearHora(clase.hora_fin)}
             </p>
 
             <p className="text-slate-500">
@@ -175,7 +176,7 @@ const VerClasePractica = ({ claseId, cambiarVista, volverA = 'clasesPracticas' }
           <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
             <p className="text-sm text-slate-500 font-medium">Fecha</p>
             <p className="text-lg font-bold text-slate-800">
-              {formatearFecha(clase.fecha)}
+              {formatearFechaVisual(clase.fecha)}
             </p>
           </div>
 

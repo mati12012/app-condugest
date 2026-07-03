@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import {formatearFechaVisual} from '../utils/formatearFecha';
 
 const VistaClasesPracticas = ({ cambiarVista }) => {
   const [clases, setClases] = useState([]);
@@ -7,9 +8,16 @@ const VistaClasesPracticas = ({ cambiarVista }) => {
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('todas');
 
+  const [paginaActual, setPaginaActual] = useState(1);
+  const registrosPorPagina = 5;
+
   useEffect(() => {
     obtenerClasesPracticas();
   }, []);
+
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [busqueda, filtroEstado]);
 
   const obtenerClasesPracticas = async () => {
     try {
@@ -105,7 +113,7 @@ const VistaClasesPracticas = ({ cambiarVista }) => {
     const profesor = `${clase.profesor_nombre || ''} ${clase.profesor_apellido || ''}`.toLowerCase();
     const vehiculo = `${clase.vehiculo_patente || ''} ${clase.vehiculo_marca || ''} ${clase.vehiculo_modelo || ''}`.toLowerCase();
     const sede = clase.sede?.toLowerCase() || '';
-    const fecha = formatearFecha(clase.fecha).toLowerCase();
+    const fecha = formatearFechaVisual(clase.fecha).toLowerCase();
 
     const coincideBusqueda =
       alumno.includes(textoBusqueda) ||
@@ -120,6 +128,16 @@ const VistaClasesPracticas = ({ cambiarVista }) => {
 
     return coincideBusqueda && coincideEstado;
   });
+
+  const totalPaginas = Math.ceil(clasesFiltradas.length / registrosPorPagina);
+
+const indiceUltimoRegistro = paginaActual * registrosPorPagina;
+const indicePrimerRegistro = indiceUltimoRegistro - registrosPorPagina;
+
+const clasesPaginadas = clasesFiltradas.slice(
+  indicePrimerRegistro,
+  indiceUltimoRegistro
+);
 
   const totalClases = clases.length;
 
@@ -279,7 +297,7 @@ const VistaClasesPracticas = ({ cambiarVista }) => {
             </thead>
 
             <tbody className="divide-y divide-slate-200">
-              {clasesFiltradas.map((clase) => (
+              {clasesPaginadas.map((clase) => (
                 <tr key={clase.id_clase_practica} className="hover:bg-slate-50">
                   <td className="p-4">
                     <p className="font-bold text-slate-800">
@@ -313,7 +331,7 @@ const VistaClasesPracticas = ({ cambiarVista }) => {
 
                   <td className="p-4">
                     <p className="font-bold text-slate-800">
-                      {formatearFecha(clase.fecha)}
+                      {formatearFechaVisual(clase.fecha)}
                     </p>
                     <p className="text-sm text-slate-500">
                       {formatearHora(clase.hora_inicio)} - {formatearHora(clase.hora_fin)}
@@ -366,6 +384,37 @@ const VistaClasesPracticas = ({ cambiarVista }) => {
               No se encontraron clases prácticas con los filtros aplicados.
             </div>
           )}
+          {clasesFiltradas.length > 0 && (
+  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-4 border-t border-slate-200 bg-white">
+    <p className="text-sm text-slate-500">
+      Mostrando {indicePrimerRegistro + 1} - {Math.min(indiceUltimoRegistro, clasesFiltradas.length)} de {clasesFiltradas.length} clases
+    </p>
+
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        disabled={paginaActual === 1}
+        onClick={() => setPaginaActual(paginaActual - 1)}
+        className="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 font-bold hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-600 disabled:hover:border-slate-300"
+      >
+        Anterior
+      </button>
+
+      <span className="text-sm font-semibold text-slate-600">
+        Página {paginaActual} de {totalPaginas || 1}
+      </span>
+
+      <button
+        type="button"
+        disabled={paginaActual === totalPaginas || totalPaginas === 0}
+        onClick={() => setPaginaActual(paginaActual + 1)}
+        className="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 font-bold hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-600 disabled:hover:border-slate-300"
+      >
+        Siguiente
+      </button>
+    </div>
+  </div>
+)}
         </div>
       </div>
     </div>

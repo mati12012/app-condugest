@@ -6,10 +6,16 @@ const VistaVehiculos = ({ cambiarVista }) => {
   const [error, setError] = useState(null);
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('todos');
+  const [paginaActual, setPaginaActual] = useState(1);
+  const registrosPorPagina = 5;
 
   useEffect(() => {
     obtenerVehiculos();
   }, []);
+
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [busqueda, filtroEstado]);
 
   const obtenerVehiculos = async () => {
     try {
@@ -104,6 +110,17 @@ const VistaVehiculos = ({ cambiarVista }) => {
 
     return coincideBusqueda && coincideEstado;
   });
+
+  const totalPaginas = Math.ceil(vehiculosFiltrados.length / registrosPorPagina);
+
+  const indiceUltimoRegistro = paginaActual * registrosPorPagina;
+  const indicePrimerRegistro = indiceUltimoRegistro - registrosPorPagina;
+
+  const vehiculosPaginados = vehiculosFiltrados.slice(
+    indicePrimerRegistro,
+    indiceUltimoRegistro
+  );
+
 
   const totalVehiculos = vehiculos.length;
 
@@ -201,11 +218,10 @@ const VistaVehiculos = ({ cambiarVista }) => {
               <button
                 type="button"
                 onClick={() => setFiltroEstado('todos')}
-                className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
-                  filtroEstado === 'todos'
+                className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${filtroEstado === 'todos'
                     ? 'bg-blue-600 text-white'
                     : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
-                }`}
+                  }`}
               >
                 Todos
               </button>
@@ -213,11 +229,10 @@ const VistaVehiculos = ({ cambiarVista }) => {
               <button
                 type="button"
                 onClick={() => setFiltroEstado('Disponible')}
-                className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
-                  filtroEstado === 'Disponible'
+                className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${filtroEstado === 'Disponible'
                     ? 'bg-green-600 text-white'
                     : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
-                }`}
+                  }`}
               >
                 Disponibles
               </button>
@@ -225,11 +240,10 @@ const VistaVehiculos = ({ cambiarVista }) => {
               <button
                 type="button"
                 onClick={() => setFiltroEstado('En mantención')}
-                className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
-                  filtroEstado === 'En mantención'
+                className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${filtroEstado === 'En mantención'
                     ? 'bg-yellow-500 text-white'
                     : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
-                }`}
+                  }`}
               >
                 En mantención
               </button>
@@ -237,11 +251,10 @@ const VistaVehiculos = ({ cambiarVista }) => {
               <button
                 type="button"
                 onClick={() => setFiltroEstado('Fuera de servicio')}
-                className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
-                  filtroEstado === 'Fuera de servicio'
+                className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${filtroEstado === 'Fuera de servicio'
                     ? 'bg-red-600 text-white'
                     : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
-                }`}
+                  }`}
               >
                 Fuera de servicio
               </button>
@@ -262,7 +275,7 @@ const VistaVehiculos = ({ cambiarVista }) => {
             </thead>
 
             <tbody className="divide-y divide-slate-200">
-              {vehiculosFiltrados.map((vehiculo) => (
+              {vehiculosPaginados.map((vehiculo) => (
                 <tr key={vehiculo.id_vehiculo} className="hover:bg-slate-50">
                   <td className="p-4">
                     <p className="font-bold text-slate-800">
@@ -335,6 +348,37 @@ const VistaVehiculos = ({ cambiarVista }) => {
               No se encontraron vehículos con los filtros aplicados.
             </div>
           )}
+          {vehiculosFiltrados.length > 0 && (
+  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-4 border-t border-slate-200 bg-white">
+    <p className="text-sm text-slate-500">
+      Mostrando {indicePrimerRegistro + 1} - {Math.min(indiceUltimoRegistro, vehiculosFiltrados.length)} de {vehiculosFiltrados.length} vehículos
+    </p>
+
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        disabled={paginaActual === 1}
+        onClick={() => setPaginaActual(paginaActual - 1)}
+        className="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 font-bold hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-600 disabled:hover:border-slate-300"
+      >
+        Anterior
+      </button>
+
+      <span className="text-sm font-semibold text-slate-600">
+        Página {paginaActual} de {totalPaginas || 1}
+      </span>
+
+      <button
+        type="button"
+        disabled={paginaActual === totalPaginas || totalPaginas === 0}
+        onClick={() => setPaginaActual(paginaActual + 1)}
+        className="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 font-bold hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-600 disabled:hover:border-slate-300"
+      >
+        Siguiente
+      </button>
+    </div>
+  </div>
+)}
         </div>
       </div>
     </div>
