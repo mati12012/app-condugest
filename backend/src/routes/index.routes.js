@@ -8,6 +8,7 @@ import vehiculoRoutes from "./vehiculo.routes.js"; // Importamos tu ruta de veh�
 import clasePracticaRoutes from "./clasePractica.routes.js"; // Importamos tu ruta de clases prácticas
 import claseTeoricaRoutes from "./claseTeorica.routes.js"; // Importamos tu ruta de clases teóricas
 import authRoutes from "./auth.routes.js"; // Importamos tu ruta de autenticación
+import profesorPanelRoutes from "./profesorPanel.routes.js"; // Importamos tu ruta de panel de profesor
 
 export function routerApi(app) {
   const router = Router();
@@ -32,5 +33,7 @@ export function routerApi(app) {
   router.use("/clases-teoricas", soloSecretaria, claseTeoricaRoutes);
   // Aquí registramos la ruta de autenticación
   router.use("/auth", authRoutes);
+  // Aquí registramos la ruta de panel de profesor
+  router.use("/profesor", profesorPanelRoutes);
 
 }
