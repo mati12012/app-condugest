@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const VerClasePractica = ({ claseId, cambiarVista }) => {
+const VerClasePractica = ({ claseId, cambiarVista, volverA = 'clasesPracticas' }) => {
   const [clase, setClase] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
@@ -79,7 +79,7 @@ const VerClasePractica = ({ claseId, cambiarVista }) => {
         </div>
 
         <button
-          onClick={() => cambiarVista('clasesPracticas')}
+          onClick={() => cambiarVista(volverA)}
           className="mt-6 px-6 py-2.5 rounded-lg font-bold text-slate-600 border border-slate-300 hover:bg-slate-50 transition-colors"
         >
           Volver
@@ -207,7 +207,7 @@ const VerClasePractica = ({ claseId, cambiarVista }) => {
         <div className="pt-6 mt-6 border-t flex flex-col md:flex-row justify-between gap-3">
           <button
             type="button"
-            onClick={() => cambiarVista('clasesPracticas')}
+            onClick={() => cambiarVista(volverA)}
             className="px-6 py-2.5 rounded-lg font-bold text-slate-600 border border-slate-300 hover:bg-slate-50 transition-colors"
           >
             Volver

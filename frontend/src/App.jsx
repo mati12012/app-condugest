@@ -3,8 +3,6 @@ import Login from './pages/Login';
 import Sidebar from './components/Sidebar';
 import RegistrarAlumno from './pages/RegistrarAlumno';
 import VistaAlumnos from './pages/VistaAlumnos';
-import DashboardSecretaria from './pages/DashboardSecretaria';
-import AgendaClases from './pages/AgendaClases';
 import PerfilAlumno from './pages/PerfilAlumno';
 import ReservaSalaPsicotecnica from './pages/ReservaSalaPsicotecnica';
 import ModuloSalasPsicotecnicas from './pages/ModuloSalasPsicotecnicas';
@@ -24,6 +22,8 @@ import VistaClasesTeoricas from './pages/VistaClasesTeoricas';
 import RegistrarClaseTeorica from './pages/RegistrarClaseTeorica';
 import VerClaseTeorica from './pages/VerClaseTeorica';
 import EditarClaseTeorica from './pages/EditarClaseTeorica';
+import VistaAgenda from './pages/VistaAgenda';
+import PanelPrincipal from './pages/PanelPrincipal';
 
 
 function App() {
@@ -69,8 +69,7 @@ function App() {
 
         {/* aqui cambia la pantalla segun la vista actual */}
         <div className="flex-1 p-6">
-          {vistaActual === 'dashboard' && <DashboardSecretaria />}
-          {vistaActual === 'agenda' && <AgendaClases />}
+          {vistaActual === 'dashboard' && <PanelPrincipal cambiarVista={manejarCambioVista} />}
           {vistaActual === 'alumnos' && <VistaAlumnos cambiarVista={manejarCambioVista} />}
           {vistaActual === 'registrar' && <RegistrarAlumno cambiarVista={setVistaActual} />}
           {vistaActual === 'perfil' && <PerfilAlumno alumnoSeleccionado={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
@@ -79,18 +78,21 @@ function App() {
           {vistaActual === 'perfilProfesor' && (<PerfilProfesor profesorId={idSeleccionado} cambiarVista={manejarCambioVista} />)}
           {vistaActual === "registrarProfesor" && <RegistrarProfesor cambiarVista={manejarCambioVista} />}
           {vistaActual === "editarProfesor" && <EditarProfesor profesorId={idSeleccionado} cambiarVista={manejarCambioVista} />}
-          {vistaActual === "registrarVehiculo" && <RegistrarVehiculo cambiarVista={manejarCambioVista} />}          
+          {vistaActual === "registrarVehiculo" && <RegistrarVehiculo cambiarVista={manejarCambioVista} />}
           {vistaActual === "vehiculos" && <VistaVehiculos cambiarVista={manejarCambioVista} />}
           {vistaActual === "verVehiculo" && <VerVehiculo vehiculoId={idSeleccionado} cambiarVista={manejarCambioVista} />}
           {vistaActual === "editarVehiculo" && <EditarVehiculo vehiculoId={idSeleccionado} cambiarVista={manejarCambioVista} />}
           {vistaActual === "registrarClasePractica" && <RegistrarClasePractica cambiarVista={manejarCambioVista} />}
           {vistaActual === "clasesPracticas" && <VistaClasesPracticas cambiarVista={manejarCambioVista} />}
-          {vistaActual === "verClasePractica" && <VerClasePractica claseId={idSeleccionado} cambiarVista={manejarCambioVista} />}
+          {vistaActual === "verClasePractica" && <VerClasePractica claseId={idSeleccionado} cambiarVista={manejarCambioVista} volverA='clasesPracticas' />}
           {vistaActual === "editarClasePractica" && <EditarClasePractica claseId={idSeleccionado} cambiarVista={manejarCambioVista} />}
           {vistaActual === 'clasesTeoricas' && <VistaClasesTeoricas cambiarVista={manejarCambioVista} />}
           {vistaActual === 'registrarClaseTeorica' && <RegistrarClaseTeorica cambiarVista={manejarCambioVista} />}
           {vistaActual === 'verClaseTeorica' && <VerClaseTeorica idClase={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
           {vistaActual === 'editarClaseTeorica' && <EditarClaseTeorica idClase={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
+          {vistaActual === 'agenda' && <VistaAgenda cambiarVista={manejarCambioVista} />}
+          {vistaActual === 'verClasePracticaAgenda' && (<VerClasePractica claseId={idSeleccionado}cambiarVista={manejarCambioVista}volverA="agenda"/>)}
+
         </div>
       </main>
     </div>
