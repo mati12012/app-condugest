@@ -7,13 +7,41 @@ const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
 
 const estadosPermitidos = ["Programada", "Realizada", "Cancelada"];
 
-function horaAMinutos(hora) {
-  const [horas, minutos] = hora.split(":").map(Number);
-  return horas * 60 + minutos;
-}
+// Función para validar las reglas de horario de las clases teóricas
+export function validarReglasHorarioPractica(horaInicio, horaFin) {
+    const inicioLimpio = String(horaInicio).slice(0, 5);
+    const finLimpio = String(horaFin).slice(0, 5);
 
-export function horaFinEsMayor(horaInicio, horaFin) {
-  return horaAMinutos(horaFin) > horaAMinutos(horaInicio);
+    const [inicioHora, inicioMin] = inicioLimpio.split(':').map(Number);
+    const [finHora, finMin] = finLimpio.split(':').map(Number);
+
+    const minutosInicio = (inicioHora * 60) + inicioMin;
+    const minutosFin = (finHora * 60) + finMin;
+
+    // Regla 1: Horario permitido para clases prácticas en la calle
+    if (minutosInicio < 8 * 60 || minutosFin > 20 * 60) {
+        return { valido: false, mensaje: "Por seguridad, las clases prácticas en la calle solo se realizan entre las 08:00 y las 20:00 horas." };
+    }
+
+    // Regla 2: Hora de término mayor a hora de inicio
+    if (minutosFin <= minutosInicio) {
+        return { valido: false, mensaje: "La hora de término debe ser posterior a la hora de inicio." };
+    }
+
+    // Regla 3: Duración mínima y máxima de la clase práctica
+    const duracion = minutosFin - minutosInicio;
+    
+    // Mínimo 45 minutos 
+    if (duracion < 45) { 
+        return { valido: false, mensaje: "Una clase práctica debe durar al menos 45 minutos." };
+    }
+    
+    // Máximo 2 horas
+    if (duracion > 120) { 
+        return { valido: false, mensaje: "La clase práctica no puede exceder las 2 horas continuas." };
+    }
+
+    return { valido: true };
 }
 
 function formatValidationErrors(error) {
@@ -142,19 +170,7 @@ export function validateClasePracticaCreate(data) {
     abortEarly: false,
   });
 
-  const errores = formatValidationErrors(error);
-
-  if (
-    data.hora_inicio &&
-    data.hora_fin &&
-    horaRegex.test(data.hora_inicio) &&
-    horaRegex.test(data.hora_fin) &&
-    !horaFinEsMayor(data.hora_inicio, data.hora_fin)
-  ) {
-    errores.push("La hora de término debe ser mayor que la hora de inicio");
-  }
-
-  return errores;
+  return formatValidationErrors(error);
 }
 
 export function validateClasePracticaUpdate(data) {

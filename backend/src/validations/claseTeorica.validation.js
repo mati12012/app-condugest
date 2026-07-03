@@ -25,14 +25,42 @@ export const claseTeoricaBodyValidation = Joi.object({
     estado: Joi.string().valid("Programada", "Realizada", "Cancelada").required()
 });
 
-// Función para validar que la hora de fin sea mayor que la hora de inicio
-export function horaFinEsMayor(horaInicio, horaFin) {
+// Funcion para las reglas de horario
+export function validarReglasHorario(horaInicio, horaFin) {
     const inicioLimpio = String(horaInicio).slice(0, 5);
     const finLimpio = String(horaFin).slice(0, 5);
-    
-    const inicio = new Date(`1970-01-01T${inicioLimpio}:00`);
-    const fin = new Date(`1970-01-01T${finLimpio}:00`);
-    return fin > inicio;
+
+    // Convierte las horas y minutos a minutos totales para facilitar la comparacion
+    const [inicioHora, inicioMin] = inicioLimpio.split(':').map(Number);
+    const [finHora, finMin] = finLimpio.split(':').map(Number);
+
+    const minutosInicio = (inicioHora * 60) + inicioMin;
+    const minutosFin = (finHora * 60) + finMin;
+
+    // Regla 1: Horario comercial de la escuela
+    if (minutosInicio < 8 * 60 || minutosFin > 22 * 60) {
+        return { valido: false, mensaje: "Las clases solo pueden programarse entre las 08:00 y las 22:00 horas." };
+    }
+
+    // Regla 2: Hora de término mayor a hora de inicio
+    if (minutosFin <= minutosInicio) {
+        return { valido: false, mensaje: "La hora de término debe ser mayor a la hora de inicio." };
+    }
+
+    // Regla 3: Duración mínima y máxima
+    const duracion = minutosFin - minutosInicio;
+
+    // Mínimo 45 minutos
+    if (duracion < 45) { 
+        return { valido: false, mensaje: "Para cumplir la normativa, la clase debe durar al menos 45 minutos." };
+    }
+
+    // Máximo 3 horas 
+    if (duracion > 180) { 
+        return { valido: false, mensaje: "Una clase no puede durar más de 3 horas." };
+    }
+
+    return { valido: true };
 }
 
 export function validateClaseTeoricaData(data) {

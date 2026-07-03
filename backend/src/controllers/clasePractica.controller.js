@@ -12,7 +12,7 @@ import { getProfesorById } from "../services/profesor.services.js";
 import { getVehiculoById } from "../services/vehiculo.services.js";
 
 import {
-  horaFinEsMayor,
+  validarReglasHorarioPractica,
   validateClasePracticaCreate,
   validateClasePracticaIdParam,
   validateClasePracticaUpdate,
@@ -161,6 +161,11 @@ export async function createClasePracticaController(req, res) {
       );
     }
 
+    const chequeoHorario = validarReglasHorarioPractica(claseData.hora_inicio, claseData.hora_fin);
+    if (!chequeoHorario.valido) {
+        return handleErrorClient(res, 400, "Regla de seguridad vial", [chequeoHorario.mensaje]);
+    }
+
     const alumno = await getAlumnoById(claseData.id_alumno);
 
     if (!alumno) {
@@ -277,12 +282,9 @@ export async function updateClasePracticaController(req, res) {
       ...claseData,
     };
 
-    if (!horaFinEsMayor(claseFinal.hora_inicio, claseFinal.hora_fin)) {
-      return handleErrorClient(
-        res,
-        400,
-        "La hora de término debe ser mayor que la hora de inicio"
-      );
+    const chequeoHorario = validarReglasHorarioPractica(claseFinal.hora_inicio, claseFinal.hora_fin);
+    if (!chequeoHorario.valido) {
+        return handleErrorClient(res, 400, "Regla de seguridad vial", [chequeoHorario.mensaje]);
     }
 
     const alumno = await getAlumnoById(claseFinal.id_alumno);

@@ -10,7 +10,7 @@ import { getProfesorById } from "../services/profesor.services.js";
 
 import { 
     validateClaseTeoricaData, 
-    horaFinEsMayor 
+    validarReglasHorario 
 } from "../validations/claseTeorica.validation.js";
 
 import { 
@@ -46,8 +46,9 @@ export async function createClaseTeoricaController(req, res) {
         const validationErrors = validateClaseTeoricaData(claseData);
         if (validationErrors.length > 0) return handleErrorClient(res, 400, "Datos inválidos", validationErrors);
 
-        if (!horaFinEsMayor(claseData.hora_inicio, claseData.hora_fin)) {
-            return handleErrorClient(res, 400, "Error de horario", ["La hora de término debe ser mayor que la hora de inicio."]);
+        const chequeoHorario = validarReglasHorario(claseData.hora_inicio, claseData.hora_fin);
+        if (!chequeoHorario.valido) {
+            return handleErrorClient(res, 400, "Error de horario", [chequeoHorario.mensaje]);
         }
 
         const profesor = await getProfesorById(claseData.id_profesor);
@@ -80,8 +81,9 @@ export async function updateClaseTeoricaController(req, res) {
 
         const claseFinal = { ...claseExistente, ...claseData };
 
-        if (!horaFinEsMayor(claseFinal.hora_inicio, claseFinal.hora_fin)) {
-            return handleErrorClient(res, 400, "Error de horario", ["La hora de término debe ser mayor que la hora de inicio."]);
+        const chequeoHorario = validarReglasHorario(claseData.hora_inicio, claseData.hora_fin);
+        if (!chequeoHorario.valido) {
+            return handleErrorClient(res, 400, "Error de horario", [chequeoHorario.mensaje]);
         }
 
         if (claseFinal.estado !== "Cancelada") {
@@ -95,11 +97,9 @@ export async function updateClaseTeoricaController(req, res) {
             if (!profesor) return handleErrorClient(res, 404, "Profesor no encontrado", ["El profesor asignado ya no existe."]);
             if (!profesor.estado) return handleErrorClient(res, 400, "Profesor inactivo", ["El profesor se encuentra inactivo."]);
 
-            if (claseData.sede !== "Online" && profesor.sede !== claseData.sede) {
-            return handleErrorClient(res, 400, "Incompatibilidad de sede", [
-                `El profesor pertenece a ${profesor.sede} y no puede impartir clases presenciales en ${claseData.sede}.`
-            ]);
-        }
+            if (claseFinal.sede !== 'Online' && profesor.sede !== claseFinal.sede) {
+                return handleErrorClient(res, 400, "Incompatibilidad de sede", `El profesor pertenece a ${profesor.sede} y no puede impartir clases presenciales en ${claseFinal.sede}.`);
+            }
 
             const conflicto = await buscarChoqueProfesor({
                 id_profesor: profesor.id_profesor,
