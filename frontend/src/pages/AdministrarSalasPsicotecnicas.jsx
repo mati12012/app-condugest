@@ -397,7 +397,6 @@ function AdministrarSalasPsicotecnicas() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-slate-50 text-left text-slate-600">
-                  <th className="px-3 py-3">ID</th>
                   <th className="px-3 py-3">Nombre</th>
                   <th className="px-3 py-3">Sede</th>
                   <th className="px-3 py-3">Capacidad</th>
@@ -410,7 +409,7 @@ function AdministrarSalasPsicotecnicas() {
                 {salasFiltradas.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="6"
+                      colSpan="5"
                       className="px-3 py-6 text-center text-slate-500"
                     >
                       No hay salas para mostrar.
@@ -422,9 +421,6 @@ function AdministrarSalasPsicotecnicas() {
                       key={sala.id_sala}
                       className="border-b hover:bg-slate-50"
                     >
-                      <td className="px-3 py-3 text-slate-500">
-                        {sala.id_sala}
-                      </td>
 
                       <td className="px-3 py-3 font-medium text-slate-700">
                         {sala.nombre}
