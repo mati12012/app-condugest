@@ -24,17 +24,48 @@ import VerClaseTeorica from './pages/secretaria/VerClaseTeorica';
 import EditarClaseTeorica from './pages/secretaria/EditarClaseTeorica';
 import VistaAgenda from './pages/secretaria/VistaAgenda';
 import PanelPrincipal from './pages/secretaria/PanelPrincipal';
+import PanelProfesor from './pages/profesor/PanelProfesor';
+import PanelAlumno from './pages/alumno/PanelAlumno';
 
+const obtenerVistaPorRol = (rol) => {
+  if (rol === "secretaria") return "dashboard";
+  if (rol === "profesor") return "panelProfesor";
+  if (rol === "alumno") return "panelAlumno";
+
+  return "login";
+};
 
 function App() {
   // por ahora esta asi para que pase directo
-  const [usuario, setUsuario] = useState({
+  /*const [usuario, setUsuario] = useState({
     rol: 'secretaria',
     correo: 'test@correo.com'
-  });
+  });*/
+
+
 
   // para saber que pagina mostrar al lado derecho
-  const [vistaActual, setVistaActual] = useState('dashboard');
+  const usuarioInicial = (() => {
+    const usuarioGuardado = localStorage.getItem("usuarioCondugest");
+
+    if (!usuarioGuardado) return null;
+
+    try {
+      return JSON.parse(usuarioGuardado);
+    } catch {
+      localStorage.removeItem("usuarioCondugest");
+      return null;
+    }
+  })();
+
+  const tokenInicial = localStorage.getItem("tokenCondugest");
+
+  const [usuario, setUsuario] = useState(usuarioInicial);
+  const [token, setToken] = useState(tokenInicial);
+
+  const [vistaActual, setVistaActual] = useState(
+    usuarioInicial ? obtenerVistaPorRol(usuarioInicial.rol) : "login"
+  );
 
   const [alumnoSeleccionado, setAlumnoSeleccionado] = useState(null);
   const [idSeleccionado, setIdSeleccionado] = useState(null);
@@ -47,7 +78,30 @@ function App() {
     setIdSeleccionado(id);
   };
 
-  if (!usuario) return <Login onLogin={setUsuario} />;
+
+  const manejarLogin = (usuarioLogin, tokenLogin) => {
+    localStorage.setItem("usuarioCondugest", JSON.stringify(usuarioLogin));
+    localStorage.setItem("tokenCondugest", tokenLogin);
+
+    setUsuario(usuarioLogin);
+    setToken(tokenLogin);
+
+    setVistaActual(obtenerVistaPorRol(usuarioLogin.rol));
+  };
+
+  const cerrarSesion = () => {
+    localStorage.removeItem("usuarioCondugest");
+    localStorage.removeItem("tokenCondugest");
+
+    setUsuario(null);
+    setToken(null);
+
+    setVistaActual("login");
+  };
+
+  if (!usuario || vistaActual === "login") {
+    return <Login onLogin={manejarLogin} />;
+  }
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -60,7 +114,7 @@ function App() {
         <header className="bg-white border-b p-4 flex justify-between items-center">
           <span className="font-medium text-slate-600">Portal de Administración</span>
           <button
-            onClick={() => setUsuario(null)}
+            onClick={cerrarSesion}
             className="text-sm text-slate-500 hover:text-red-500 underline"
           >
             Cerrar Sesión
@@ -91,8 +145,9 @@ function App() {
           {vistaActual === 'verClaseTeorica' && <VerClaseTeorica idClase={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
           {vistaActual === 'editarClaseTeorica' && <EditarClaseTeorica idClase={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
           {vistaActual === 'agenda' && <VistaAgenda cambiarVista={manejarCambioVista} />}
-          {vistaActual === 'verClasePracticaAgenda' && (<VerClasePractica claseId={idSeleccionado}cambiarVista={manejarCambioVista}volverA="agenda"/>)}
-
+          {vistaActual === 'verClasePracticaAgenda' && (<VerClasePractica claseId={idSeleccionado} cambiarVista={manejarCambioVista} volverA="agenda" />)}
+          {vistaActual === "panelProfesor" && (<PanelProfesor usuario={usuario} cerrarSesion={cerrarSesion} />)}
+          {vistaActual === "panelAlumno" && (<PanelAlumno usuario={usuario} cerrarSesion={cerrarSesion} />)}
         </div>
       </main>
     </div>
