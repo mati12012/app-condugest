@@ -21,6 +21,8 @@ import {
   handleSuccess,
 } from "../handlers/responseHandlers.js";
 
+import { crearUsuarioAuth } from "../services/auth.services.js";
+
 function limpiarDatosProfesor(data) {
   return {
     ...data,
@@ -137,6 +139,16 @@ export async function createProfesorController(req, res) {
       ...profesorData,
       correo_institucional: correoInstitucional,
       estado: profesorData.estado ?? true,
+    });
+    
+    await crearUsuarioAuth({
+      correo: nuevoProfesor.correo_institucional,
+      password: "Profesor1234",
+      rol: "profesor",
+      id_profesor: nuevoProfesor.id_profesor,
+      id_alumno: null,
+      estado: nuevoProfesor.estado,
+      debe_cambiar_password: true,
     });
 
     return handleSuccess(
