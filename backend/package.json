@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/index.js",
-    "crear:secretaria": "node src/scripts/crearUsuarioSecretaria.js"
+    "crear:secretaria": "node src/scripts/crearUsuarioSecretaria.js",
+    "crear:usuarios": "node src/scripts/crearUsuariosExistentes.js",
+    "reset:alumnos": "node src/scripts/resetPasswordAlumnos.js"
   },
   "keywords": [],
   "author": "",

@@ -103,6 +103,24 @@ function App() {
     return <Login onLogin={manejarLogin} />;
   }
 
+  if (usuario.rol === "alumno") {
+  return (
+    <PanelAlumno
+      usuario={usuario}
+      cerrarSesion={cerrarSesion}
+    />
+  );
+}
+
+if (usuario.rol === "profesor") {
+  return (
+    <PanelProfesor
+      usuario={usuario}
+      cerrarSesion={cerrarSesion}
+    />
+  );
+}
+
   return (
     <div className="flex min-h-screen bg-slate-50">
       {/* barra lateral izquierda */}
@@ -146,8 +164,6 @@ function App() {
           {vistaActual === 'editarClaseTeorica' && <EditarClaseTeorica idClase={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
           {vistaActual === 'agenda' && <VistaAgenda cambiarVista={manejarCambioVista} />}
           {vistaActual === 'verClasePracticaAgenda' && (<VerClasePractica claseId={idSeleccionado} cambiarVista={manejarCambioVista} volverA="agenda" />)}
-          {vistaActual === "panelProfesor" && (<PanelProfesor usuario={usuario} cerrarSesion={cerrarSesion} />)}
-          {vistaActual === "panelAlumno" && (<PanelAlumno usuario={usuario} cerrarSesion={cerrarSesion} />)}
         </div>
       </main>
     </div>
