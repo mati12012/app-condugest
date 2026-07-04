@@ -1,33 +1,456 @@
-import React from "react";
+import { useEffect, useMemo, useState } from "react";
+import SidebarProfesor from "../../components/SidebarProfesor";
+import { apiFetch } from "../../utils/apiFetch";
+import { formatearFechaVisual } from "../../utils/formatearFecha";
+
+const titulosVista = {
+  inicio: {
+    titulo: "Inicio",
+    descripcion: "Resumen de clases asignadas y actividad del dia.",
+  },
+  misClases: {
+    titulo: "Mis clases",
+    descripcion: "Listado de clases practicas asignadas.",
+  },
+  agenda: {
+    titulo: "Agenda",
+    descripcion: "Vista rapida de la jornada del profesor.",
+  },
+  evaluaciones: {
+    titulo: "Evaluaciones",
+    descripcion: "Espacio preparado para registrar evaluaciones.",
+  },
+  perfil: {
+    titulo: "Mi perfil",
+    descripcion: "Datos de la cuenta del profesor.",
+  },
+};
+
+function obtenerFechaHoy() {
+  const hoy = new Date();
+  const anio = hoy.getFullYear();
+  const mes = String(hoy.getMonth() + 1).padStart(2, "0");
+  const dia = String(hoy.getDate()).padStart(2, "0");
+
+  return `${anio}-${mes}-${dia}`;
+}
+
+function formatearFechaInput(fecha) {
+  if (!fecha) return "";
+
+  const fechaTexto = String(fecha);
+
+  if (fechaTexto.includes("T")) {
+    return fechaTexto.split("T")[0];
+  }
+
+  return fechaTexto;
+}
+
+function formatearHora(hora) {
+  if (!hora) return "";
+  return String(hora).slice(0, 5);
+}
+
+function normalizarEstado(estado) {
+  return String(estado || "").toLowerCase();
+}
+
+function obtenerClaseEstado(estado) {
+  const estadoNormalizado = normalizarEstado(estado);
+
+  if (estadoNormalizado === "programada") {
+    return "bg-blue-100 text-blue-700";
+  }
+
+  if (estadoNormalizado === "realizada") {
+    return "bg-green-100 text-green-700";
+  }
+
+  if (estadoNormalizado === "cancelada") {
+    return "bg-red-100 text-red-700";
+  }
+
+  return "bg-slate-100 text-slate-700";
+}
+
+function mostrarEstado(estado) {
+  const estadoNormalizado = normalizarEstado(estado);
+
+  if (estadoNormalizado === "programada") return "Programada";
+  if (estadoNormalizado === "realizada") return "Realizada";
+  if (estadoNormalizado === "cancelada") return "Cancelada";
+
+  return estado || "Sin estado";
+}
+
+function TarjetaResumen({ valor, etiqueta, color = "text-slate-900" }) {
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+      <p className={`text-4xl font-bold ${color}`}>{valor}</p>
+      <p className="text-slate-500 mt-2">{etiqueta}</p>
+    </div>
+  );
+}
+
+function EstadoClase({ estado }) {
+  return (
+    <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${obtenerClaseEstado(estado)}`}>
+      {mostrarEstado(estado)}
+    </span>
+  );
+}
+
+function TablaClases({ clases, vacio = "No hay clases para mostrar." }) {
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left">
+          <thead>
+            <tr className="border-b border-slate-200 bg-slate-50 text-slate-500">
+              <th className="px-4 py-3">Fecha</th>
+              <th className="px-4 py-3">Hora</th>
+              <th className="px-4 py-3">Alumno</th>
+              <th className="px-4 py-3">Vehiculo</th>
+              <th className="px-4 py-3">Sede</th>
+              <th className="px-4 py-3">Estado</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {clases.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="px-4 py-8 text-center text-slate-500">
+                  {vacio}
+                </td>
+              </tr>
+            ) : (
+              clases.map((clase, index) => (
+                <tr
+                  key={clase.id_clase_practica || `${clase.fecha}-${clase.hora_inicio}-${index}`}
+                  className="border-b border-slate-100 hover:bg-slate-50"
+                >
+                  <td className="px-4 py-3 font-medium text-slate-700">
+                    {formatearFechaVisual(clase.fecha)}
+                  </td>
+
+                  <td className="px-4 py-3 text-slate-600">
+                    {formatearHora(clase.hora_inicio)} - {formatearHora(clase.hora_fin)}
+                  </td>
+
+                  <td className="px-4 py-3 text-slate-600">
+                    {clase.alumno_nombre} {clase.alumno_apellido}
+                  </td>
+
+                  <td className="px-4 py-3 text-slate-600">
+                    {clase.vehiculo_patente} - {clase.vehiculo_marca} {clase.vehiculo_modelo}
+                  </td>
+
+                  <td className="px-4 py-3 text-slate-600">
+                    {clase.sede || "Sin sede"}
+                  </td>
+
+                  <td className="px-4 py-3">
+                    <EstadoClase estado={clase.estado} />
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function AgendaHoy({ clasesHoy }) {
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+      <h2 className="text-xl font-bold text-slate-900 mb-5">Agenda de hoy</h2>
+
+      <div className="space-y-4">
+        {clasesHoy.length === 0 ? (
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 text-slate-500">
+            No tienes clases programadas para hoy.
+          </div>
+        ) : (
+          clasesHoy.map((clase, index) => (
+            <div
+              key={clase.id_clase_practica || `${clase.fecha}-${clase.hora_inicio}-${index}`}
+              className="border border-slate-200 rounded-xl p-4 bg-slate-50"
+            >
+              <div className="flex justify-between gap-3">
+                <div>
+                  <p className="font-bold text-slate-900">
+                    {formatearHora(clase.hora_inicio)} - {formatearHora(clase.hora_fin)}
+                  </p>
+
+                  <p className="text-slate-600 mt-1">
+                    {clase.alumno_nombre} {clase.alumno_apellido}
+                  </p>
+
+                  <p className="text-sm text-slate-500 mt-1">
+                    {clase.vehiculo_patente} - {clase.sede || "Sin sede"}
+                  </p>
+                </div>
+
+                <span className="h-fit">
+                  <EstadoClase estado={clase.estado} />
+                </span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
 
 function PanelProfesor({ usuario, cerrarSesion }) {
-  return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
-      <div className="max-w-xl w-full bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center">
-        <h1 className="text-3xl font-bold text-slate-900">
-          Panel Profesor
-        </h1>
+  const [vistaProfesor, setVistaProfesor] = useState("inicio");
+  const [clases, setClases] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
 
-        <p className="text-slate-500 mt-3">
-          Esta vista está reservada para profesores.
-        </p>
+  async function obtenerMisClases() {
+    const respuesta = await apiFetch(
+      `${import.meta.env.VITE_BASE_URL}/profesor/mis-clases`
+    );
 
-        <div className="mt-6 rounded-xl bg-blue-50 border border-blue-200 p-4 text-blue-700">
-          Sesión iniciada como: <strong>{usuario?.correo}</strong>
+    const data = await respuesta.json();
+
+    if (!respuesta.ok) {
+      throw new Error(data.message || "No se pudieron obtener tus clases");
+    }
+
+    return data.data?.clases_practicas || [];
+  }
+
+  async function cargarMisClases() {
+    try {
+      setCargando(true);
+      setError("");
+
+      const clasesProfesor = await obtenerMisClases();
+      setClases(clasesProfesor);
+    } catch (error) {
+      setError(error.message || "Error al cargar las clases del profesor");
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  useEffect(() => {
+    let componenteActivo = true;
+
+    async function cargarClasesIniciales() {
+      try {
+        const clasesProfesor = await obtenerMisClases();
+
+        if (componenteActivo) {
+          setClases(clasesProfesor);
+        }
+      } catch (error) {
+        if (componenteActivo) {
+          setError(error.message || "Error al cargar las clases del profesor");
+        }
+      } finally {
+        if (componenteActivo) {
+          setCargando(false);
+        }
+      }
+    }
+
+    cargarClasesIniciales();
+
+    return () => {
+      componenteActivo = false;
+    };
+  }, []);
+
+  const fechaHoy = obtenerFechaHoy();
+
+  const clasesOrdenadas = useMemo(() => {
+    return [...clases].sort((a, b) => {
+      const fechaA = formatearFechaInput(a.fecha);
+      const fechaB = formatearFechaInput(b.fecha);
+
+      if (fechaA !== fechaB) {
+        return fechaA.localeCompare(fechaB);
+      }
+
+      return String(a.hora_inicio).localeCompare(String(b.hora_inicio));
+    });
+  }, [clases]);
+
+  const clasesHoy = clasesOrdenadas.filter(
+    (clase) => formatearFechaInput(clase.fecha) === fechaHoy
+  );
+
+  const proximasClases = clasesOrdenadas.filter((clase) => {
+    const fechaClase = formatearFechaInput(clase.fecha);
+    const estado = normalizarEstado(clase.estado);
+
+    return fechaClase >= fechaHoy && estado !== "realizada" && estado !== "cancelada";
+  });
+
+  const clasesRealizadas = clasesOrdenadas.filter(
+    (clase) => normalizarEstado(clase.estado) === "realizada"
+  );
+
+  const clasesCanceladas = clasesOrdenadas.filter(
+    (clase) => normalizarEstado(clase.estado) === "cancelada"
+  );
+
+  const vista = titulosVista[vistaProfesor] || titulosVista.inicio;
+
+  const renderizarVista = () => {
+    if (cargando) {
+      return (
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm text-slate-500">
+          Cargando tus clases asignadas...
+        </div>
+      );
+    }
+
+    if (vistaProfesor === "misClases") {
+      return (
+        <section className="space-y-6">
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={cargarMisClases}
+              className="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 font-bold hover:bg-slate-50 active:scale-95 transition-all"
+            >
+              Actualizar
+            </button>
+          </div>
+
+          <TablaClases
+            clases={clasesOrdenadas}
+            vacio="No tienes clases practicas asignadas."
+          />
+        </section>
+      );
+    }
+
+    if (vistaProfesor === "agenda") {
+      return (
+        <section className="grid grid-cols-1 xl:grid-cols-[420px_1fr] gap-6">
+          <AgendaHoy clasesHoy={clasesHoy} />
+
+          <TablaClases
+            clases={proximasClases}
+            vacio="No tienes proximas clases en agenda."
+          />
+        </section>
+      );
+    }
+
+    if (vistaProfesor === "evaluaciones") {
+      return (
+        <section className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
+          <h2 className="text-xl font-bold text-slate-900">Evaluaciones</h2>
+          <p className="text-slate-500 mt-2">
+            Esta seccion quedo preparada para mostrar evaluaciones, registrar resultados y revisar observaciones.
+          </p>
+        </section>
+      );
+    }
+
+    if (vistaProfesor === "perfil") {
+      return (
+        <section className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm max-w-2xl">
+          <h2 className="text-xl font-bold text-slate-900">Datos del profesor</h2>
+
+          <dl className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-xl border border-slate-200 p-4">
+              <dt className="text-sm text-slate-500">Correo</dt>
+              <dd className="font-semibold text-slate-900 mt-1 break-all">
+                {usuario?.correo || "Sin correo registrado"}
+              </dd>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 p-4">
+              <dt className="text-sm text-slate-500">Rol</dt>
+              <dd className="font-semibold text-slate-900 mt-1">
+                {usuario?.rol || "profesor"}
+              </dd>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 p-4">
+              <dt className="text-sm text-slate-500">ID profesor</dt>
+              <dd className="font-semibold text-slate-900 mt-1">
+                {usuario?.id_profesor || "No disponible"}
+              </dd>
+            </div>
+          </dl>
+        </section>
+      );
+    }
+
+    return (
+      <section className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+          <TarjetaResumen valor={clases.length} etiqueta="Clases asignadas" />
+          <TarjetaResumen valor={clasesHoy.length} etiqueta="Clases de hoy" color="text-blue-700" />
+          <TarjetaResumen valor={clasesRealizadas.length} etiqueta="Realizadas" color="text-green-700" />
+          <TarjetaResumen valor={clasesCanceladas.length} etiqueta="Canceladas" color="text-red-700" />
         </div>
 
-        <p className="text-sm text-slate-400 mt-4">
-          Próximamente aquí se mostrarán clases asignadas, agenda del profesor y datos personales.
-        </p>
+        <section className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-slate-900">
+                Proximas clases practicas
+              </h2>
 
-        <button
-          type="button"
-          onClick={cerrarSesion}
-          className="mt-6 px-5 py-2.5 rounded-lg bg-slate-800 text-white font-bold hover:bg-slate-900 active:scale-95 transition-all"
-        >
-          Cerrar sesión
-        </button>
-      </div>
+              <button
+                type="button"
+                onClick={() => setVistaProfesor("misClases")}
+                className="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 font-bold hover:bg-slate-50 active:scale-95 transition-all"
+              >
+                Ver todas
+              </button>
+            </div>
+
+            <TablaClases
+              clases={proximasClases.slice(0, 5)}
+              vacio="No tienes proximas clases practicas asignadas."
+            />
+          </div>
+
+          <AgendaHoy clasesHoy={clasesHoy} />
+        </section>
+      </section>
+    );
+  };
+
+  return (
+    <div className="flex min-h-screen bg-slate-100">
+      <SidebarProfesor
+        vistaActual={vistaProfesor}
+        cambiarVista={setVistaProfesor}
+        cerrarSesion={cerrarSesion}
+        usuario={usuario}
+      />
+
+      <main className="flex-1 flex flex-col min-w-0">
+        <header className="bg-white border-b border-slate-200 px-6 py-4">
+          <h1 className="text-2xl font-bold text-slate-900">{vista.titulo}</h1>
+          <p className="text-sm text-slate-500 mt-1">{vista.descripcion}</p>
+        </header>
+
+        <div className="flex-1 p-6 space-y-6">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl">
+              {error}
+            </div>
+          )}
+
+          {renderizarVista()}
+        </div>
+      </main>
     </div>
   );
 }
