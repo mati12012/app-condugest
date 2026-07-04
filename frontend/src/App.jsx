@@ -26,6 +26,7 @@ import VistaAgenda from './pages/secretaria/VistaAgenda';
 import PanelPrincipal from './pages/secretaria/PanelPrincipal';
 import PanelProfesor from './pages/profesor/PanelProfesor';
 import PanelAlumno from './pages/alumno/PanelAlumno';
+import PlanesPublicos from './pages/public/PlanesPublicos';
 
 const obtenerVistaPorRol = (rol) => {
   if (rol === "secretaria") return "dashboard";
@@ -64,7 +65,7 @@ function App() {
   const [token, setToken] = useState(tokenInicial);
 
   const [vistaActual, setVistaActual] = useState(
-    usuarioInicial ? obtenerVistaPorRol(usuarioInicial.rol) : "login"
+    usuarioInicial ? obtenerVistaPorRol(usuarioInicial.rol) : "planesPublicos"
   );
 
   const [alumnoSeleccionado, setAlumnoSeleccionado] = useState(null);
@@ -99,8 +100,21 @@ function App() {
     setVistaActual("login");
   };
 
-  if (!usuario || !token || vistaActual === "login") {
-    return <Login onLogin={manejarLogin} />;
+  if (!usuario || !token) {
+    if (vistaActual === "login") {
+      return (
+        <Login
+          onLogin={manejarLogin}
+          onVerPlanes={() => setVistaActual("planesPublicos")}
+        />
+      );
+    }
+
+    return (
+      <PlanesPublicos
+        onIniciarSesion={() => setVistaActual("login")}
+      />
+    );
   }
 
   if (usuario.rol === "alumno") {

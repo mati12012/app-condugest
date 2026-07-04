@@ -13,6 +13,25 @@ export async function getAllPlanes() {
   });
 }
 
+export async function getPlanesActivosPublicos() {
+  return await planRepository().find({
+    select: {
+      nombre: true,
+      descripcion: true,
+      cantidad_clases_practicas: true,
+      cantidad_clases_teoricas: true,
+      valor: true,
+      tipo: true,
+    },
+    where: {
+      estado: "Activo",
+    },
+    order: {
+      id_plan: "ASC",
+    },
+  });
+}
+
 export async function getPlanById(id) {
   return await planRepository().findOne({
     where: {
