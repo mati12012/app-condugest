@@ -60,3 +60,12 @@ export async function deleteVehiculo(id) {
 
   return vehiculo;
 }
+
+export async function actualizarDocumentoVehiculo(idVehiculo, nombreArchivo) {
+  const urlArchivo = `/uploads/vehiculos/${nombreArchivo}`;
+  await AppDataSource.query(
+    `UPDATE vehiculos SET url_revision_tecnica = $1 WHERE id_vehiculo = $2`,
+    [urlArchivo, idVehiculo]
+  );
+  return urlArchivo;
+}

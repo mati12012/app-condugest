@@ -139,6 +139,20 @@ const VerVehiculo = ({ vehiculoId, cambiarVista }) => {
           </div>
         </div>
 
+        {vehiculo.url_revision_tecnica && (
+          <div className="bg-blue-50 p-5 rounded-xl border border-blue-200 mt-6 md:col-span-2">
+            <p className="text-sm text-blue-700 font-medium mb-2">Documento Adjunto</p>
+            <a 
+              href={`http://localhost:3000${vehiculo.url_revision_tecnica}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-lg font-bold text-blue-600 hover:underline flex items-center gap-2"
+            >
+              Ver Revisión Técnica
+            </a>
+          </div>
+        )}
+
         <div className="mt-6 bg-slate-50 p-5 rounded-xl border border-slate-200">
           <p className="text-sm text-slate-500 font-medium mb-2">Observación</p>
           <p className="text-slate-700">
