@@ -1,94 +1,118 @@
-import React from 'react';
+import {
+  BookOpenCheck,
+  Building2,
+  CalendarDays,
+  Car,
+  ClipboardCheck,
+  Home,
+  LogOut,
+  UserCircle,
+  Users,
+} from "lucide-react";
 
-const Sidebar = ({ cambiarVista, vistaActual }) => {
+const opcionesMenu = [
+  {
+    id: "dashboard",
+    etiqueta: "Inicio",
+    Icono: Home,
+    vistasActivas: ["dashboard"],
+  },
+  {
+    id: "agenda",
+    etiqueta: "Agenda",
+    Icono: CalendarDays,
+    vistasActivas: ["agenda", "verClasePracticaAgenda"],
+  },
+  {
+    id: "alumnos",
+    etiqueta: "Alumnos",
+    Icono: Users,
+    vistasActivas: ["alumnos", "registrar", "perfil"],
+  },
+  {
+    id: "clasesTeoricas",
+    etiqueta: "Clases teóricas",
+    Icono: BookOpenCheck,
+    vistasActivas: ["clasesTeoricas", "registrarClaseTeorica", "verClaseTeorica", "editarClaseTeorica"],
+  },
+  {
+    id: "clasesPracticas",
+    etiqueta: "Clases prácticas",
+    Icono: ClipboardCheck,
+    vistasActivas: ["clasesPracticas", "registrarClasePractica", "verClasePractica", "editarClasePractica"],
+  },
+  {
+    id: "profesores",
+    etiqueta: "Profesores",
+    Icono: UserCircle,
+    vistasActivas: ["profesores", "perfilProfesor", "registrarProfesor", "editarProfesor"],
+  },
+  {
+    id: "vehiculos",
+    etiqueta: "Vehículos",
+    Icono: Car,
+    vistasActivas: ["vehiculos", "registrarVehiculo", "verVehiculo", "editarVehiculo"],
+  },
+  {
+    id: "salasPsicotecnicas",
+    etiqueta: "Salas psicotécnicas",
+    Icono: Building2,
+    vistasActivas: ["salasPsicotecnicas"],
+  },
+];
+
+function Sidebar({ cambiarVista, vistaActual, cerrarSesion, usuario }) {
   return (
     <aside className="w-64 bg-slate-900 text-white flex flex-col min-h-screen">
-      {/* cabecera con el logo */}
       <div className="p-6 border-b border-slate-800">
         <h2 className="text-2xl font-bold text-blue-400">ConduGest</h2>
-        <p className="text-sm text-slate-400">Sistema de gestión</p>
+        <p className="text-sm text-slate-400">Portal secretaría</p>
       </div>
 
-      {/* menu de navegacion principal */}
       <nav className="flex-1 p-4 flex flex-col gap-2">
-        <button
-          onClick={() => cambiarVista('dashboard')}
-          className={`text-left px-4 py-2 rounded transition-colors ${vistaActual === 'dashboard'
-            ? 'bg-slate-800 text-blue-300 font-medium'
-            : 'hover:bg-slate-800'
-            }`}
-        >
-          Panel Principal
-        </button>
+        {opcionesMenu.map(({ id, etiqueta, Icono, vistasActivas }) => {
+          const estaActivo = vistasActivas.includes(vistaActual);
 
-        <button
-          onClick={() => cambiarVista('agenda')}
-          className={`text-left px-4 py-2 rounded transition-colors ${vistaActual === 'agenda'
-            ? 'bg-slate-800 text-blue-300 font-medium'
-            : 'hover:bg-slate-800'
-            }`}
-        >
-          Agenda
-        </button>
-
-        <button
-          onClick={() => cambiarVista('alumnos')}
-          className={`text-left px-4 py-2 rounded transition-colors ${vistaActual === 'alumnos'
-            ? 'bg-slate-800 text-blue-300 font-medium'
-            : 'hover:bg-slate-800'
-            }`}
-        >
-          Alumnos
-        </button>
-
-        <button 
-          onClick={() => cambiarVista('clasesTeoricas')}
-          className={`text-left px-4 py-2 rounded transition-colors ${vistaActual === 'clasesTeoricas'
-            ? 'bg-slate-800 text-blue-300 font-medium'
-            : 'hover:bg-slate-800'
-            }`}
-        >
-          Clases teóricas
-        </button>
-
-        <button
-        onClick={() => cambiarVista('clasesPracticas')}
-        className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors"
-        >
-          Clases prácticas
-        </button>
-
-        <button
-          onClick={() => cambiarVista('profesores')}
-          className="w-full text-left px-5 py-3 rounded-lg hover:bg-slate-800 transition-colors"
-        >
-          Profesores
-        </button>
-
-        <button
-          onClick={() => cambiarVista("vehiculos")}
-          className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">
-          Vehículos
-        </button>
-
-        <button
-          onClick={() => cambiarVista("salasPsicotecnicas")}
-          className="text-left px-4 py-2 hover:bg-slate-800 rounded transition-colors">
-          Salas psicotécnicas
-        </button>
-
-
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => cambiarVista(id)}
+              className={`w-full flex items-center gap-3 text-left px-4 py-2.5 rounded transition-colors ${
+                estaActivo
+                  ? "bg-slate-800 text-blue-300 font-medium"
+                  : "text-slate-200 hover:bg-slate-800 hover:text-white"
+              }`}
+            >
+              <Icono size={18} strokeWidth={2.2} />
+              <span>{etiqueta}</span>
+            </button>
+          );
+        })}
       </nav>
 
-      {/* pie de la sidebar con estado del usuario */}
-      <div className="p-6 border-t border-slate-800">
-        <strong className="block text-slate-200">Secretaría Central</strong>
-        <p className="text-sm text-green-400 flex items-center gap-2 mt-1">
-          <span className="w-2 h-2 bg-green-400 rounded-full"></span> En línea
-        </p>
+      <div className="p-4 border-t border-slate-800 space-y-4">
+        <div className="px-2">
+          <strong className="block text-sm text-slate-200 truncate">
+            {usuario?.correo || "Secretaría Central"}
+          </strong>
+          <p className="text-sm text-green-400 flex items-center gap-2 mt-1">
+            <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+            En línea
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={cerrarSesion}
+          className="w-full flex items-center gap-3 text-left px-4 py-2.5 rounded text-slate-200 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+        >
+          <LogOut size={18} strokeWidth={2.2} />
+          <span>Cerrar sesión</span>
+        </button>
       </div>
     </aside>
   );
-};
+}
 
 export default Sidebar;

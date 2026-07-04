@@ -124,19 +124,19 @@ if (usuario.rol === "profesor") {
   return (
     <div className="flex min-h-screen bg-slate-50">
       {/* barra lateral izquierda */}
-      <Sidebar cambiarVista={manejarCambioVista} vistaActual={vistaActual} />
+      <Sidebar
+        cambiarVista={manejarCambioVista}
+        vistaActual={vistaActual}
+        cerrarSesion={cerrarSesion}
+        usuario={usuario}
+      />
 
       {/* contenido principal derecho */}
       <main className="flex-1 flex flex-col">
         {/* barra superior pequeña */}
         <header className="bg-white border-b p-4 flex justify-between items-center">
           <span className="font-medium text-slate-600">Portal de Administración</span>
-          <button
-            onClick={cerrarSesion}
-            className="text-sm text-slate-500 hover:text-red-500 underline"
-          >
-            Cerrar Sesión
-          </button>
+          <span className="text-sm text-slate-500">{usuario?.correo}</span>
         </header>
 
         {/* aqui cambia la pantalla segun la vista actual */}
