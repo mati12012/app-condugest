@@ -26,6 +26,8 @@ import VistaAgenda from './pages/secretaria/VistaAgenda';
 import PanelPrincipal from './pages/secretaria/PanelPrincipal';
 import PanelProfesor from './pages/profesor/PanelProfesor';
 import PanelAlumno from './pages/alumno/PanelAlumno';
+import PlanesPublicos from './pages/public/PlanesPublicos';
+import VistaPlanes from './pages/secretaria/VistaPlanes';
 
 const obtenerVistaPorRol = (rol) => {
   if (rol === "secretaria") return "dashboard";
@@ -64,7 +66,7 @@ function App() {
   const [token, setToken] = useState(tokenInicial);
 
   const [vistaActual, setVistaActual] = useState(
-    usuarioInicial ? obtenerVistaPorRol(usuarioInicial.rol) : "login"
+    usuarioInicial ? obtenerVistaPorRol(usuarioInicial.rol) : "planesPublicos"
   );
 
   const [alumnoSeleccionado, setAlumnoSeleccionado] = useState(null);
@@ -99,8 +101,21 @@ function App() {
     setVistaActual("login");
   };
 
-  if (!usuario || !token || vistaActual === "login") {
-    return <Login onLogin={manejarLogin} />;
+  if (!usuario || !token) {
+    if (vistaActual === "login") {
+      return (
+        <Login
+          onLogin={manejarLogin}
+          onVerPlanes={() => setVistaActual("planesPublicos")}
+        />
+      );
+    }
+
+    return (
+      <PlanesPublicos
+        onIniciarSesion={() => setVistaActual("login")}
+      />
+    );
   }
 
   if (usuario.rol === "alumno") {
@@ -124,19 +139,19 @@ if (usuario.rol === "profesor") {
   return (
     <div className="flex min-h-screen bg-slate-50">
       {/* barra lateral izquierda */}
-      <Sidebar cambiarVista={manejarCambioVista} vistaActual={vistaActual} />
+      <Sidebar
+        cambiarVista={manejarCambioVista}
+        vistaActual={vistaActual}
+        cerrarSesion={cerrarSesion}
+        usuario={usuario}
+      />
 
       {/* contenido principal derecho */}
       <main className="flex-1 flex flex-col">
         {/* barra superior pequeña */}
         <header className="bg-white border-b p-4 flex justify-between items-center">
           <span className="font-medium text-slate-600">Portal de Administración</span>
-          <button
-            onClick={cerrarSesion}
-            className="text-sm text-slate-500 hover:text-red-500 underline"
-          >
-            Cerrar Sesión
-          </button>
+          <span className="text-sm text-slate-500">{usuario?.correo}</span>
         </header>
 
         {/* aqui cambia la pantalla segun la vista actual */}
@@ -145,6 +160,7 @@ if (usuario.rol === "profesor") {
           {vistaActual === 'alumnos' && <VistaAlumnos cambiarVista={manejarCambioVista} />}
           {vistaActual === 'registrar' && <RegistrarAlumno cambiarVista={setVistaActual} />}
           {vistaActual === 'perfil' && <PerfilAlumno alumnoSeleccionado={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
+          {vistaActual === 'planes' && <VistaPlanes />}
           {vistaActual === "salasPsicotecnicas" && <ModuloSalasPsicotecnicas />}
           {vistaActual === "profesores" && <VistaProfesores cambiarVista={manejarCambioVista} />}
           {vistaActual === 'perfilProfesor' && (<PerfilProfesor profesorId={idSeleccionado} cambiarVista={manejarCambioVista} />)}

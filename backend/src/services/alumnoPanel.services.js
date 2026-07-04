@@ -10,28 +10,20 @@ export async function getAlumnoIdDesdeUsuario(idUsuario) {
 
 export async function getPerfilAlumno(idAlumno) {
   const resultado = await AppDataSource.query(
-    `SELECT a.licencia, a.sede, 
-            m.clases_contratadas, m.clases_realizadas, m.saldo_pendiente, m.estado_pago,
-            p.nombre AS nombre_plan
-     FROM alumnos a
-     LEFT JOIN matriculas m ON a.id_alumno = m.id_alumno AND m.estado_matricula = 'Activa'
-     LEFT JOIN planes p ON m.id_plan = p.id_plan
-     WHERE a.id_alumno = $1`,
+    `SELECT licencia, sede, clases_completadas, total_clases FROM alumnos WHERE id_alumno = $1`,
     [idAlumno]
   );
   
   if (resultado.length === 0) return null;
 
-  const data = resultado[0];
+  const alumno = resultado[0];
 
   return {
-    plan: data.nombre_plan || "Sin plan activo",
-    licencia: data.licencia,
-    sede: data.sede,
-    clases_completadas: data.clases_realizadas || 0,
-    total_clases: data.clases_contratadas || 0,
-    saldo_pendiente: data.saldo_pendiente || 0,
-    estado_pago: data.estado_pago || "N/A"
+    plan: `Plan ${alumno.total_clases} Clases`,
+    licencia: alumno.licencia,
+    sede: alumno.sede,
+    clases_completadas: alumno.clases_completadas,
+    total_clases: alumno.total_clases
   };
 }
 

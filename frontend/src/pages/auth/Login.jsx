@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const Login = ({ onLogin }) => {
+const Login = ({ onLogin, onVerPlanes }) => {
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -129,6 +129,14 @@ const Login = ({ onLogin }) => {
               {cargando ? 'Ingresando...' : 'Entrar'}
             </button>
           </form>
+
+          <button
+            type="button"
+            onClick={onVerPlanes}
+            className="w-full mt-4 py-2.5 rounded-lg border border-slate-300 text-slate-600 font-bold hover:bg-slate-50 active:scale-95 transition-all"
+          >
+            Ver planes disponibles
+          </button>
         </div>
 
       </div>

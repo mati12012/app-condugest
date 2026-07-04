@@ -9,6 +9,7 @@ import Vehiculo from "../entitys/vehiculo.entity.js";
 import ClasePractica from "../entitys/clasePractica.entity.js";
 import ClaseTeorica from "../entitys/claseTeorica.entity.js";
 import Usuario from "../entitys/usuario.entity.js";
+import Plan from "../entitys/plan.entity.js";
 
 export const AppDataSource = new DataSource({
     type: "postgres",
@@ -17,7 +18,7 @@ export const AppDataSource = new DataSource({
     username: DB_USERNAME,
     password: DB_PASSWORD,
     database: DATABASE,
-    entities: [Alumno, SalaPsicotecnica, ReservaSala, ProfesorEntity, Vehiculo, ClasePractica, ClaseTeorica, Usuario],
+    entities: [Alumno, SalaPsicotecnica, ReservaSala, ProfesorEntity, Vehiculo, ClasePractica, ClaseTeorica, Usuario, Plan],
     synchronize: true, // Cambiar a false en producción para evitar pérdida de datos
     logging: false,
 });
