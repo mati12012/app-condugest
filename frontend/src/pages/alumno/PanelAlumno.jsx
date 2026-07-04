@@ -1,33 +1,113 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import SidebarAlumno from "../../components/SidebarAlumno"; 
+import { apiFetch } from "../../utils/apiFetch";
+import VistaInicio from "./VistaInicio";
+import VistaMisClases from "./VistaMisClases";
+import VistaPerfil from "./VistaPerfil";
+
+const titulosVista = {
+  inicio: { titulo: "Inicio", descripcion: "Resumen de tu avance y próximas clases." },
+  misClases: { titulo: "Mis clases", descripcion: "Historial completo y agenda de clases prácticas." },
+  resultados: { titulo: "Mis resultados", descripcion: "Calificaciones de tus exámenes teóricos y prácticos." },
+  material: { titulo: "Material de estudio", descripcion: "Manuales y documentos para preparar tus exámenes." },
+  perfil: { titulo: "Mi perfil", descripcion: "Datos de tu cuenta de alumno y estado del plan." },
+};
 
 function PanelAlumno({ usuario, cerrarSesion }) {
+  const [vistaAlumno, setVistaAlumno] = useState("inicio");
+  const [perfil, setPerfil] = useState(null);
+  const [clases, setClases] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
+  const [clasesPracticas, setClasesPracticas] = useState([]);
+  const [clasesTeoricas, setClasesTeoricas] = useState([]);
+
+  const cargarDatosPanel = async () => {
+    try {
+      setCargando(true);
+      setError("");
+
+      const [resMiPerfil, resMisClases] = await Promise.all([
+        apiFetch(`${import.meta.env.VITE_BASE_URL}/alumno-panel/mi-perfil`),
+        apiFetch(`${import.meta.env.VITE_BASE_URL}/alumno-panel/mis-clases`)
+      ]);
+
+      const dataMiPerfil = await resMiPerfil.json();
+      const dataMisClases = await resMisClases.json();
+
+      if (!resMiPerfil.ok || !resMisClases.ok) {
+        throw new Error("Error al cargar los datos del alumno");
+    }
+
+      setPerfil(dataMiPerfil.data);
+      setClasesPracticas(dataMisClases.data.clases_practicas || []);
+      setClasesTeoricas(dataMisClases.data.clases_teoricas || []);
+
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  useEffect(() => {
+    cargarDatosPanel();
+  }, []);
+
+  const vista = titulosVista[vistaAlumno] || titulosVista.inicio;
+
+  const renderizarVista = () => {
+    if (cargando) return <div className="p-8 text-slate-500">Cargando información...</div>;
+    
+    switch (vistaAlumno) {
+      case "inicio":
+        return <VistaInicio perfil={perfil} clases={clases} usuario={usuario} />;
+      case "misClases":
+        return <VistaMisClases clasesPracticas={clasesPracticas} clasesTeoricas={clasesTeoricas} recargarDatos={cargarDatosPanel} />;
+      case "perfil":
+        return <VistaPerfil perfil={perfil} usuario={usuario} />;
+      case "resultados":
+        return (
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
+            <h2 className="text-xl font-bold text-slate-900">Próximamente</h2>
+            <p className="text-slate-500 mt-2">Aquí podrás ver los resultados de tus evaluaciones muy pronto.</p>
+          </div>
+        );
+      case "material":
+        return (
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
+            <h2 className="text-xl font-bold text-slate-900">Material de Estudio</h2>
+            <p className="text-slate-500 mt-2">El material bibliográfico estará disponible en breve.</p>
+          </div>
+        );
+      default:
+        return <VistaInicio perfil={perfil} clases={clases} usuario={usuario} />;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
-      <div className="max-w-xl w-full bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center">
-        <h1 className="text-3xl font-bold text-slate-900">
-          Panel Alumno
-        </h1>
+    <div className="flex min-h-screen bg-slate-100">
+      <SidebarAlumno
+        vistaActual={vistaAlumno}
+        cambiarVista={setVistaAlumno}
+        cerrarSesion={cerrarSesion}
+        usuario={usuario}
+      />
+      <main className="flex-1 flex flex-col min-w-0">
+        <header className="bg-white border-b border-slate-200 px-6 py-4">
+          <h1 className="text-2xl font-bold text-slate-900">{vista.titulo}</h1>
+          <p className="text-sm text-slate-500 mt-1">{vista.descripcion}</p>
+        </header>
 
-        <p className="text-slate-500 mt-3">
-          Esta vista está reservada para alumnos.
-        </p>
-
-        <div className="mt-6 rounded-xl bg-green-50 border border-green-200 p-4 text-green-700">
-          Sesión iniciada como: <strong>{usuario?.correo}</strong>
+        <div className="flex-1 p-6 space-y-6">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl">
+              {error}
+            </div>
+          )}
+          {renderizarVista()}
         </div>
-
-        <p className="text-sm text-slate-400 mt-4">
-          Próximamente aquí se mostrarán clases agendadas, progreso y datos del alumno.
-        </p>
-
-        <button
-          type="button"
-          onClick={cerrarSesion}
-          className="mt-6 px-5 py-2.5 rounded-lg bg-slate-800 text-white font-bold hover:bg-slate-900 active:scale-95 transition-all"
-        >
-          Cerrar sesión
-        </button>
-      </div>
+      </main>
     </div>
   );
 }
