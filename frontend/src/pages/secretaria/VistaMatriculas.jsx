@@ -57,6 +57,22 @@ function obtenerClaseEstado(estado) {
   return "bg-slate-100 text-slate-700 border-slate-200";
 }
 
+function obtenerClaseEstadoPago(estado) {
+  if (estado === "Pagado") {
+    return "bg-green-100 text-green-700 border-green-200";
+  }
+
+  if (estado === "Parcial") {
+    return "bg-orange-100 text-orange-700 border-orange-200";
+  }
+
+  if (estado === "Pendiente") {
+    return "bg-yellow-100 text-yellow-800 border-yellow-200";
+  }
+
+  return "bg-slate-100 text-slate-700 border-slate-200";
+}
+
 function obtenerMensajeError(data, mensajeFallback) {
   if (Array.isArray(data?.errorDetails)) {
     return data.errorDetails.join(" ");
@@ -84,6 +100,10 @@ function VistaMatriculas() {
   const [guardando, setGuardando] = useState(false);
   const [errorFormulario, setErrorFormulario] = useState("");
   const [actualizandoId, setActualizandoId] = useState(null);
+  const [resumenVisible, setResumenVisible] = useState(false);
+  const [resumenMatricula, setResumenMatricula] = useState(null);
+  const [cargandoResumen, setCargandoResumen] = useState(false);
+  const [errorResumen, setErrorResumen] = useState("");
 
   async function obtenerMatriculas() {
     try {
@@ -105,38 +125,57 @@ function VistaMatriculas() {
     }
   }
 
-  async function obtenerDatosFormulario() {
-    try {
-      setCargandoFormulario(true);
-
-      const [respuestaAlumnos, respuestaPlanes] = await Promise.all([
-        apiFetch(`${import.meta.env.VITE_BASE_URL}/alumnos`),
-        apiFetch(`${import.meta.env.VITE_BASE_URL}/planes`),
-      ]);
-
-      const dataAlumnos = await respuestaAlumnos.json();
-      const dataPlanes = await respuestaPlanes.json();
-
-      if (!respuestaAlumnos.ok) {
-        throw new Error(dataAlumnos.message || "No se pudieron cargar los alumnos");
-      }
-
-      if (!respuestaPlanes.ok) {
-        throw new Error(dataPlanes.message || "No se pudieron cargar los planes");
-      }
-
-      setAlumnos(dataAlumnos.data || []);
-      setPlanes(dataPlanes.data || []);
-    } catch (error) {
-      setError(error.message || "Error al cargar alumnos y planes");
-    } finally {
-      setCargandoFormulario(false);
-    }
-  }
-
   useEffect(() => {
-    obtenerMatriculas();
-    obtenerDatosFormulario();
+    let cancelado = false;
+
+    async function cargarDatosIniciales() {
+      try {
+        const [respuestaMatriculas, respuestaAlumnos, respuestaPlanes] = await Promise.all([
+          apiFetch(`${import.meta.env.VITE_BASE_URL}/matriculas`),
+          apiFetch(`${import.meta.env.VITE_BASE_URL}/alumnos`),
+          apiFetch(`${import.meta.env.VITE_BASE_URL}/planes`),
+        ]);
+
+        const [dataMatriculas, dataAlumnos, dataPlanes] = await Promise.all([
+          respuestaMatriculas.json(),
+          respuestaAlumnos.json(),
+          respuestaPlanes.json(),
+        ]);
+
+        if (!respuestaMatriculas.ok) {
+          throw new Error(dataMatriculas.message || "No se pudieron obtener las matriculas");
+        }
+
+        if (!respuestaAlumnos.ok) {
+          throw new Error(dataAlumnos.message || "No se pudieron cargar los alumnos");
+        }
+
+        if (!respuestaPlanes.ok) {
+          throw new Error(dataPlanes.message || "No se pudieron cargar los planes");
+        }
+
+        if (!cancelado) {
+          setMatriculas(dataMatriculas.data || []);
+          setAlumnos(dataAlumnos.data || []);
+          setPlanes(dataPlanes.data || []);
+        }
+      } catch (error) {
+        if (!cancelado) {
+          setError(error.message || "Error al cargar los datos de matriculas");
+        }
+      } finally {
+        if (!cancelado) {
+          setCargando(false);
+          setCargandoFormulario(false);
+        }
+      }
+    }
+
+    cargarDatosIniciales();
+
+    return () => {
+      cancelado = true;
+    };
   }, []);
 
   const planesActivos = useMemo(() => {
@@ -272,6 +311,52 @@ function VistaMatriculas() {
       setActualizandoId(null);
     }
   }
+
+  async function verResumenMatricula(matricula) {
+    if (!matricula?.id_matricula) return;
+
+    try {
+      setResumenVisible(true);
+      setResumenMatricula(null);
+      setCargandoResumen(true);
+      setErrorResumen("");
+      setError("");
+
+      const response = await apiFetch(
+        `${import.meta.env.VITE_BASE_URL}/matriculas/resumen/${matricula.id_matricula}`
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          obtenerMensajeError(data, "No se pudo obtener el resumen de la matricula")
+        );
+      }
+
+      setResumenMatricula(data.data || null);
+    } catch (error) {
+      setErrorResumen(error.message || "No se pudo obtener el resumen de la matricula");
+    } finally {
+      setCargandoResumen(false);
+    }
+  }
+
+  function cerrarResumenMatricula() {
+    if (cargandoResumen) return;
+
+    setResumenVisible(false);
+    setResumenMatricula(null);
+    setErrorResumen("");
+  }
+
+  const resumenFinanciero = resumenMatricula?.resumen_financiero;
+  const resumenAcademico = resumenMatricula?.resumen_academico;
+  const alumnoResumen = resumenMatricula?.alumno;
+  const planResumen = resumenMatricula?.plan;
+  const saldoPendienteResumen = Number(resumenFinanciero?.saldo_pendiente || 0);
+  const practicasRestantesResumen = Number(
+    resumenAcademico?.clases_practicas_restantes || 0
+  );
 
   return (
     <div className="w-full space-y-6">
@@ -485,6 +570,7 @@ function VistaMatriculas() {
                   <th className="p-4 font-bold">Valor total</th>
                   <th className="p-4 font-bold">Fecha</th>
                   <th className="p-4 font-bold">Estado</th>
+                  <th className="p-4 font-bold">Acciones</th>
                 </tr>
               </thead>
 
@@ -556,6 +642,16 @@ function VistaMatriculas() {
                         ))}
                       </select>
                     </td>
+
+                    <td className="p-4 min-w-36">
+                      <button
+                        type="button"
+                        onClick={() => verResumenMatricula(matricula)}
+                        className="px-3 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 text-sm font-bold hover:bg-blue-100 transition-colors"
+                      >
+                        Ver resumen
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -571,6 +667,190 @@ function VistaMatriculas() {
           </div>
         )}
       </div>
+
+      {resumenVisible && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 px-4 py-6 flex items-start justify-center overflow-y-auto">
+          <div className="w-full max-w-5xl bg-white rounded-xl shadow-xl border border-slate-200">
+            <div className="p-5 border-b border-slate-200 flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800">
+                  Resumen de matricula
+                </h2>
+                <p className="text-sm text-slate-500 mt-1">
+                  Informacion financiera y avance academico del alumno.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={cerrarResumenMatricula}
+                className="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 font-bold hover:bg-slate-50"
+              >
+                Cerrar
+              </button>
+            </div>
+
+            {cargandoResumen ? (
+              <div className="p-8 text-center text-slate-500">
+                Cargando resumen de matricula...
+              </div>
+            ) : errorResumen ? (
+              <div className="p-6">
+                <div className="bg-red-50 text-red-700 border border-red-200 p-4 rounded-lg">
+                  {errorResumen}
+                </div>
+              </div>
+            ) : resumenMatricula && (
+              <div className="p-6 space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
+                    <p className="text-xs uppercase font-bold text-slate-400">
+                      Alumno
+                    </p>
+                    <p className="text-xl font-bold text-slate-800 mt-2">
+                      {alumnoResumen?.nombre} {alumnoResumen?.apellido}
+                    </p>
+                    <p className="text-sm text-slate-500 font-mono mt-1">
+                      {alumnoResumen?.rut || "Sin RUT"}
+                    </p>
+                    <p className="text-sm text-slate-500 break-all mt-1">
+                      {alumnoResumen?.correo || "Sin correo"}
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
+                    <p className="text-xs uppercase font-bold text-slate-400">
+                      Plan
+                    </p>
+                    <p className="text-xl font-bold text-slate-800 mt-2">
+                      {planResumen?.nombre || "Plan no disponible"}
+                    </p>
+                    <p className="text-sm text-slate-500 mt-1">
+                      {planResumen?.tipo || "Sin tipo"}
+                    </p>
+                    <span className={`inline-flex mt-3 px-3 py-1 rounded-full text-xs font-bold border ${obtenerClaseEstado(resumenMatricula.estado_matricula)}`}>
+                      {resumenMatricula.estado_matricula}
+                    </span>
+                  </div>
+
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
+                    <p className="text-xs uppercase font-bold text-slate-400">
+                      Estado de pago
+                    </p>
+                    <span className={`inline-flex mt-3 px-3 py-1 rounded-full text-sm font-bold border ${obtenerClaseEstadoPago(resumenFinanciero?.estado_pago)}`}>
+                      {resumenFinanciero?.estado_pago || "Sin estado"}
+                    </span>
+                    <p className="text-sm text-slate-500 mt-4">
+                      Matricula #{resumenMatricula.id_matricula}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                  <section className="border border-slate-200 rounded-xl overflow-hidden">
+                    <div className="bg-slate-50 border-b border-slate-200 p-4">
+                      <h3 className="text-lg font-bold text-slate-800">
+                        Resumen financiero
+                      </h3>
+                    </div>
+
+                    <div className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <p className="text-sm text-slate-500 font-medium">Valor total</p>
+                        <p className="text-2xl font-bold text-slate-800">
+                          {formatearPesos(resumenFinanciero?.valor_total)}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-sm text-slate-500 font-medium">Total pagado</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          {formatearPesos(resumenFinanciero?.total_pagado)}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-sm text-slate-500 font-medium">Saldo pendiente</p>
+                        <p className="text-2xl font-bold text-red-600">
+                          {formatearPesos(resumenFinanciero?.saldo_pendiente)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {saldoPendienteResumen > 0 && (
+                      <div className="mx-5 mb-5 bg-yellow-50 text-yellow-800 border border-yellow-200 p-3 rounded-lg text-sm font-medium">
+                        La matrícula mantiene saldo pendiente.
+                      </div>
+                    )}
+                  </section>
+
+                  <section className="border border-slate-200 rounded-xl overflow-hidden">
+                    <div className="bg-slate-50 border-b border-slate-200 p-4">
+                      <h3 className="text-lg font-bold text-slate-800">
+                        Resumen academico
+                      </h3>
+                    </div>
+
+                    <div className="p-5 space-y-4">
+                      <div className="grid grid-cols-3 gap-3 text-center">
+                        <div className="bg-white border border-slate-200 rounded-lg p-3">
+                          <p className="text-xs text-slate-500 font-medium">Practicas contratadas</p>
+                          <p className="text-2xl font-bold text-slate-800">
+                            {resumenAcademico?.clases_practicas_contratadas ?? 0}
+                          </p>
+                        </div>
+
+                        <div className="bg-white border border-slate-200 rounded-lg p-3">
+                          <p className="text-xs text-slate-500 font-medium">Practicas realizadas</p>
+                          <p className="text-2xl font-bold text-green-600">
+                            {resumenAcademico?.clases_practicas_realizadas ?? 0}
+                          </p>
+                        </div>
+
+                        <div className="bg-white border border-slate-200 rounded-lg p-3">
+                          <p className="text-xs text-slate-500 font-medium">Practicas restantes</p>
+                          <p className="text-2xl font-bold text-blue-600">
+                            {resumenAcademico?.clases_practicas_restantes ?? 0}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-3 text-center">
+                        <div className="bg-white border border-slate-200 rounded-lg p-3">
+                          <p className="text-xs text-slate-500 font-medium">Teoricas contratadas</p>
+                          <p className="text-2xl font-bold text-slate-800">
+                            {resumenAcademico?.clases_teoricas_contratadas ?? 0}
+                          </p>
+                        </div>
+
+                        <div className="bg-white border border-slate-200 rounded-lg p-3">
+                          <p className="text-xs text-slate-500 font-medium">Teoricas realizadas</p>
+                          <p className="text-2xl font-bold text-green-600">
+                            {resumenAcademico?.clases_teoricas_realizadas ?? 0}
+                          </p>
+                        </div>
+
+                        <div className="bg-white border border-slate-200 rounded-lg p-3">
+                          <p className="text-xs text-slate-500 font-medium">Teoricas restantes</p>
+                          <p className="text-2xl font-bold text-blue-600">
+                            {resumenAcademico?.clases_teoricas_restantes ?? 0}
+                          </p>
+                        </div>
+                      </div>
+
+                      {practicasRestantesResumen === 0 && (
+                        <div className="bg-red-50 text-red-700 border border-red-200 p-3 rounded-lg text-sm font-medium">
+                          El alumno no tiene clases prácticas disponibles.
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
