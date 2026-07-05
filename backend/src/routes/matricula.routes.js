@@ -6,6 +6,7 @@ import {
   getMatriculaController,
   getMatriculasController,
   getMatriculasPorAlumnoController,
+  getResumenMatriculaController,
   updateMatriculaController,
 } from "../controllers/matricula.controller.js";
 
@@ -13,6 +14,7 @@ const router = Router();
 
 router.get("/", getMatriculasController);
 router.get("/alumno/:id_alumno", getMatriculasPorAlumnoController);
+router.get("/resumen/:id_matricula", getResumenMatriculaController);
 router.get("/:id", getMatriculaController);
 router.post("/", createMatriculaController);
 router.patch("/:id", updateMatriculaController);

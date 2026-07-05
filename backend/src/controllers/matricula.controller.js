@@ -7,6 +7,7 @@ import {
   getMatriculaDetalleById,
   getMatriculasPorAlumno,
   getPlanActivoMatriculaById,
+  getResumenMatriculaById,
   updateMatricula,
 } from "../services/matricula.services.js";
 
@@ -14,6 +15,7 @@ import {
   validateMatriculaAlumnoParam,
   validateMatriculaCreate,
   validateMatriculaIdParam,
+  validateMatriculaResumenParam,
   validateMatriculaUpdate,
 } from "../validations/matricula.validation.js";
 
@@ -92,6 +94,42 @@ export async function getMatriculaController(req, res) {
       res,
       500,
       "Error al obtener matricula",
+      error.message
+    );
+  }
+}
+
+export async function getResumenMatriculaController(req, res) {
+  try {
+    const { id_matricula } = req.params;
+    const paramErrors = validateMatriculaResumenParam(req.params);
+
+    if (paramErrors.length > 0) {
+      return handleErrorClient(
+        res,
+        400,
+        "Parametros invalidos",
+        paramErrors
+      );
+    }
+
+    const resumen = await getResumenMatriculaById(id_matricula);
+
+    if (!resumen) {
+      return handleErrorClient(res, 404, "Matricula no encontrada");
+    }
+
+    return handleSuccess(
+      res,
+      200,
+      "Resumen de matricula obtenido exitosamente",
+      resumen
+    );
+  } catch (error) {
+    return handleErrorServer(
+      res,
+      500,
+      "Error al obtener resumen de matricula",
       error.message
     );
   }

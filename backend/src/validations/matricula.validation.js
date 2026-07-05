@@ -59,6 +59,15 @@ const matriculaAlumnoParamSchema = Joi.object({
   }),
 });
 
+const matriculaResumenParamSchema = Joi.object({
+  id_matricula: Joi.number().integer().positive().required().messages({
+    "number.base": "El ID de la matricula debe ser un numero",
+    "number.integer": "El ID de la matricula debe ser un numero entero",
+    "number.positive": "El ID de la matricula debe ser positivo",
+    "any.required": "El ID de la matricula es obligatorio",
+  }),
+});
+
 export function validateMatriculaCreate(data) {
   const { error, value } = matriculaCreateSchema.validate(data, {
     abortEarly: false,
@@ -91,6 +100,14 @@ export function validateMatriculaIdParam(params) {
 
 export function validateMatriculaAlumnoParam(params) {
   const { error } = matriculaAlumnoParamSchema.validate(params, {
+    abortEarly: false,
+  });
+
+  return formatValidationErrors(error);
+}
+
+export function validateMatriculaResumenParam(params) {
+  const { error } = matriculaResumenParamSchema.validate(params, {
     abortEarly: false,
   });
 
