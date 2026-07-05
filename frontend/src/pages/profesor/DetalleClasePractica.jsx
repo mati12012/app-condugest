@@ -92,7 +92,13 @@ function DetalleClasePractica({ claseId, clases, volver, cargarMisClases }) {
           <div className="flex-1 flex flex-col justify-center">
             {yaRegistrada ? (
               <div className="text-center space-y-4">
-                <div className={`inline-block px-6 py-3 rounded-xl font-bold text-lg ${asistenciaActual === 'Presente' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
+                <div className={`inline-block px-6 py-3 rounded-xl font-bold text-lg ${
+                  asistenciaActual === 'Presente'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : asistenciaActual === 'Justificado'
+                      ? 'bg-amber-100 text-amber-800'
+                      : 'bg-red-100 text-red-800'
+                }`}>
                   El alumno quedó {asistenciaActual}
                 </div>
                 <p className="text-sm text-slate-500">
@@ -111,7 +117,7 @@ function DetalleClasePractica({ claseId, clases, volver, cargarMisClases }) {
                 <p className="text-sm text-slate-600 text-center mb-6">
                   ¿El alumno se presentó a su clase práctica programada?
                 </p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <button 
                     disabled={procesando} 
                     onClick={() => manejarAsistencia('Presente')} 
@@ -125,6 +131,13 @@ function DetalleClasePractica({ claseId, clases, volver, cargarMisClases }) {
                     className="w-full py-3 rounded-xl bg-red-50 text-red-700 border border-red-200 font-bold hover:bg-red-100 transition-colors"
                   >
                     No, Ausente
+                  </button>
+                  <button
+                    disabled={procesando}
+                    onClick={() => manejarAsistencia('Justificado')}
+                    className="w-full py-3 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 font-bold hover:bg-amber-100 transition-colors"
+                  >
+                    Justificado
                   </button>
                 </div>
               </div>

@@ -11,6 +11,7 @@ import {
 import { getAlumnoById } from "../services/alumno.services.js";
 import { getProfesorById } from "../services/profesor.services.js";
 import { getVehiculoById } from "../services/vehiculo.services.js";
+import { getProfesorIdDesdeUsuario } from "../services/profesorPanel.services.js";
 
 import {
   validarReglasHorarioPractica,
@@ -365,16 +366,47 @@ export async function marcarAsistenciaPracticaController(req, res) {
   try {
     const { id } = req.params;
     const { asistencia } = req.body;
+    const estadosPermitidos = ["Presente", "Ausente", "Justificado", "Pendiente"];
+    const paramErrors = validateClasePracticaIdParam(req.params);
 
-    if (!["Presente", "Ausente", "Justificado", "Pendiente"].includes(asistencia)) {
+    if (paramErrors.length > 0) {
+      return handleErrorClient(
+        res,
+        400,
+        "Parámetros inválidos",
+        paramErrors
+      );
+    }
+
+    if (!estadosPermitidos.includes(asistencia)) {
        return handleErrorClient(res, 400, "Estado de asistencia inválido");
     }
 
-    const claseActualizada = await actualizarAsistenciaPractica(id, asistencia);
+    const idProfesor = await getProfesorIdDesdeUsuario(req.usuario?.id_usuario);
 
-    if (!claseActualizada) {
+    if (!idProfesor) {
+      return handleErrorClient(
+        res,
+        404,
+        "No se encontró un profesor asociado al usuario autenticado"
+      );
+    }
+
+    const clase = await getClasePracticaById(id);
+
+    if (!clase) {
         return handleErrorClient(res, 404, "Clase no encontrada");
     }
+
+    if (Number(clase.id_profesor) !== Number(idProfesor)) {
+      return handleErrorClient(
+        res,
+        403,
+        "No tienes permisos para marcar asistencia de esta clase práctica"
+      );
+    }
+
+    const claseActualizada = await actualizarAsistenciaPractica(id, asistencia);
 
     return handleSuccess(res, 200, `Asistencia marcada como ${asistencia}`, claseActualizada);
   } catch (error) {

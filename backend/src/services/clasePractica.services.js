@@ -1,6 +1,5 @@
 import { AppDataSource } from "../config/configDb.js";
 import ClasePractica from "../entitys/clasePractica.entity.js";
-import { getAlumnoById, updateAlumno } from "./alumno.services.js";
 
 function clasePracticaRepository() {
   return AppDataSource.getRepository(ClasePractica);
@@ -166,22 +165,22 @@ export async function actualizarAsistenciaPractica(id, nuevaAsistencia) {
   
   if (!clase) return null;
 
-  const alumno = await getAlumnoById(clase.id_alumno);
+  const estadoClasePorAsistencia = {
+    Presente: "Realizada",
+    Ausente: "Realizada",
+    Justificado: "Cancelada",
+    Pendiente: "Programada",
+  };
 
-  if (nuevaAsistencia === "Presente" && clase.asistencia !== "Presente") {
-    await updateAlumno(alumno.id_alumno, {
-      clases_completadas: alumno.clases_completadas + 1
-    });
-    await AppDataSource.query(`UPDATE clases_practicas SET estado = 'Realizada' WHERE id_clase_practica = $1`, [id]);
-  }
-  else if (clase.asistencia === "Presente" && nuevaAsistencia !== "Presente") {
-    await updateAlumno(alumno.id_alumno, {
-      clases_completadas: alumno.clases_completadas - 1
-    });
-    await AppDataSource.query(`UPDATE clases_practicas SET estado = 'Programada' WHERE id_clase_practica = $1`, [id]);
-  }
-
-  await AppDataSource.query(`UPDATE clases_practicas SET asistencia = $1 WHERE id_clase_practica = $2`, [nuevaAsistencia, id]);
+  await AppDataSource.query(
+    `
+    UPDATE clases_practicas
+    SET asistencia = $1,
+        estado = $2
+    WHERE id_clase_practica = $3
+    `,
+    [nuevaAsistencia, estadoClasePorAsistencia[nuevaAsistencia], Number(id)]
+  );
 
   return await getClasePracticaDetalleById(id);
 }

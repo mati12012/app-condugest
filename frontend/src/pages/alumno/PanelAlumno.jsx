@@ -13,10 +13,29 @@ const titulosVista = {
   perfil: { titulo: "Mi perfil", descripcion: "Datos de tu cuenta de alumno y estado del plan." },
 };
 
+async function obtenerDatosAlumnoPanel() {
+  const [resMiPerfil, resMisClases] = await Promise.all([
+    apiFetch(`${import.meta.env.VITE_BASE_URL}/alumno-panel/mi-perfil`),
+    apiFetch(`${import.meta.env.VITE_BASE_URL}/alumno-panel/mis-clases`)
+  ]);
+
+  const dataMiPerfil = await resMiPerfil.json();
+  const dataMisClases = await resMisClases.json();
+
+  if (!resMiPerfil.ok || !resMisClases.ok) {
+    throw new Error("Error al cargar los datos del alumno");
+  }
+
+  return {
+    perfil: dataMiPerfil.data,
+    clasesPracticas: dataMisClases.data.clases_practicas || [],
+    clasesTeoricas: dataMisClases.data.clases_teoricas || [],
+  };
+}
+
 function PanelAlumno({ usuario, cerrarSesion }) {
   const [vistaAlumno, setVistaAlumno] = useState("inicio");
   const [perfil, setPerfil] = useState(null);
-  const [clases, setClases] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [clasesPracticas, setClasesPracticas] = useState([]);
@@ -27,22 +46,11 @@ function PanelAlumno({ usuario, cerrarSesion }) {
       setCargando(true);
       setError("");
 
-      const [resMiPerfil, resMisClases] = await Promise.all([
-        apiFetch(`${import.meta.env.VITE_BASE_URL}/alumno-panel/mi-perfil`),
-        apiFetch(`${import.meta.env.VITE_BASE_URL}/alumno-panel/mis-clases`)
-      ]);
+      const datosPanel = await obtenerDatosAlumnoPanel();
 
-      const dataMiPerfil = await resMiPerfil.json();
-      const dataMisClases = await resMisClases.json();
-
-      if (!resMiPerfil.ok || !resMisClases.ok) {
-        throw new Error("Error al cargar los datos del alumno");
-    }
-
-      setPerfil(dataMiPerfil.data);
-      setClasesPracticas(dataMisClases.data.clases_practicas || []);
-      setClasesTeoricas(dataMisClases.data.clases_teoricas || []);
-
+      setPerfil(datosPanel.perfil);
+      setClasesPracticas(datosPanel.clasesPracticas);
+      setClasesTeoricas(datosPanel.clasesTeoricas);
     } catch (error) {
       setError(error.message);
     } finally {
@@ -51,7 +59,33 @@ function PanelAlumno({ usuario, cerrarSesion }) {
   };
 
   useEffect(() => {
-    cargarDatosPanel();
+    let cancelado = false;
+
+    async function cargarDatosIniciales() {
+      try {
+        const datosPanel = await obtenerDatosAlumnoPanel();
+
+        if (!cancelado) {
+          setPerfil(datosPanel.perfil);
+          setClasesPracticas(datosPanel.clasesPracticas);
+          setClasesTeoricas(datosPanel.clasesTeoricas);
+        }
+      } catch (error) {
+        if (!cancelado) {
+          setError(error.message);
+        }
+      } finally {
+        if (!cancelado) {
+          setCargando(false);
+        }
+      }
+    }
+
+    cargarDatosIniciales();
+
+    return () => {
+      cancelado = true;
+    };
   }, []);
 
   const vista = titulosVista[vistaAlumno] || titulosVista.inicio;
@@ -61,7 +95,7 @@ function PanelAlumno({ usuario, cerrarSesion }) {
     
     switch (vistaAlumno) {
       case "inicio":
-        return <VistaInicio perfil={perfil} clases={clases} usuario={usuario} />;
+        return <VistaInicio perfil={perfil} clases={clasesPracticas} usuario={usuario} />;
       case "misClases":
         return <VistaMisClases clasesPracticas={clasesPracticas} clasesTeoricas={clasesTeoricas} recargarDatos={cargarDatosPanel} />;
       case "perfil":
@@ -81,7 +115,7 @@ function PanelAlumno({ usuario, cerrarSesion }) {
           </div>
         );
       default:
-        return <VistaInicio perfil={perfil} clases={clases} usuario={usuario} />;
+        return <VistaInicio perfil={perfil} clases={clasesPracticas} usuario={usuario} />;
     }
   };
 

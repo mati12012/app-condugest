@@ -1,25 +1,48 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../../utils/apiFetch";
 
+async function obtenerClasesTeoricasProfesor() {
+  const res = await apiFetch(`${import.meta.env.VITE_BASE_URL}/profesor/mis-clases-teoricas`);
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "No se pudieron cargar las clases teoricas");
+  }
+
+  return data.data || [];
+}
+
 function MisClasesTeoricas({ verDetalleClase }) {
   const [clases, setClases] = useState([]);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    cargarClases();
-  }, []);
+    let cancelado = false;
 
-  const cargarClases = async () => {
-    try {
-      const res = await apiFetch(`${import.meta.env.VITE_BASE_URL}/profesor/mis-clases-teoricas`);
-      const data = await res.json();
-      if (res.ok) setClases(data.data || []);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setCargando(false);
+    async function cargarClasesIniciales() {
+      try {
+        const clasesProfesor = await obtenerClasesTeoricasProfesor();
+
+        if (!cancelado) {
+          setClases(clasesProfesor);
+        }
+      } catch (error) {
+        if (!cancelado) {
+          console.error(error);
+        }
+      } finally {
+        if (!cancelado) {
+          setCargando(false);
+        }
+      }
     }
-  };
+
+    cargarClasesIniciales();
+
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
   if (cargando) return <div className="p-8 text-center text-slate-500">Cargando clases teóricas...</div>;
 

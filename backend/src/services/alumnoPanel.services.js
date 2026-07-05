@@ -10,7 +10,28 @@ export async function getAlumnoIdDesdeUsuario(idUsuario) {
 
 export async function getPerfilAlumno(idAlumno) {
   const resultado = await AppDataSource.query(
-    `SELECT licencia, sede, clases_completadas, total_clases FROM alumnos WHERE id_alumno = $1`,
+    `
+    SELECT
+      a.licencia,
+      a.sede,
+      COALESCE(m.cantidad_clases_practicas, a.total_clases, 0)::int AS total_clases,
+      COALESCE((
+        SELECT COUNT(*)
+        FROM clases_practicas cp
+        WHERE cp.id_alumno = a.id_alumno
+          AND cp.asistencia = 'Presente'
+      ), 0)::int AS clases_completadas
+    FROM alumnos a
+    LEFT JOIN LATERAL (
+      SELECT cantidad_clases_practicas
+      FROM matriculas
+      WHERE id_alumno = a.id_alumno
+        AND estado = 'Activa'
+      ORDER BY fecha_matricula DESC, id_matricula DESC
+      LIMIT 1
+    ) m ON true
+    WHERE a.id_alumno = $1
+    `,
     [idAlumno]
   );
   
@@ -43,11 +64,23 @@ export async function getClasesPracticasPorAlumno(idAlumno) {
 
 export async function getClasesTeoricasPorAlumno(idAlumno) {
   return await AppDataSource.query(
-    `SELECT ct.id_clase_teorica, ct.fecha, ct.hora_inicio, ct.hora_fin, ct.estado, ct.tema,
-            p.nombre AS profesor_nombre, p.apellido AS profesor_apellido
-     FROM clases_teoricas ct
+    `SELECT
+            ct.id_clase_teorica,
+            ct.fecha,
+            ct.hora_inicio,
+            ct.hora_fin,
+            ct.estado,
+            ct.tema,
+            ct.sede,
+            ast.id_asistencia,
+            ast.estado_asistencia,
+            p.nombre AS profesor_nombre,
+            p.apellido AS profesor_apellido
+     FROM asistencias_teoricas ast
+     INNER JOIN clases_teoricas ct
+       ON ast.id_clase_teorica = ct.id_clase_teorica
      LEFT JOIN profesores p ON ct.id_profesor = p.id_profesor
-     WHERE ct.sede = (SELECT sede FROM alumnos WHERE id_alumno = $1)
+     WHERE ast.id_alumno = $1
      ORDER BY ct.fecha ASC, ct.hora_inicio ASC`,
     [idAlumno]
   );

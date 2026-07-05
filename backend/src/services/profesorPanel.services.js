@@ -67,9 +67,56 @@ export async function getClasesTeoricasPorProfesor(id_profesor) {
     `, [Number(id_profesor)]);
 }
 
+export async function getClaseTeoricaProfesorById(idClase, idProfesor) {
+    const resultado = await AppDataSource.query(`
+        SELECT id_clase_teorica, id_profesor
+        FROM clases_teoricas
+        WHERE id_clase_teorica = $1
+        LIMIT 1
+    `, [Number(idClase)]);
+
+    if (resultado.length === 0) {
+        return null;
+    }
+
+    return {
+        clase: resultado[0],
+        perteneceProfesor: Number(resultado[0].id_profesor) === Number(idProfesor),
+    };
+}
+
+export async function getAsistenciaTeoricaProfesorById(idAsistencia, idProfesor) {
+    const resultado = await AppDataSource.query(`
+        SELECT
+            ast.id_asistencia,
+            ast.id_clase_teorica,
+            ast.id_alumno,
+            ast.estado_asistencia,
+            ct.id_profesor
+        FROM asistencias_teoricas ast
+        INNER JOIN clases_teoricas ct
+          ON ast.id_clase_teorica = ct.id_clase_teorica
+        WHERE ast.id_asistencia = $1
+        LIMIT 1
+    `, [Number(idAsistencia)]);
+
+    if (resultado.length === 0) {
+        return null;
+    }
+
+    return {
+        asistencia: resultado[0],
+        perteneceProfesor: Number(resultado[0].id_profesor) === Number(idProfesor),
+    };
+}
+
 export async function registrarAsistenciaTeorica(id_asistencia, estado) {
-    await AppDataSource.query(`
-        UPDATE asistencias_teoricas SET estado_asistencia = $1 WHERE id_asistencia = $2
+    const resultado = await AppDataSource.query(`
+        UPDATE asistencias_teoricas
+        SET estado_asistencia = $1
+        WHERE id_asistencia = $2
+        RETURNING *
     `, [estado, Number(id_asistencia)]);
-    return true;
+
+    return resultado.length > 0 ? resultado[0] : null;
 }

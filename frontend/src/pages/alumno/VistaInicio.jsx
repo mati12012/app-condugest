@@ -17,7 +17,9 @@ function VistaInicio({ perfil, clases, usuario }) {
     return Math.round((perfil.clases_completadas / perfil.total_clases) * 100);
   }, [perfil]);
 
-  const proximasClases = clases.filter(c => c.estado !== 'Realizada').slice(0, 3); 
+  const proximasClases = clases
+    .filter((clase) => clase.estado === "Programada")
+    .slice(0, 3);
 
   return (
     <section className="space-y-6">
