@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Login from './pages/auth/Login';
 import Sidebar from './components/Sidebar';
 import RegistrarAlumno from './pages/secretaria/RegistrarAlumno';
 import VistaAlumnos from './pages/secretaria/VistaAlumnos';
 import PerfilAlumno from './pages/secretaria/PerfilAlumno';
-import ReservaSalaPsicotecnica from './pages/secretaria/ReservaSalaPsicotecnica';
 import ModuloSalasPsicotecnicas from './pages/secretaria/ModuloSalasPsicotecnicas';
 import VistaProfesores from './pages/secretaria/VistaProfesores';
 import PerfilProfesor from './pages/secretaria/PerfilProfesor';
@@ -28,6 +27,9 @@ import PanelProfesor from './pages/profesor/PanelProfesor';
 import PanelAlumno from './pages/alumno/PanelAlumno';
 import PlanesPublicos from './pages/public/PlanesPublicos';
 import VistaPlanes from './pages/secretaria/VistaPlanes';
+import VistaSolicitudesMatricula from './pages/secretaria/VistaSolicitudesMatricula';
+import VistaMatriculas from './pages/secretaria/VistaMatriculas';
+import VistaPagos from './pages/secretaria/VistaPagos';
 
 const obtenerVistaPorRol = (rol) => {
   if (rol === "secretaria") return "dashboard";
@@ -161,6 +163,9 @@ if (usuario.rol === "profesor") {
           {vistaActual === 'registrar' && <RegistrarAlumno cambiarVista={setVistaActual} />}
           {vistaActual === 'perfil' && <PerfilAlumno alumnoSeleccionado={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
           {vistaActual === 'planes' && <VistaPlanes />}
+          {vistaActual === 'solicitudesMatricula' && <VistaSolicitudesMatricula />}
+          {vistaActual === 'matriculas' && <VistaMatriculas />}
+          {vistaActual === 'pagos' && <VistaPagos />}
           {vistaActual === "salasPsicotecnicas" && <ModuloSalasPsicotecnicas />}
           {vistaActual === "profesores" && <VistaProfesores cambiarVista={manejarCambioVista} />}
           {vistaActual === 'perfilProfesor' && (<PerfilProfesor profesorId={idSeleccionado} cambiarVista={manejarCambioVista} />)}

@@ -16,6 +16,7 @@ export async function getAllPlanes() {
 export async function getPlanesActivosPublicos() {
   return await planRepository().find({
     select: {
+      id_plan: true,
       nombre: true,
       descripcion: true,
       cantidad_clases_practicas: true,

@@ -4,6 +4,7 @@ import {
   CalendarDays,
   Car,
   ClipboardCheck,
+  CreditCard,
   Home,
   LogOut,
   UserCircle,
@@ -34,6 +35,24 @@ const opcionesMenu = [
     etiqueta: "Planes",
     Icono: BookOpenCheck,
     vistasActivas: ["planes"],
+  },
+  {
+    id: "solicitudesMatricula",
+    etiqueta: "Solicitudes",
+    Icono: ClipboardCheck,
+    vistasActivas: ["solicitudesMatricula"],
+  },
+  {
+    id: "matriculas",
+    etiqueta: "Matrículas",
+    Icono: ClipboardCheck,
+    vistasActivas: ["matriculas"],
+  },
+  {
+    id: "pagos",
+    etiqueta: "Pagos",
+    Icono: CreditCard,
+    vistasActivas: ["pagos"],
   },
   {
     id: "clasesTeoricas",
