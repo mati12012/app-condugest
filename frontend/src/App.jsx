@@ -29,6 +29,7 @@ import PanelAlumno from './pages/alumno/PanelAlumno';
 import PlanesPublicos from './pages/public/PlanesPublicos';
 import VistaPlanes from './pages/secretaria/VistaPlanes';
 import VistaSolicitudesMatricula from './pages/secretaria/VistaSolicitudesMatricula';
+import VistaMatriculas from './pages/secretaria/VistaMatriculas';
 
 const obtenerVistaPorRol = (rol) => {
   if (rol === "secretaria") return "dashboard";
@@ -163,6 +164,7 @@ if (usuario.rol === "profesor") {
           {vistaActual === 'perfil' && <PerfilAlumno alumnoSeleccionado={alumnoSeleccionado} cambiarVista={manejarCambioVista} />}
           {vistaActual === 'planes' && <VistaPlanes />}
           {vistaActual === 'solicitudesMatricula' && <VistaSolicitudesMatricula />}
+          {vistaActual === 'matriculas' && <VistaMatriculas />}
           {vistaActual === "salasPsicotecnicas" && <ModuloSalasPsicotecnicas />}
           {vistaActual === "profesores" && <VistaProfesores cambiarVista={manejarCambioVista} />}
           {vistaActual === 'perfilProfesor' && (<PerfilProfesor profesorId={idSeleccionado} cambiarVista={manejarCambioVista} />)}

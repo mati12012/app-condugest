@@ -42,6 +42,12 @@ const opcionesMenu = [
     vistasActivas: ["solicitudesMatricula"],
   },
   {
+    id: "matriculas",
+    etiqueta: "Matrículas",
+    Icono: ClipboardCheck,
+    vistasActivas: ["matriculas"],
+  },
+  {
     id: "clasesTeoricas",
     etiqueta: "Clases teóricas",
     Icono: BookOpenCheck,
