@@ -1,5 +1,6 @@
 import { AppDataSource } from "../config/configDb.js";
 import ClaseTeorica from "../entitys/claseTeorica.entity.js";
+import AsistenciaTeorica from "../entitys/asistencia_teorica.entity.js";
 
 const claseRepository = AppDataSource.getRepository(ClaseTeorica);
 
@@ -65,4 +66,32 @@ export async function buscarChoqueProfesor({ id_profesor, fecha, hora_inicio, ho
     if (choquePractica.length > 0) return "El profesor ya tiene una clase práctica asignada en ese horario.";
     
     return null;
+}
+
+// Obtener alumnos inscritos en una clase
+export async function obtenerInscritos(id_clase) {
+    return await AppDataSource.query(`
+        SELECT ast.id_asistencia, ast.estado_asistencia, a.id_alumno, a.rut, a.nombre, a.apellido, a.correo
+        FROM asistencias_teoricas ast
+        INNER JOIN alumnos a ON ast.id_alumno = a.id_alumno
+        WHERE ast.id_clase_teorica = $1
+        ORDER BY a.apellido ASC
+    `, [Number(id_clase)]);
+}
+
+// Inscribir un alumno 
+export async function inscribirAlumno(id_clase, id_alumno) {
+    const repo = AppDataSource.getRepository(AsistenciaTeorica);
+    const existe = await repo.findOneBy({ id_clase_teorica: Number(id_clase), id_alumno: Number(id_alumno) });
+    if (existe) return null; // Ya está inscrito
+
+    const nueva = repo.create({ id_clase_teorica: Number(id_clase), id_alumno: Number(id_alumno) });
+    return await repo.save(nueva);
+}
+
+// Remover un alumno de la clase
+export async function quitarAlumno(id_clase, id_alumno) {
+    const repo = AppDataSource.getRepository(AsistenciaTeorica);
+    await repo.delete({ id_clase_teorica: Number(id_clase), id_alumno: Number(id_alumno) });
+    return true;
 }

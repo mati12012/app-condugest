@@ -3,7 +3,10 @@ import {
     getAllClasesTeoricas, 
     getClaseTeoricaById, 
     updateClaseTeorica, 
-    buscarChoqueProfesor 
+    buscarChoqueProfesor, 
+    obtenerInscritos, 
+    inscribirAlumno, 
+    quitarAlumno,
 } from "../services/claseTeorica.services.js";
 
 import { getProfesorById } from "../services/profesor.services.js";
@@ -117,5 +120,39 @@ export async function updateClaseTeoricaController(req, res) {
         
     } catch (error) {
         return handleErrorServer(res, 500, "Error al actualizar la clase", error.message);
+    }
+}
+
+export async function getInscritosController(req, res) {
+    try {
+        const inscritos = await obtenerInscritos(req.params.id);
+        return handleSuccess(res, 200, "Lista de inscritos", inscritos);
+    } catch (error) {
+        return handleErrorServer(res, 500, "Error al obtener inscritos", error.message);
+    }
+}
+
+export async function inscribirAlumnoController(req, res) {
+    try {
+        const { id } = req.params;
+        const { id_alumno } = req.body;
+        if (!id_alumno) return handleErrorClient(res, 400, "Debe enviar el alumno a inscribir");
+        
+        const inscripcion = await inscribirAlumno(id, id_alumno);
+        if (!inscripcion) return handleErrorClient(res, 409, "El alumno ya se encuentra inscrito en esta clase");
+        
+        return handleSuccess(res, 201, "Alumno inscrito exitosamente", inscripcion);
+    } catch (error) {
+        return handleErrorServer(res, 500, "Error al inscribir alumno", error.message);
+    }
+}
+
+export async function quitarAlumnoController(req, res) {
+    try {
+        const { id, id_alumno } = req.params;
+        await quitarAlumno(id, id_alumno);
+        return handleSuccess(res, 200, "Alumno removido de la clase");
+    } catch (error) {
+        return handleErrorServer(res, 500, "Error al remover alumno", error.message);
     }
 }
