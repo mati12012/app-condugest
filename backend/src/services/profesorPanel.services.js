@@ -56,3 +56,20 @@ export async function getClasesPracticasPorProfesor(idProfesor) {
     [idProfesor]
   );
 }
+
+export async function getClasesTeoricasPorProfesor(id_profesor) {
+    return await AppDataSource.query(`
+        SELECT ct.*,
+        (SELECT COUNT(*) FROM asistencias_teoricas WHERE id_clase_teorica = ct.id_clase_teorica) as total_alumnos
+        FROM clases_teoricas ct
+        WHERE ct.id_profesor = $1
+        ORDER BY ct.fecha DESC, ct.hora_inicio ASC
+    `, [Number(id_profesor)]);
+}
+
+export async function registrarAsistenciaTeorica(id_asistencia, estado) {
+    await AppDataSource.query(`
+        UPDATE asistencias_teoricas SET estado_asistencia = $1 WHERE id_asistencia = $2
+    `, [estado, Number(id_asistencia)]);
+    return true;
+}

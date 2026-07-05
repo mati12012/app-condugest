@@ -40,6 +40,18 @@ export async function crearUsuarioAuth({
   return await usuarioRepository().save(nuevoUsuario);
 }
 
+export async function updateEstadoUsuarioProfesor(idProfesor, estado) {
+  return await usuarioRepository().update(
+    {
+      id_profesor: Number(idProfesor),
+      rol: "profesor",
+    },
+    {
+      estado: Boolean(estado),
+    }
+  );
+}
+
 export async function compararPassword(password, passwordHash) {
   return await bcrypt.compare(password, passwordHash);
 }

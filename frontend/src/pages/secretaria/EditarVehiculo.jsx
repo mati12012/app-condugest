@@ -12,12 +12,18 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
     sede: 'Sede Concepcion',
     kilometraje: '',
     estado_operativo: 'Disponible',
-    observacion: ''
+    observacion: '',
+    url_revision_tecnica: null 
   });
 
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState('');
+  
+  
+  const [archivo, setArchivo] = useState(null);
+  const [subiendoArchivo, setSubiendoArchivo] = useState(false);
+  const [mensajeArchivo, setMensajeArchivo] = useState('');
 
   useEffect(() => {
     obtenerVehiculo();
@@ -44,7 +50,8 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
           sede: vehiculo.sede || 'Sede Concepcion',
           kilometraje: vehiculo.kilometraje ?? '',
           estado_operativo: vehiculo.estado_operativo || 'Disponible',
-          observacion: vehiculo.observacion || ''
+          observacion: vehiculo.observacion || '',
+          url_revision_tecnica: vehiculo.url_revision_tecnica || null 
         });
       } else {
         setMensaje(`Error: ${respuestaServidor.message || 'No se pudo cargar el vehículo'}`);
@@ -58,75 +65,68 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
   };
 
   const limpiarPatente = (patente) => {
-    return patente
-      .trim()
-      .toUpperCase()
-      .replace(/\s/g, '')
-      .replace(/-/g, '')
-      .replace(/\./g, '');
+    return patente.trim().toUpperCase().replace(/\s/g, '').replace(/-/g, '').replace(/\./g, '');
   };
 
   const validarPatente = (patente) => {
     const patenteLimpia = limpiarPatente(patente);
-
     return /^([A-Z]{2}\d{4}|[A-Z]{4}\d{2})$/.test(patenteLimpia);
   };
 
   const validarFormulario = () => {
-    if (datos.patente.trim() === '') {
-      return 'Error: La patente es obligatoria';
-    }
-
-    if (!validarPatente(datos.patente)) {
-      return 'Error: La patente debe tener formato chileno válido. Ejemplo: AB1234 o ABCD12';
-    }
-
-    if (datos.marca.trim() === '') {
-      return 'Error: La marca es obligatoria';
-    }
-
-    if (datos.modelo.trim() === '') {
-      return 'Error: El modelo es obligatorio';
-    }
-
-    if (datos.anio === '') {
-      return 'Error: El año es obligatorio';
-    }
-
+    if (datos.patente.trim() === '') return 'Error: La patente es obligatoria';
+    if (!validarPatente(datos.patente)) return 'Error: La patente debe tener formato chileno válido. Ejemplo: AB1234 o ABCD12';
+    if (datos.marca.trim() === '') return 'Error: La marca es obligatoria';
+    if (datos.modelo.trim() === '') return 'Error: El modelo es obligatorio';
+    if (datos.anio === '') return 'Error: El año es obligatorio';
+    
     const anioNumero = Number(datos.anio);
-
-    if (Number.isNaN(anioNumero)) {
-      return 'Error: El año debe ser un número';
-    }
-
-    if (anioNumero < 1990 || anioNumero > 2030) {
-      return 'Error: El año debe estar entre 1990 y 2030';
-    }
-
+    if (Number.isNaN(anioNumero)) return 'Error: El año debe ser un número';
+    if (anioNumero < 1990 || anioNumero > 2030) return 'Error: El año debe estar entre 1990 y 2030';
+    
     if (datos.kilometraje !== '') {
       const kilometrajeNumero = Number(datos.kilometraje);
-
-      if (Number.isNaN(kilometrajeNumero)) {
-        return 'Error: El kilometraje debe ser un número';
-      }
-
-      if (kilometrajeNumero < 0) {
-        return 'Error: El kilometraje no puede ser negativo';
-      }
+      if (Number.isNaN(kilometrajeNumero)) return 'Error: El kilometraje debe ser un número';
+      if (kilometrajeNumero < 0) return 'Error: El kilometraje no puede ser negativo';
     }
-
     return null;
   };
 
+  const handleSubirDocumento = async () => {
+    if (!archivo) return;
+    setSubiendoArchivo(true);
+    setMensajeArchivo('');
+
+    const formData = new FormData();
+    formData.append('documento', archivo);
+
+    try {
+      const token = localStorage.getItem('tokenCondugest'); 
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/vehiculos/${vehiculoId}/revision-tecnica`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setMensajeArchivo('Documento subido correctamente');
+        obtenerVehiculo(); 
+      } else {
+        setMensajeArchivo(`Error: ${data.message}`);
+      }
+    } catch (error) {
+      setMensajeArchivo('Error de conexión al subir documento');
+    } finally {
+      setSubiendoArchivo(false);
+    }
+  };
+
   const obtenerMensajeErrorServidor = (respuestaServidor) => {
-    if (Array.isArray(respuestaServidor.errorDetails)) {
-      return respuestaServidor.errorDetails.join(' | ');
-    }
-
-    if (Array.isArray(respuestaServidor.details)) {
-      return respuestaServidor.details.join(' | ');
-    }
-
+    if (Array.isArray(respuestaServidor.errorDetails)) return respuestaServidor.errorDetails.join(' | ');
+    if (Array.isArray(respuestaServidor.details)) return respuestaServidor.details.join(' | ');
     return respuestaServidor.message || 'No se pudo actualizar el vehículo';
   };
 
@@ -135,7 +135,6 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
     setMensaje('');
 
     const errorValidacion = validarFormulario();
-
     if (errorValidacion) {
       setMensaje(errorValidacion);
       return;
@@ -207,9 +206,7 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
         )}
 
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">
-            Patente
-          </label>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Patente</label>
           <input
             type="text"
             placeholder="Ej: ABCD12"
@@ -218,16 +215,11 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
             onChange={e => setDatos({ ...datos, patente: e.target.value })}
             required
           />
-          <p className="text-xs text-slate-400 mt-1">
-            Se guardará en mayúsculas y sin guiones.
-          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Marca
-            </label>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Marca</label>
             <input
               type="text"
               placeholder="Ej: Toyota"
@@ -239,9 +231,7 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Modelo
-            </label>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Modelo</label>
             <input
               type="text"
               placeholder="Ej: Yaris"
@@ -253,9 +243,7 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Año
-            </label>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Año</label>
             <input
               type="number"
               placeholder="Ej: 2020"
@@ -267,9 +255,7 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Kilometraje
-            </label>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Kilometraje</label>
             <input
               type="number"
               placeholder="Ej: 45000"
@@ -280,9 +266,7 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Tipo de transmisión
-            </label>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Tipo de transmisión</label>
             <select
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none bg-white"
               value={datos.tipo_transmision}
@@ -294,9 +278,7 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Licencia requerida
-            </label>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Licencia requerida</label>
             <select
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none bg-white"
               value={datos.licencia_requerida}
@@ -313,9 +295,7 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Sede asignada
-            </label>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Sede asignada</label>
             <select
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none bg-white"
               value={datos.sede}
@@ -328,9 +308,7 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Estado operativo
-            </label>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Estado operativo</label>
             <select
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none bg-white"
               value={datos.estado_operativo}
@@ -344,15 +322,56 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">
-            Observación
-          </label>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Observación</label>
           <textarea
             placeholder="Ej: Vehículo con mantención reciente"
             className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none min-h-[100px]"
             value={datos.observacion}
             onChange={e => setDatos({ ...datos, observacion: e.target.value })}
           />
+        </div>
+
+        <div className="pt-6 border-t mt-6">
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
+            Documento de Revisión Técnica (PDF, JPG, PNG)
+          </label>
+          
+          {datos.url_revision_tecnica && (
+            <div className="mb-3">
+              <a 
+                href={`http://localhost:3000${datos.url_revision_tecnica}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 font-medium hover:underline flex items-center gap-2"
+              >
+                Ver documento actual adjunto
+              </a>
+            </div>
+          )}
+
+          <div className="flex flex-col md:flex-row gap-3 items-start md:items-center">
+            <input 
+              type="file" 
+              accept=".pdf,.jpg,.jpeg,.png"
+              onChange={(e) => setArchivo(e.target.files[0])}
+              className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+            <button
+              type="button"
+              onClick={handleSubirDocumento}
+              disabled={!archivo || subiendoArchivo}
+              className={`px-4 py-2 rounded-lg font-bold text-white whitespace-nowrap transition-colors ${
+                !archivo || subiendoArchivo ? 'bg-slate-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+              }`}
+            >
+              {subiendoArchivo ? 'Subiendo...' : 'Subir Documento'}
+            </button>
+          </div>
+          {mensajeArchivo && (
+            <p className={`text-sm mt-2 font-medium ${mensajeArchivo.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
+              {mensajeArchivo}
+            </p>
+          )}
         </div>
 
         <div className="pt-4 border-t mt-6 flex flex-col md:flex-row justify-between gap-3">

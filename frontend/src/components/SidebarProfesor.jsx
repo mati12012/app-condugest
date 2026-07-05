@@ -5,34 +5,16 @@ import {
   Home,
   LogOut,
   UserCircle,
+  Presentation 
 } from "lucide-react";
 
 const opcionesMenu = [
-  {
-    id: "inicio",
-    etiqueta: "Inicio",
-    Icono: Home,
-  },
-  {
-    id: "misClases",
-    etiqueta: "Mis clases",
-    Icono: BookOpenCheck,
-  },
-  {
-    id: "agenda",
-    etiqueta: "Agenda",
-    Icono: CalendarDays,
-  },
-  {
-    id: "evaluaciones",
-    etiqueta: "Evaluaciones",
-    Icono: ClipboardCheck,
-  },
-  {
-    id: "perfil",
-    etiqueta: "Mi perfil",
-    Icono: UserCircle,
-  },
+  { id: "inicio", etiqueta: "Inicio", Icono: Home },
+  { id: "misClases", etiqueta: "Clases prácticas", Icono: BookOpenCheck },
+  { id: "misClasesTeoricas", etiqueta: "Clases teóricas", Icono: Presentation }, 
+  { id: "agenda", etiqueta: "Agenda", Icono: CalendarDays },
+  { id: "evaluaciones", etiqueta: "Evaluaciones", Icono: ClipboardCheck },
+  { id: "perfil", etiqueta: "Mi perfil", Icono: UserCircle },
 ];
 
 function SidebarProfesor({ vistaActual, cambiarVista, cerrarSesion, usuario }) {
@@ -46,7 +28,6 @@ function SidebarProfesor({ vistaActual, cambiarVista, cerrarSesion, usuario }) {
       <nav className="flex-1 p-4 flex flex-col gap-2">
         {opcionesMenu.map(({ id, etiqueta, Icono }) => {
           const estaActivo = vistaActual === id;
-
           return (
             <button
               key={id}

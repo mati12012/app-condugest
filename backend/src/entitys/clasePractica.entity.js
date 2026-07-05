@@ -60,6 +60,12 @@ const ClasePractica = new EntitySchema({
       type: "text",
       nullable: true,
     },
+    asistencia: {
+      type: "varchar",
+      length: 20,
+      nullable: false,
+      default: "Pendiente", 
+    }
   },
 
   foreignKeys: [

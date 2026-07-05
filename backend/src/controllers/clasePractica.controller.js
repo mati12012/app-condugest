@@ -4,7 +4,8 @@ import {
   getAllClasesPracticas,
   getClasePracticaById,
   getClasePracticaDetalleById,
-  updateClasePractica,
+  updateClasePractica, 
+  actualizarAsistenciaPractica,
 } from "../services/clasePractica.services.js";
 
 import { getAlumnoById } from "../services/alumno.services.js";
@@ -357,5 +358,26 @@ export async function updateClasePracticaController(req, res) {
       "Error al actualizar clase práctica",
       error.message
     );
+  }
+}
+
+export async function marcarAsistenciaPracticaController(req, res) {
+  try {
+    const { id } = req.params;
+    const { asistencia } = req.body;
+
+    if (!["Presente", "Ausente", "Justificado", "Pendiente"].includes(asistencia)) {
+       return handleErrorClient(res, 400, "Estado de asistencia inválido");
+    }
+
+    const claseActualizada = await actualizarAsistenciaPractica(id, asistencia);
+
+    if (!claseActualizada) {
+        return handleErrorClient(res, 404, "Clase no encontrada");
+    }
+
+    return handleSuccess(res, 200, `Asistencia marcada como ${asistencia}`, claseActualizada);
+  } catch (error) {
+    return handleErrorServer(res, 500, "Error interno al marcar asistencia", error.message);
   }
 }

@@ -9,7 +9,11 @@ import {
 import {
   getProfesorIdDesdeUsuario,
   getClasesPracticasPorProfesor,
+  getClasesTeoricasPorProfesor,
+  registrarAsistenciaTeorica,
 } from "../services/profesorPanel.services.js";
+
+import { obtenerInscritos } from "../services/claseTeorica.services.js";
 
 export async function getMisClasesProfesorController(req, res) {
   try {
@@ -52,4 +56,34 @@ export async function getMisClasesProfesorController(req, res) {
       error.message
     );
   }
+}
+
+export async function getMisClasesTeoricasController(req, res) {
+    try {
+        const idProfesor = await getProfesorIdDesdeUsuario(req.usuario?.id_usuario);
+        const clases = await getClasesTeoricasPorProfesor(idProfesor);
+        return handleSuccess(res, 200, "Clases teóricas", clases);
+    } catch (error) {
+        return handleErrorServer(res, 500, "Error", error.message);
+    }
+}
+
+export async function getDetalleClaseTeoricaProfesorController(req, res) {
+    try {
+        const inscritos = await obtenerInscritos(req.params.idClase);
+        return handleSuccess(res, 200, "Alumnos de la clase", inscritos);
+    } catch (error) {
+        return handleErrorServer(res, 500, "Error", error.message);
+    }
+}
+
+export async function marcarAsistenciaTeoricaController(req, res) {
+    try {
+        const { idAsistencia } = req.params;
+        const { estado } = req.body;
+        await registrarAsistenciaTeorica(idAsistencia, estado);
+        return handleSuccess(res, 200, "Asistencia registrada exitosamente");
+    } catch (error) {
+        return handleErrorServer(res, 500, "Error", error.message);
+    }
 }

@@ -5,6 +5,7 @@ import {
   getVehiculoById,
   getVehiculoByPatente,
   updateVehiculo,
+  actualizarDocumentoVehiculo,
 } from "../services/vehiculo.services.js";
 
 import {
@@ -274,5 +275,21 @@ export async function deleteVehiculoController(req, res) {
       "Error al eliminar vehículo",
       error.message
     );
+  }
+}
+
+export async function subirRevisionController(req, res) {
+  try {
+    const { id } = req.params;
+    
+    if (!req.file) {
+      return res.status(400).json({ message: "No se subió ningún archivo" });
+    }
+
+    const urlDocumento = await actualizarDocumentoVehiculo(id, req.file.filename);
+    
+    return handleSuccess(res, 200, "Documento subido con éxito", { url_revision_tecnica: urlDocumento });
+  } catch (error) {
+    return handleErrorServer(res, 500, "Error al subir el documento", error.message);
   }
 }

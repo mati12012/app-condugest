@@ -61,6 +61,11 @@ const Vehiculo = new EntitySchema({
       type: "text",
       nullable: true,
     },
+    url_revision_tecnica: {
+      type: "varchar",
+      length: 255,
+      nullable: true,
+    },
   },
 });
 

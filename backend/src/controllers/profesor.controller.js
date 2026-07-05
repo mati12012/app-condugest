@@ -21,14 +21,23 @@ import {
   handleSuccess,
 } from "../handlers/responseHandlers.js";
 
-import { crearUsuarioAuth } from "../services/auth.services.js";
+import {
+  crearUsuarioAuth,
+  updateEstadoUsuarioProfesor,
+} from "../services/auth.services.js";
 
 function limpiarDatosProfesor(data) {
-  return {
-    ...data,
+  const limpio = { ...data };
 
+  if (limpio.estado === "true") {
+    limpio.estado = true;
+  }
 
-  };
+  if (limpio.estado === "false") {
+    limpio.estado = false;
+  }
+
+  return limpio;
 }
 export async function getProfesoresController(req, res) {
   try {
@@ -239,6 +248,10 @@ export async function updateProfesorController(req, res) {
     delete profesorData.correo_institucional;
 
     const profesorActualizado = await updateProfesor(id, profesorData);
+
+    if (typeof profesorData.estado === "boolean") {
+      await updateEstadoUsuarioProfesor(id, profesorActualizado.estado);
+    }
 
     return handleSuccess(
       res,
