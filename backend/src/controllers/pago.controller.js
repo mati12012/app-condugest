@@ -49,6 +49,34 @@ function limpiarDatosPago(data) {
   return limpio;
 }
 
+function validarReglasRegistroPago({ matricula, resumen, monto, metodoPago }) {
+  if (["Anulada", "Finalizada"].includes(matricula.estado)) {
+    return "No se pueden registrar pagos en matrículas anuladas o finalizadas.";
+  }
+
+  const saldoPendiente = Number(resumen?.saldo_pendiente || 0);
+
+  if (saldoPendiente <= 0) {
+    return "La matrícula ya no tiene saldo pendiente.";
+  }
+
+  if (monto > saldoPendiente) {
+    return "El monto del pago no puede superar el saldo pendiente de la matrícula.";
+  }
+
+  const esPagoSaldoMenorAlMinimo = saldoPendiente < 5000 && monto === saldoPendiente;
+
+  if (monto < 5000 && !esPagoSaldoMenorAlMinimo) {
+    return "El monto mínimo de abono es de $5.000.";
+  }
+
+  if (metodoPago === "Efectivo" && monto % 10 !== 0) {
+    return "Para pagos en efectivo, el monto debe ser múltiplo de 10.";
+  }
+
+  return null;
+}
+
 export async function getPagosController(req, res) {
   try {
     const pagos = await getAllPagos();
@@ -163,11 +191,20 @@ export async function createPagoController(req, res) {
       return handleErrorClient(res, 404, "Matricula no encontrada");
     }
 
-    if (matricula.estado === "Anulada") {
+    const resumen = await getResumenFinancieroMatricula(value.id_matricula);
+
+    const errorReglasPago = validarReglasRegistroPago({
+      matricula,
+      resumen,
+      monto: value.monto,
+      metodoPago: value.metodo_pago,
+    });
+
+    if (errorReglasPago) {
       return handleErrorClient(
         res,
         409,
-        "No se pueden registrar pagos en matriculas anuladas"
+        errorReglasPago
       );
     }
 

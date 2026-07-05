@@ -24,7 +24,7 @@ const pagoCreateSchema = Joi.object({
 
   monto: Joi.number().integer().positive().required().messages({
     "number.base": "El monto es obligatorio",
-    "number.integer": "El monto debe ser un numero entero",
+    "number.integer": "El monto debe ser un número entero.",
     "number.positive": "El monto debe ser mayor a 0",
     "any.required": "El monto es obligatorio",
   }),

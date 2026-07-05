@@ -289,7 +289,54 @@ function VistaPagos() {
     0
   );
 
-  const matriculaAnulada = matriculaSeleccionada?.estado === "Anulada";
+  const saldoPendienteSeleccionado = Number(resumenSeleccionado?.saldo_pendiente || 0);
+  const matriculaBloqueadaPorEstado = ["Anulada", "Finalizada"].includes(
+    matriculaSeleccionada?.estado
+  );
+  const matriculaPagada = Boolean(
+    formulario.id_matricula &&
+    resumenSeleccionado &&
+    saldoPendienteSeleccionado <= 0
+  );
+
+  const advertenciaMonto = useMemo(() => {
+    if (!formulario.id_matricula || !resumenSeleccionado || formulario.monto === "") {
+      return "";
+    }
+
+    const monto = Number(formulario.monto);
+
+    if (!Number.isFinite(monto)) {
+      return "";
+    }
+
+    if (!Number.isInteger(monto)) {
+      return "El monto debe ser un número entero.";
+    }
+
+    if (monto > saldoPendienteSeleccionado) {
+      return "El monto del pago no puede superar el saldo pendiente de la matrícula.";
+    }
+
+    const esPagoSaldoMenorAlMinimo =
+      saldoPendienteSeleccionado < 5000 && monto === saldoPendienteSeleccionado;
+
+    if (monto < 5000 && !esPagoSaldoMenorAlMinimo) {
+      return "El monto mínimo de abono es de $5.000.";
+    }
+
+    if (formulario.metodo_pago === "Efectivo" && monto % 10 !== 0) {
+      return "Para pagos en efectivo, el monto debe ser múltiplo de 10.";
+    }
+
+    return "";
+  }, [
+    formulario.id_matricula,
+    formulario.metodo_pago,
+    formulario.monto,
+    resumenSeleccionado,
+    saldoPendienteSeleccionado,
+  ]);
 
   function abrirFormularioCrear() {
     setFormulario(formularioInicial);
@@ -333,8 +380,18 @@ function VistaPagos() {
   async function guardarPago(evento) {
     evento.preventDefault();
 
-    if (matriculaAnulada) {
-      setErrorFormulario("No se pueden registrar pagos en matriculas anuladas.");
+    if (matriculaBloqueadaPorEstado) {
+      setErrorFormulario("No se pueden registrar pagos en matrículas anuladas o finalizadas.");
+      return;
+    }
+
+    if (matriculaPagada) {
+      setErrorFormulario("Esta matrícula ya está pagada.");
+      return;
+    }
+
+    if (advertenciaMonto) {
+      setErrorFormulario(advertenciaMonto);
       return;
     }
 
@@ -593,9 +650,15 @@ function VistaPagos() {
                     </div>
                   </div>
 
-                  {matriculaAnulada && (
+                  {matriculaPagada && (
+                    <div className="bg-green-50 text-green-700 border border-green-200 p-3 rounded-lg text-sm font-medium">
+                      Esta matrícula ya está pagada.
+                    </div>
+                  )}
+
+                  {matriculaBloqueadaPorEstado && (
                     <div className="bg-red-50 text-red-700 border border-red-200 p-3 rounded-lg text-sm font-medium">
-                      Esta matricula esta anulada. No se pueden registrar nuevos pagos.
+                      No se pueden registrar pagos en matrículas anuladas o finalizadas.
                     </div>
                   )}
                 </div>
@@ -612,6 +675,7 @@ function VistaPagos() {
                 type="number"
                 name="monto"
                 min="1"
+                step="1"
                 value={formulario.monto}
                 onChange={manejarCambioFormulario}
                 required
@@ -654,10 +718,16 @@ function VistaPagos() {
             </div>
           </div>
 
+          {advertenciaMonto && (
+            <div className="bg-yellow-50 text-yellow-800 border border-yellow-200 p-3 rounded-lg text-sm font-medium">
+              {advertenciaMonto}
+            </div>
+          )}
+
           <div className="flex justify-end">
             <button
               type="submit"
-              disabled={guardando || matriculaAnulada}
+              disabled={guardando || matriculaBloqueadaPorEstado || matriculaPagada}
               className="px-5 py-2.5 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed"
             >
               {guardando ? "Guardando..." : "Registrar pago"}
