@@ -17,6 +17,8 @@ const RegistrarVehiculo = ({ cambiarVista }) => {
 
   const [mensaje, setMensaje] = useState('');
   const [cargando, setCargando] = useState(false);
+  const [archivo, setArchivo] = useState(null);
+  const [subiendoArchivo, setSubiendoArchivo] = useState(false);
 
   const limpiarPatente = (patente) => {
     return patente
@@ -127,26 +129,40 @@ const RegistrarVehiculo = ({ cambiarVista }) => {
       const respuestaServidor = await response.json();
 
       if (response.ok) {
-        setMensaje('Exito: vehículo registrado correctamente');
+        const idNuevoVehiculo = respuestaServidor.data?.id_vehiculo || respuestaServidor.data?.id;
+
+        if (archivo && idNuevoVehiculo) {
+          setMensaje('Vehículo creado. Subiendo documento...');
+          setSubiendoArchivo(true);
+          
+          const formData = new FormData();
+          formData.append('documento', archivo);
+          const token = localStorage.getItem('tokenCondugest');
+
+          await fetch(`${import.meta.env.VITE_BASE_URL}/vehiculos/${idNuevoVehiculo}/revision-tecnica`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+          });
+        }
+
+        setMensaje('Éxito: vehículo y documentos registrados correctamente');
+        setSubiendoArchivo(false);
 
         setDatos({
-          patente: '',
-          marca: '',
-          modelo: '',
-          anio: '',
-          tipo_transmision: 'Manual',
-          licencia_requerida: 'B',
-          sede: 'Sede Concepcion',
-          kilometraje: '',
-          estado_operativo: 'Disponible',
-          observacion: ''
+          patente: '', marca: '', modelo: '', anio: '', tipo_transmision: 'Manual',
+          licencia_requerida: 'B', sede: 'Sede Concepcion', kilometraje: '',
+          estado_operativo: 'Disponible', observacion: ''
         });
+        setArchivo(null); 
+
       } else {
         setMensaje(`Error: ${obtenerMensajeErrorServidor(respuestaServidor)}`);
       }
     } catch (error) {
       console.error(error);
       setMensaje('Error: Sin conexión al servidor');
+      setSubiendoArchivo(false);
     } finally {
       setCargando(false);
     }
@@ -321,6 +337,23 @@ const RegistrarVehiculo = ({ cambiarVista }) => {
           />
           <p className="text-xs text-slate-400 mt-1">
             Campo opcional. Puedes registrar detalles de mantención, uso o disponibilidad.
+          </p>
+        </div>
+
+        <div className="pt-6 border-t mt-6">
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
+            Documento de Revisión Técnica (PDF, JPG, PNG) - Opcional
+          </label>
+          <div className="flex items-center gap-3">
+            <input 
+              type="file" 
+              accept=".pdf,.jpg,.jpeg,.png"
+              onChange={(e) => setArchivo(e.target.files[0])}
+              className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+          </div>
+          <p className="text-xs text-slate-400 mt-2">
+            Puedes adjuntar el documento ahora o hacerlo más tarde desde la opción "Editar".
           </p>
         </div>
 

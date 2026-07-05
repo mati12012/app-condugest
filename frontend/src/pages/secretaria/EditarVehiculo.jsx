@@ -344,7 +344,7 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
                 rel="noopener noreferrer"
                 className="text-blue-600 font-medium hover:underline flex items-center gap-2"
               >
-                📄 Ver documento actual adjunto
+                Ver documento actual adjunto
               </a>
             </div>
           )}
