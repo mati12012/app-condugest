@@ -79,6 +79,16 @@ const VerClaseTeorica = ({ idClase, cambiarVista }) => {
     return formatearFechaVisual(fecha);
   };
 
+  const obtenerTextoSala = (claseActual) => {
+    if (claseActual.salaTeorica?.nombre) {
+      return `${claseActual.salaTeorica.nombre} - ${claseActual.salaTeorica.sede}`;
+    }
+
+    if (claseActual.modalidad === 'Online') return 'Clase online';
+
+    return 'Sala no asignada';
+  };
+
   useEffect(() => {
     if (idClase) Promise.resolve().then(obtenerDatosCompletos);
   }, [idClase, obtenerDatosCompletos]);
@@ -109,8 +119,9 @@ const VerClaseTeorica = ({ idClase, cambiarVista }) => {
             <p className="text-lg font-bold text-slate-800">{clase.profesor ? `${clase.profesor.nombre} ${clase.profesor.apellido}` : 'Sin asignar'}</p>
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-400 uppercase">Sede/Modalidad</p>
-            <p className="text-lg font-bold text-slate-800">{clase.sede}</p>
+            <p className="text-sm font-semibold text-slate-400 uppercase">Modalidad</p>
+            <p className="text-lg font-bold text-slate-800">{clase.modalidad || clase.sede}</p>
+            <p className="text-sm text-slate-500">{obtenerTextoSala(clase)}</p>
           </div>
           <div>
             <p className="text-sm font-semibold text-slate-400 uppercase">Fecha y Hora</p>
@@ -120,6 +131,43 @@ const VerClaseTeorica = ({ idClase, cambiarVista }) => {
           <div>
             <p className="text-sm font-semibold text-slate-400 uppercase">Estado</p>
             <p className="text-lg font-bold text-slate-800">{clase.estado}</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs font-bold uppercase text-slate-400">Link de reunion</p>
+            {clase.link_reunion ? (
+              <a
+                href={clase.link_reunion}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-flex text-sm font-bold text-blue-600 hover:underline"
+              >
+                Abrir enlace
+              </a>
+            ) : (
+              <p className="mt-2 text-sm text-slate-500">Sin link registrado.</p>
+            )}
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs font-bold uppercase text-slate-400">Codigo de reunion</p>
+            <p className="mt-2 text-sm font-semibold text-slate-700">{clase.codigo_reunion || 'Sin codigo registrado.'}</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs font-bold uppercase text-slate-400">Grabacion</p>
+            {clase.url_grabacion ? (
+              <a
+                href={clase.url_grabacion}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-flex text-sm font-bold text-blue-600 hover:underline"
+              >
+                Ver grabacion
+              </a>
+            ) : (
+              <p className="mt-2 text-sm text-slate-500">Sin grabacion registrada.</p>
+            )}
           </div>
         </div>
 

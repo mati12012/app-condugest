@@ -131,6 +131,14 @@ export async function getClasesTeoricasPorAlumno(idAlumno) {
             ct.estado,
             ct.tema,
             ct.sede,
+            ct.modalidad,
+            ct.link_reunion,
+            ct.codigo_reunion,
+            ct.url_grabacion,
+            ct.id_sala_teorica,
+            st.nombre AS sala_nombre,
+            st.sede AS sala_sede,
+            st.capacidad AS sala_capacidad,
             ast.id_asistencia,
             ast.estado_asistencia,
             p.nombre AS profesor_nombre,
@@ -139,6 +147,7 @@ export async function getClasesTeoricasPorAlumno(idAlumno) {
      INNER JOIN clases_teoricas ct
        ON ast.id_clase_teorica = ct.id_clase_teorica
      LEFT JOIN profesores p ON ct.id_profesor = p.id_profesor
+     LEFT JOIN salas_teoricas st ON ct.id_sala_teorica = st.id_sala_teorica
      WHERE ast.id_alumno = $1
      ORDER BY ct.fecha ASC, ct.hora_inicio ASC`,
     [idAlumno]

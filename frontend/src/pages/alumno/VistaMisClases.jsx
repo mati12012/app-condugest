@@ -65,6 +65,22 @@ async function obtenerMisReprogramaciones() {
   return data.data || [];
 }
 
+function obtenerTextoSalaTeorica(clase) {
+  if (clase.sala_nombre) {
+    return `${clase.sala_nombre} - ${clase.sala_sede || clase.sede}`;
+  }
+
+  if (clase.modalidad === "Online") return "Clase online";
+
+  return "Sala no asignada";
+}
+
+function obtenerClaseModalidadTeorica(modalidad) {
+  if (modalidad === "Online") return "bg-indigo-100 text-indigo-700";
+  if (modalidad === "Híbrida") return "bg-amber-100 text-amber-700";
+  return "bg-slate-100 text-slate-700";
+}
+
 function TablaClases({
   datos,
   esHistorial,
@@ -72,7 +88,7 @@ function TablaClases({
   solicitudesPendientesPorClase,
   abrirFormularioReprogramacion,
 }) {
-  const columnas = esHistorial ? 5 : 4;
+  const columnas = (esHistorial ? 5 : 4) + (esTeorica ? 2 : 0);
 
   return (
     <div className="overflow-x-auto">
@@ -82,7 +98,9 @@ function TablaClases({
             <th className="px-4 py-3">Fecha y Hora</th>
             <th className="px-4 py-3">Profesor</th>
             <th className="px-4 py-3">{esTeorica ? "Tema / Módulo" : "Vehículo"}</th>
+            {esTeorica && <th className="px-4 py-3">Modalidad</th>}
             <th className="px-4 py-3">Estado</th>
+            {esTeorica && <th className="px-4 py-3">Acceso</th>}
             {esHistorial && <th className="px-4 py-3">Observación</th>}
           </tr>
         </thead>
@@ -108,6 +126,17 @@ function TablaClases({
                       ? clase.tema || "Teoría General"
                       : `${clase.vehiculo_marca || ""} ${clase.vehiculo_modelo || ""}`.trim() || "Sin vehículo"}
                   </td>
+                  {esTeorica && (
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${obtenerClaseModalidadTeorica(clase.modalidad)}`}>
+                        {clase.modalidad || clase.sede}
+                      </span>
+                      <p className="text-xs text-slate-500 mt-2">{obtenerTextoSalaTeorica(clase)}</p>
+                      {clase.codigo_reunion && (
+                        <p className="text-xs text-slate-500 mt-1">Codigo: {clase.codigo_reunion}</p>
+                      )}
+                    </td>
+                  )}
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center gap-3">
                       <span className={`rounded-full px-3 py-1 text-xs font-bold ${obtenerClaseEstado(clase.estado)}`}>
@@ -130,6 +159,34 @@ function TablaClases({
                       )}
                     </div>
                   </td>
+                  {esTeorica && (
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-2 items-start">
+                        {clase.link_reunion ? (
+                          <a
+                            href={clase.link_reunion}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="rounded-lg bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700 hover:bg-blue-200"
+                          >
+                            Entrar a clase
+                          </a>
+                        ) : (
+                          <span className="text-xs text-slate-400">Sin link registrado</span>
+                        )}
+                        {clase.url_grabacion && (
+                          <a
+                            href={clase.url_grabacion}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="rounded-lg bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700 hover:bg-slate-200"
+                          >
+                            Ver grabacion
+                          </a>
+                        )}
+                      </div>
+                    </td>
+                  )}
                   {esHistorial && (
                     <td className="px-4 py-3 text-slate-600">
                       {clase.observacion || (clase.estado === "Cancelada" ? "Clase cancelada." : "Sin observaciones.")}

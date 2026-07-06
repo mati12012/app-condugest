@@ -21,6 +21,7 @@ import VistaClasesTeoricas from './pages/secretaria/VistaClasesTeoricas';
 import RegistrarClaseTeorica from './pages/secretaria/RegistrarClaseTeorica';
 import VerClaseTeorica from './pages/secretaria/VerClaseTeorica';
 import EditarClaseTeorica from './pages/secretaria/EditarClaseTeorica';
+import VistaSalasTeoricas from './pages/secretaria/VistaSalasTeoricas';
 import VistaAgenda from './pages/secretaria/VistaAgenda';
 import PanelPrincipal from './pages/secretaria/PanelPrincipal';
 import PanelProfesor from './pages/profesor/PanelProfesor';
@@ -182,6 +183,7 @@ if (usuario.rol === "profesor") {
           {vistaActual === 'materiales' && <VistaMaterialesEstudio />}
           {vistaActual === 'solicitudesExamen' && <VistaSolicitudesExamen />}
           {vistaActual === "salasPsicotecnicas" && <ModuloSalasPsicotecnicas />}
+          {vistaActual === "salasTeoricas" && <VistaSalasTeoricas />}
           {vistaActual === "profesores" && <VistaProfesores cambiarVista={manejarCambioVista} />}
           {vistaActual === "disponibilidadProfesores" && <VistaDisponibilidadProfesores />}
           {vistaActual === 'perfilProfesor' && (<PerfilProfesor profesorId={idSeleccionado} cambiarVista={manejarCambioVista} />)}

@@ -82,6 +82,12 @@ const opcionesMenu = [
     vistasActivas: ["clasesTeoricas", "registrarClaseTeorica", "verClaseTeorica", "editarClaseTeorica"],
   },
   {
+    id: "salasTeoricas",
+    etiqueta: "Salas teóricas",
+    Icono: Building2,
+    vistasActivas: ["salasTeoricas"],
+  },
+  {
     id: "clasesPracticas",
     etiqueta: "Clases prácticas",
     Icono: ClipboardCheck,

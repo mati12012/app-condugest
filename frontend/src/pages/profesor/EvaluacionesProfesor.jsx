@@ -230,7 +230,7 @@ function EvaluacionesProfesor({ clases }) {
           </span>
 
           <h2 className="text-2xl font-bold text-slate-900 mt-4">
-            Registro de desempeno practico
+            Registro de desempeño practico
           </h2>
 
           <p className="text-slate-500 mt-3 text-base leading-relaxed">

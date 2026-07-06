@@ -3,6 +3,7 @@ import {DataSource} from "typeorm";
 import {DATABASE, DB_USERNAME, DB_HOST, DB_PASSWORD, DB_PORT} from "./configEnv.js";
 import Alumno from "../entitys/alumno.entity.js";
 import SalaPsicotecnica from "../entitys/salaPsicotecnica.entity.js";
+import SalaTeorica from "../entitys/salaTeorica.entity.js";
 import ReservaSala from "../entitys/reservaSala.entity.js";
 import {ProfesorEntity} from "../entitys/profesor.entity.js";
 import Vehiculo from "../entitys/vehiculo.entity.js";
@@ -27,7 +28,7 @@ export const AppDataSource = new DataSource({
     username: DB_USERNAME,
     password: DB_PASSWORD,
     database: DATABASE,
-    entities: [Alumno, SalaPsicotecnica, ReservaSala, ProfesorEntity, Vehiculo, ClasePractica, ClaseTeorica, Usuario, Plan, SolicitudMatricula, Matricula, Pago, AsistenciaTeorica, EvaluacionPractica, SolicitudReprogramacion, MaterialEstudio, SolicitudExamen, DisponibilidadProfesor],
+    entities: [Alumno, SalaPsicotecnica, SalaTeorica, ReservaSala, ProfesorEntity, Vehiculo, ClasePractica, ClaseTeorica, Usuario, Plan, SolicitudMatricula, Matricula, Pago, AsistenciaTeorica, EvaluacionPractica, SolicitudReprogramacion, MaterialEstudio, SolicitudExamen, DisponibilidadProfesor],
     synchronize: true, // Cambiar a false en producción para evitar pérdida de datos
     logging: false,
 });

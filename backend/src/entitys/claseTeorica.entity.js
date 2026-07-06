@@ -33,6 +33,27 @@ const ClaseTeorica = new EntitySchema({
             nullable: false,
             default: "Sede Concepción",
         },
+        modalidad: {
+            type: "varchar",
+            length: 20,
+            nullable: false,
+            default: "Presencial",
+        },
+        link_reunion: {
+            type: "varchar",
+            length: 500,
+            nullable: true,
+        },
+        codigo_reunion: {
+            type: "varchar",
+            length: 100,
+            nullable: true,
+        },
+        url_grabacion: {
+            type: "varchar",
+            length: 500,
+            nullable: true,
+        },
         estado: {
             type: "varchar",
             length: 50,
@@ -45,6 +66,13 @@ const ClaseTeorica = new EntitySchema({
             type: "many-to-one",
             joinColumn: { name: "id_profesor" },
             onDelete: "SET NULL", // Si se borra al profe, la clase no se borra, solo queda sin un profe asignado
+            nullable: true
+        },
+        salaTeorica: {
+            target: "SalaTeorica",
+            type: "many-to-one",
+            joinColumn: { name: "id_sala_teorica" },
+            onDelete: "SET NULL",
             nullable: true
         }
     }

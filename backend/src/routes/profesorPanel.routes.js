@@ -10,6 +10,7 @@ import {
   getMisClasesProfesorController,
   getMisClasesTeoricasController, 
   getDetalleClaseTeoricaProfesorController, 
+  updateRecursosClaseTeoricaProfesorController,
   marcarAsistenciaTeoricaController,
 } from "../controllers/profesorPanel.controller.js";
 
@@ -61,6 +62,13 @@ router.get(
   "/clase-teorica/:idClase/alumnos", 
   verificarToken, permitirRoles("profesor", "Profesor"), 
   getDetalleClaseTeoricaProfesorController
+);
+
+router.patch(
+  "/clase-teorica/:idClase/recursos",
+  verificarToken,
+  permitirRoles("profesor", "Profesor"),
+  updateRecursosClaseTeoricaProfesorController
 );
 
 

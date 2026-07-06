@@ -2,6 +2,7 @@ import { Router } from "express";
 import { verificarToken, permitirRoles } from "../middlewares/auth.middleware.js";
 import alumnoRoutes from "./alumno.routes.js";
 import salaPsicotecnicaRoutes from "./salaPsicotecnica.routes.js";
+import salaTeoricaRoutes from "./salaTeorica.routes.js";
 import reservaSalaRoutes from "./reservaSala.routes.js";
 import profesorRoutes from "./profesor.routes.js";
 import vehiculoRoutes from "./vehiculo.routes.js";
@@ -29,6 +30,7 @@ export function routerApi(app) {
 
   router.use("/alumnos", soloSecretaria, alumnoRoutes);
   router.use("/salas-psicotecnicas", soloSecretaria, salaPsicotecnicaRoutes);
+  router.use("/salas-teoricas", soloSecretaria, salaTeoricaRoutes);
   router.use("/reservas-salas", soloSecretaria, reservaSalaRoutes);
   router.use("/profesores", soloSecretaria, profesorRoutes);
   router.use("/vehiculos", soloSecretaria, vehiculoRoutes);

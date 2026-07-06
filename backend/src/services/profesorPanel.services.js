@@ -136,9 +136,15 @@ export async function getClasesPracticasPorProfesor(idProfesor) {
 
 export async function getClasesTeoricasPorProfesor(id_profesor) {
     return await AppDataSource.query(`
-        SELECT ct.*,
-        (SELECT COUNT(*) FROM asistencias_teoricas WHERE id_clase_teorica = ct.id_clase_teorica) as total_alumnos
+        SELECT
+          ct.*,
+          st.nombre AS sala_nombre,
+          st.sede AS sala_sede,
+          st.capacidad AS sala_capacidad,
+          (SELECT COUNT(*) FROM asistencias_teoricas WHERE id_clase_teorica = ct.id_clase_teorica)::int AS total_alumnos
         FROM clases_teoricas ct
+        LEFT JOIN salas_teoricas st
+          ON st.id_sala_teorica = ct.id_sala_teorica
         WHERE ct.id_profesor = $1
         ORDER BY ct.fecha DESC, ct.hora_inicio ASC
     `, [Number(id_profesor)]);
@@ -146,9 +152,27 @@ export async function getClasesTeoricasPorProfesor(id_profesor) {
 
 export async function getClaseTeoricaProfesorById(idClase, idProfesor) {
     const resultado = await AppDataSource.query(`
-        SELECT id_clase_teorica, id_profesor
-        FROM clases_teoricas
-        WHERE id_clase_teorica = $1
+        SELECT
+          ct.id_clase_teorica,
+          ct.id_profesor,
+          ct.tema,
+          ct.fecha,
+          ct.hora_inicio,
+          ct.hora_fin,
+          ct.sede,
+          ct.estado,
+          ct.modalidad,
+          ct.link_reunion,
+          ct.codigo_reunion,
+          ct.url_grabacion,
+          ct.id_sala_teorica,
+          st.nombre AS sala_nombre,
+          st.sede AS sala_sede,
+          st.capacidad AS sala_capacidad
+        FROM clases_teoricas ct
+        LEFT JOIN salas_teoricas st
+          ON st.id_sala_teorica = ct.id_sala_teorica
+        WHERE ct.id_clase_teorica = $1
         LIMIT 1
     `, [Number(idClase)]);
 
@@ -160,6 +184,40 @@ export async function getClaseTeoricaProfesorById(idClase, idProfesor) {
         clase: resultado[0],
         perteneceProfesor: Number(resultado[0].id_profesor) === Number(idProfesor),
     };
+}
+
+export async function actualizarRecursosClaseTeoricaProfesor(idClase, idProfesor, recursos) {
+    const resultado = await AppDataSource.query(`
+        UPDATE clases_teoricas
+        SET
+          link_reunion = $1,
+          codigo_reunion = $2,
+          url_grabacion = $3
+        WHERE id_clase_teorica = $4
+          AND id_profesor = $5
+        RETURNING
+          id_clase_teorica,
+          id_profesor,
+          tema,
+          fecha,
+          hora_inicio,
+          hora_fin,
+          sede,
+          estado,
+          modalidad,
+          link_reunion,
+          codigo_reunion,
+          url_grabacion,
+          id_sala_teorica
+    `, [
+        recursos.link_reunion,
+        recursos.codigo_reunion,
+        recursos.url_grabacion,
+        Number(idClase),
+        Number(idProfesor),
+    ]);
+
+    return resultado.length > 0 ? resultado[0] : null;
 }
 
 export async function getAsistenciaTeoricaProfesorById(idAsistencia, idProfesor) {
