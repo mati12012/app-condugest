@@ -10,6 +10,7 @@ import {
 } from "../services/claseTeorica.services.js";
 
 import { getProfesorById } from "../services/profesor.services.js";
+import { profesorTieneDisponibilidadParaClase } from "../services/disponibilidadProfesor.services.js";
 
 import { 
     validateClaseTeoricaData, 
@@ -21,6 +22,27 @@ import {
     handleErrorServer, 
     handleSuccess 
 } from "../handlers/responseHandlers.js";
+
+async function validarDisponibilidadProfesorHorario(res, claseData) {
+    const tieneDisponibilidad = await profesorTieneDisponibilidadParaClase({
+        id_profesor: claseData.id_profesor,
+        fecha: claseData.fecha,
+        hora_inicio: claseData.hora_inicio,
+        hora_fin: claseData.hora_fin,
+        sede: claseData.sede,
+    });
+
+    if (!tieneDisponibilidad) {
+        handleErrorClient(
+            res,
+            400,
+            "El profesor no tiene disponibilidad en el horario seleccionado."
+        );
+        return false;
+    }
+
+    return true;
+}
 
 export async function getClasesTeoricasController(req, res) {
     try {
@@ -64,6 +86,15 @@ export async function createClaseTeoricaController(req, res) {
             ]);
         }
 
+        if (claseData.estado !== "Cancelada") {
+            const profesorDisponible = await validarDisponibilidadProfesorHorario(
+                res,
+                claseData
+            );
+
+            if (!profesorDisponible) return;
+        }
+
         const conflicto = await buscarChoqueProfesor(claseData);
         if (conflicto) return handleErrorClient(res, 409, "Choque de horario", [conflicto]);
 
@@ -103,6 +134,16 @@ export async function updateClaseTeoricaController(req, res) {
             if (claseFinal.sede !== 'Online' && profesor.sede !== claseFinal.sede) {
                 return handleErrorClient(res, 400, "Incompatibilidad de sede", `El profesor pertenece a ${profesor.sede} y no puede impartir clases presenciales en ${claseFinal.sede}.`);
             }
+
+            const profesorDisponible = await validarDisponibilidadProfesorHorario(
+                res,
+                {
+                    ...claseFinal,
+                    id_profesor: profesor.id_profesor,
+                }
+            );
+
+            if (!profesorDisponible) return;
 
             const conflicto = await buscarChoqueProfesor({
                 id_profesor: profesor.id_profesor,

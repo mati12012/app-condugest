@@ -1,6 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
-import { formatearFechaVisual } from '../../utils/formatearFecha';
+
+const formatearFechaInput = (fecha) => {
+  if (!fecha) return '';
+
+  const fechaTexto = String(fecha);
+
+  if (fechaTexto.includes('T')) {
+    return fechaTexto.split('T')[0];
+  }
+
+  return fechaTexto;
+};
+
+const formatearHoraInput = (hora) => {
+  if (!hora) return '';
+
+  return String(hora).slice(0, 5);
+};
+
 const EditarClasePractica = ({ claseId, cambiarVista }) => {
   const [datos, setDatos] = useState({
     id_alumno: '',
@@ -22,29 +40,7 @@ const EditarClasePractica = ({ claseId, cambiarVista }) => {
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState('');
 
-  useEffect(() => {
-    cargarDatosIniciales();
-  }, [claseId]);
-
-  const formatearFechaInput = (fecha) => {
-    if (!fecha) return '';
-
-    const fechaTexto = String(fecha);
-
-    if (fechaTexto.includes('T')) {
-      return fechaTexto.split('T')[0];
-    }
-
-    return fechaTexto;
-  };
-
-  const formatearHoraInput = (hora) => {
-    if (!hora) return '';
-
-    return String(hora).slice(0, 5);
-  };
-
-  const cargarDatosIniciales = async () => {
+  const cargarDatosIniciales = useCallback(async () => {
     try {
       setCargandoDatos(true);
       setMensaje('');
@@ -83,7 +79,7 @@ const EditarClasePractica = ({ claseId, cambiarVista }) => {
         id_alumno: clase.id_alumno || '',
         id_profesor: clase.id_profesor || '',
         id_vehiculo: clase.id_vehiculo || '',
-        fecha: formatearFechaVisual(clase.fecha),
+        fecha: formatearFechaInput(clase.fecha),
         hora_inicio: formatearHoraInput(clase.hora_inicio),
         hora_fin: formatearHoraInput(clase.hora_fin),
         sede: clase.sede || 'Sede Concepcion',
@@ -100,7 +96,11 @@ const EditarClasePractica = ({ claseId, cambiarVista }) => {
     } finally {
       setCargandoDatos(false);
     }
-  };
+  }, [claseId]);
+
+  useEffect(() => {
+    Promise.resolve().then(cargarDatosIniciales);
+  }, [cargarDatosIniciales]);
 
   const profesorSeleccionado = profesores.find(
     (profesor) => String(profesor.id_profesor) === String(datos.id_profesor)

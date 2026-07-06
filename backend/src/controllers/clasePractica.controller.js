@@ -13,6 +13,7 @@ import { getAlumnoById } from "../services/alumno.services.js";
 import { getProfesorById } from "../services/profesor.services.js";
 import { getVehiculoById } from "../services/vehiculo.services.js";
 import { getProfesorIdDesdeUsuario } from "../services/profesorPanel.services.js";
+import { profesorTieneDisponibilidadParaClase } from "../services/disponibilidadProfesor.services.js";
 
 import {
   validarReglasHorarioPractica,
@@ -93,6 +94,27 @@ async function validarCupoPractico(res, claseData, idClaseExcluida = null) {
 
   if (!disponibilidad.valido) {
     handleErrorClient(res, 400, disponibilidad.mensaje);
+    return false;
+  }
+
+  return true;
+}
+
+async function validarDisponibilidadProfesorHorario(res, claseData) {
+  const tieneDisponibilidad = await profesorTieneDisponibilidadParaClase({
+    id_profesor: claseData.id_profesor,
+    fecha: claseData.fecha,
+    hora_inicio: claseData.hora_inicio,
+    hora_fin: claseData.hora_fin,
+    sede: claseData.sede,
+  });
+
+  if (!tieneDisponibilidad) {
+    handleErrorClient(
+      res,
+      400,
+      "El profesor no tiene disponibilidad en el horario seleccionado."
+    );
     return false;
   }
 
@@ -208,6 +230,17 @@ export async function createClasePracticaController(req, res) {
         400,
         "El profesor se encuentra inactivo"
       );
+    }
+
+    if (claseData.estado === "Programada") {
+      const profesorDisponible = await validarDisponibilidadProfesorHorario(
+        res,
+        claseData
+      );
+
+      if (!profesorDisponible) {
+        return;
+      }
     }
 
     const vehiculo = await getVehiculoById(claseData.id_vehiculo);
@@ -346,6 +379,15 @@ export async function updateClasePracticaController(req, res) {
           400,
           "El profesor se encuentra inactivo"
         );
+      }
+
+      const profesorDisponible = await validarDisponibilidadProfesorHorario(
+        res,
+        claseFinal
+      );
+
+      if (!profesorDisponible) {
+        return;
       }
 
       if (vehiculo.estado_operativo !== "Disponible") {

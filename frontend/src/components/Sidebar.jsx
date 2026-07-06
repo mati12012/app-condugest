@@ -4,6 +4,7 @@ import {
   CalendarDays,
   Car,
   ClipboardCheck,
+  Clock,
   CreditCard,
   FileText,
   Home,
@@ -90,6 +91,12 @@ const opcionesMenu = [
     etiqueta: "Profesores",
     Icono: UserCircle,
     vistasActivas: ["profesores", "perfilProfesor", "registrarProfesor", "editarProfesor"],
+  },
+  {
+    id: "disponibilidadProfesores",
+    etiqueta: "Disponibilidad",
+    Icono: Clock,
+    vistasActivas: ["disponibilidadProfesores"],
   },
   {
     id: "vehiculos",
