@@ -6,6 +6,7 @@ import {
   getClasePracticaDetalleById,
   updateClasePractica, 
   actualizarAsistenciaPractica,
+  validarDisponibilidadClasePractica,
 } from "../services/clasePractica.services.js";
 
 import { getAlumnoById } from "../services/alumno.services.js";
@@ -81,6 +82,21 @@ function obtenerMensajeConflicto(conflicto) {
   }
 
   return "Existe un choque de horario con otra clase práctica";
+}
+
+async function validarCupoPractico(res, claseData, idClaseExcluida = null) {
+  const disponibilidad = await validarDisponibilidadClasePractica({
+    id_alumno: claseData.id_alumno,
+    estado: claseData.estado,
+    id_clase_excluida: idClaseExcluida,
+  });
+
+  if (!disponibilidad.valido) {
+    handleErrorClient(res, 400, disponibilidad.mensaje);
+    return false;
+  }
+
+  return true;
 }
 
 export async function getClasesPracticasController(req, res) {
@@ -172,6 +188,12 @@ export async function createClasePracticaController(req, res) {
 
     if (!alumno) {
       return handleErrorClient(res, 404, "El alumno no existe");
+    }
+
+    const tieneCupoDisponible = await validarCupoPractico(res, claseData);
+
+    if (!tieneCupoDisponible) {
+      return;
     }
 
     const profesor = await getProfesorById(claseData.id_profesor);
@@ -293,6 +315,16 @@ export async function updateClasePracticaController(req, res) {
 
     if (!alumno) {
       return handleErrorClient(res, 404, "El alumno no existe");
+    }
+
+    const tieneCupoDisponible = await validarCupoPractico(
+      res,
+      claseFinal,
+      id
+    );
+
+    if (!tieneCupoDisponible) {
+      return;
     }
 
     const profesor = await getProfesorById(claseFinal.id_profesor);

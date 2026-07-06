@@ -160,6 +160,107 @@ export async function buscarChoqueClasePractica({
   return null;
 }
 
+export async function getDisponibilidadClasesPracticasAlumno(
+  idAlumno,
+  idClaseExcluida = null
+) {
+  const matriculas = await AppDataSource.query(
+    `
+    SELECT
+      id_matricula,
+      id_alumno,
+      cantidad_clases_practicas,
+      estado
+    FROM matriculas
+    WHERE id_alumno = $1
+      AND estado = 'Activa'
+    ORDER BY fecha_matricula DESC, id_matricula DESC
+    LIMIT 1
+    `,
+    [Number(idAlumno)]
+  );
+
+  if (matriculas.length === 0) {
+    return {
+      tieneMatriculaActiva: false,
+      matricula: null,
+      clasesContratadas: 0,
+      clasesOcupadas: 0,
+      clasesDisponibles: 0,
+    };
+  }
+
+  const parametros = [Number(idAlumno)];
+  let consultaClasesOcupadas = `
+    SELECT COUNT(*)::int AS total
+    FROM clases_practicas
+    WHERE id_alumno = $1
+      AND estado IN ('Programada', 'Realizada')
+  `;
+
+  if (idClaseExcluida) {
+    consultaClasesOcupadas += ` AND id_clase_practica <> $2`;
+    parametros.push(Number(idClaseExcluida));
+  }
+
+  const clasesOcupadasResultado = await AppDataSource.query(
+    consultaClasesOcupadas,
+    parametros
+  );
+
+  const matricula = matriculas[0];
+  const clasesContratadas = Number(matricula.cantidad_clases_practicas);
+  const clasesOcupadas = Number(clasesOcupadasResultado[0]?.total || 0);
+
+  return {
+    tieneMatriculaActiva: true,
+    matricula,
+    clasesContratadas,
+    clasesOcupadas,
+    clasesDisponibles: Math.max(clasesContratadas - clasesOcupadas, 0),
+  };
+}
+
+export async function validarDisponibilidadClasePractica({
+  id_alumno,
+  estado,
+  id_clase_excluida = null,
+}) {
+  if (estado === "Cancelada") {
+    return {
+      valido: true,
+      consumeCupo: false,
+    };
+  }
+
+  const disponibilidad = await getDisponibilidadClasesPracticasAlumno(
+    id_alumno,
+    id_clase_excluida
+  );
+
+  if (!disponibilidad.tieneMatriculaActiva) {
+    return {
+      valido: false,
+      mensaje: "El alumno no tiene una matrícula activa.",
+      disponibilidad,
+    };
+  }
+
+  if (disponibilidad.clasesOcupadas >= disponibilidad.clasesContratadas) {
+    return {
+      valido: false,
+      mensaje: "El alumno no tiene clases prácticas disponibles para agendar.",
+      disponibilidad,
+    };
+  }
+
+  return {
+    valido: true,
+    consumeCupo: true,
+    disponibilidad,
+  };
+}
+
 export async function actualizarAsistenciaPractica(id, nuevaAsistencia) {
   const clase = await getClasePracticaById(id);
   
