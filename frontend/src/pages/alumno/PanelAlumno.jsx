@@ -6,12 +6,14 @@ import MisResultadosAlumno from "./MisResultadosAlumno";
 import VistaMisClases from "./VistaMisClases";
 import VistaPerfil from "./VistaPerfil";
 import VistaMateriales from "./VistaMateriales";
+import VistaSolicitudExamen from "./VistaSolicitudExamen";
 
 const titulosVista = {
   inicio: { titulo: "Inicio", descripcion: "Resumen de tu avance y próximas clases." },
   misClases: { titulo: "Mis clases", descripcion: "Historial completo y agenda de clases prácticas." },
   resultados: { titulo: "Mis resultados", descripcion: "Resultados de tus evaluaciones prácticas." },
   material: { titulo: "Material de estudio", descripcion: "Manuales y documentos para preparar tus exámenes." },
+  examen: { titulo: "Mi examen", descripcion: "Solicita y revisa tu examen municipal." },
   perfil: { titulo: "Mi perfil", descripcion: "Datos de tu cuenta de alumno y estado del plan." },
 };
 
@@ -112,6 +114,8 @@ function PanelAlumno({ usuario, cerrarSesion }) {
         return <MisResultadosAlumno />;
       case "material":
         return <VistaMateriales />;
+      case "examen":
+        return <VistaSolicitudExamen />;
       default:
         return <VistaInicio perfil={perfil} clases={clasesPracticas} usuario={usuario} />;
     }

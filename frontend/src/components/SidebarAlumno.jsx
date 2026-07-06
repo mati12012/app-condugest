@@ -2,6 +2,7 @@ import {
   Home,
   BookOpenCheck,
   Award,
+  ClipboardCheck,
   FileText,
   UserCircle,
   LogOut,
@@ -27,6 +28,11 @@ const opcionesMenu = [
     id: "material",
     etiqueta: "Material de estudio",
     Icono: FileText,
+  },
+  {
+    id: "examen",
+    etiqueta: "Mi examen",
+    Icono: ClipboardCheck,
   },
   {
     id: "perfil",

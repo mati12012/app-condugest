@@ -10,6 +10,10 @@ import {
   createReprogramacionAlumnoController,
   getMisReprogramacionesAlumnoController,
 } from "../controllers/solicitudReprogramacion.controller.js";
+import {
+  createSolicitudExamenAlumnoController,
+  getMisSolicitudesExamenAlumnoController,
+} from "../controllers/solicitudExamen.controller.js";
 
 const router = Router();
 
@@ -20,5 +24,7 @@ router.get("/materiales", getMaterialesAlumnoController);
 router.get("/mis-evaluaciones", getEvaluacionesAlumnoController);
 router.post("/reprogramaciones", createReprogramacionAlumnoController);
 router.get("/mis-reprogramaciones", getMisReprogramacionesAlumnoController);
+router.post("/solicitudes-examen", createSolicitudExamenAlumnoController);
+router.get("/mis-solicitudes-examen", getMisSolicitudesExamenAlumnoController);
 
 export default router;

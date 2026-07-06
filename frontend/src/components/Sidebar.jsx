@@ -68,6 +68,12 @@ const opcionesMenu = [
     vistasActivas: ["reprogramaciones"],
   },
   {
+    id: "solicitudesExamen",
+    etiqueta: "Examen municipal",
+    Icono: ClipboardCheck,
+    vistasActivas: ["solicitudesExamen"],
+  },
+  {
     id: "clasesTeoricas",
     etiqueta: "Clases teóricas",
     Icono: BookOpenCheck,

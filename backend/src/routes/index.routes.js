@@ -17,6 +17,7 @@ import pagoRoutes from "./pago.routes.js";
 import evaluacionPracticaRoutes from "./evaluacionPractica.routes.js";
 import solicitudReprogramacionRoutes from "./solicitudReprogramacion.routes.js";
 import materialEstudioRoutes from "./materialEstudio.routes.js";
+import solicitudExamenRoutes from "./solicitudExamen.routes.js";
 import publicRoutes from "./public.routes.js";
 
 export function routerApi(app) {
@@ -39,6 +40,7 @@ export function routerApi(app) {
   router.use("/evaluaciones-practicas", soloSecretaria, evaluacionPracticaRoutes);
   router.use("/reprogramaciones", soloSecretaria, solicitudReprogramacionRoutes);
   router.use("/materiales-estudio", soloSecretaria, materialEstudioRoutes);
+  router.use("/solicitudes-examen", soloSecretaria, solicitudExamenRoutes);
   router.use("/public", publicRoutes);
   router.use("/auth", authRoutes);
   router.use("/alumno-panel", alumnoPanelRoutes);
