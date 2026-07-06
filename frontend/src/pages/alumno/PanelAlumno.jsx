@@ -5,6 +5,7 @@ import VistaInicio from "./VistaInicio";
 import MisResultadosAlumno from "./MisResultadosAlumno";
 import VistaMisClases from "./VistaMisClases";
 import VistaPerfil from "./VistaPerfil";
+import VistaMateriales from "./VistaMateriales";
 
 const titulosVista = {
   inicio: { titulo: "Inicio", descripcion: "Resumen de tu avance y próximas clases." },
@@ -110,12 +111,7 @@ function PanelAlumno({ usuario, cerrarSesion }) {
       case "resultados":
         return <MisResultadosAlumno />;
       case "material":
-        return (
-          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900">Material de Estudio</h2>
-            <p className="text-slate-500 mt-2">El material bibliográfico estará disponible en breve.</p>
-          </div>
-        );
+        return <VistaMateriales />;
       default:
         return <VistaInicio perfil={perfil} clases={clasesPracticas} usuario={usuario} />;
     }

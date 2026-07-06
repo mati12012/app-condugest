@@ -5,6 +5,7 @@ import {
   getClasesPracticasPorAlumno,
   getClasesTeoricasPorAlumno,
 } from "../services/alumnoPanel.services.js";
+import { getMaterialesEstudioActivos } from "../services/materialEstudio.services.js";
 
 export async function getMiPerfilAlumnoController(req, res) {
   try {
@@ -39,5 +40,25 @@ export async function getMisClasesAlumnoController(req, res) {
     });
   } catch (error) {
     return handleErrorServer(res, 500, "Error", error.message);
+  }
+}
+
+export async function getMaterialesAlumnoController(req, res) {
+  try {
+    const materiales = await getMaterialesEstudioActivos();
+
+    return handleSuccess(
+      res,
+      200,
+      "Materiales de estudio obtenidos",
+      materiales
+    );
+  } catch (error) {
+    return handleErrorServer(
+      res,
+      500,
+      "Error al obtener materiales de estudio",
+      error.message
+    );
   }
 }

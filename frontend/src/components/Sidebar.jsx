@@ -5,6 +5,7 @@ import {
   Car,
   ClipboardCheck,
   CreditCard,
+  FileText,
   Home,
   LogOut,
   UserCircle,
@@ -35,6 +36,12 @@ const opcionesMenu = [
     etiqueta: "Planes",
     Icono: BookOpenCheck,
     vistasActivas: ["planes"],
+  },
+  {
+    id: "materiales",
+    etiqueta: "Materiales",
+    Icono: FileText,
+    vistasActivas: ["materiales"],
   },
   {
     id: "solicitudesMatricula",
