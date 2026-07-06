@@ -12,10 +12,17 @@ function TarjetaResumen({ valor, etiqueta, color = "text-slate-900", extraInfo }
 }
 
 function VistaInicio({ perfil, clases, usuario }) {
+  const totalClasesPracticas = Number(perfil?.total_clases_practicas || 0);
+  const clasesRealizadas = Number(perfil?.clases_practicas_realizadas || 0);
+  const clasesRestantes = Number(perfil?.clases_practicas_restantes || 0);
+
   const porcentajeAvance = useMemo(() => {
-    if (!perfil || !perfil.total_clases) return 0;
-    return Math.round((perfil.clases_completadas / perfil.total_clases) * 100);
-  }, [perfil]);
+    if (!totalClasesPracticas) return 0;
+    return Math.min(
+      Math.round((clasesRealizadas / totalClasesPracticas) * 100),
+      100
+    );
+  }, [clasesRealizadas, totalClasesPracticas]);
 
   const proximasClases = clases
     .filter((clase) => clase.estado === "Programada")
@@ -28,10 +35,26 @@ function VistaInicio({ perfil, clases, usuario }) {
         <h2 className="text-2xl font-bold text-slate-900 mt-2">Bienvenido, {usuario?.correo}</h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-        <TarjetaResumen valor={perfil?.plan || "Sin Plan"} etiqueta="Plan Contratado" color="text-blue-700" />
-        <TarjetaResumen valor={perfil?.clases_completadas || 0} etiqueta="Clases realizadas" color="text-green-700" />
-        <TarjetaResumen valor={perfil?.total_clases || 0} etiqueta="Total de clases" />
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-5">
+        <TarjetaResumen
+          valor={perfil?.nombre_plan || "Sin matrícula activa"}
+          etiqueta={perfil?.tipo_plan || "Plan contratado"}
+          color="text-blue-700"
+        />
+        <TarjetaResumen
+          valor={clasesRealizadas}
+          etiqueta="Clases realizadas"
+          color="text-green-700"
+        />
+        <TarjetaResumen
+          valor={totalClasesPracticas}
+          etiqueta="Clases prácticas contratadas"
+        />
+        <TarjetaResumen
+          valor={clasesRestantes}
+          etiqueta="Clases restantes"
+          color={clasesRestantes === 0 ? "text-amber-700" : "text-slate-900"}
+        />
         <TarjetaResumen 
           valor={`${porcentajeAvance}%`} 
           etiqueta="Avance total" 
