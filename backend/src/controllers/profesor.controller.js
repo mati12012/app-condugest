@@ -16,6 +16,13 @@ import {
 } from "../validations/profesor.validation.js";
 
 import {
+  normalizarEmail,
+  normalizarRutBasico,
+  normalizarTelefonoChile,
+  normalizarTexto,
+} from "../validations/common.validation.js";
+
+import {
   handleErrorClient,
   handleErrorServer,
   handleSuccess,
@@ -28,6 +35,28 @@ import {
 
 function limpiarDatosProfesor(data) {
   const limpio = { ...data };
+
+  ["nombre", "apellido", "sede", "licencia_autorizada", "especialidad"].forEach(
+    (campo) => {
+      if (typeof limpio[campo] === "string") {
+        limpio[campo] = normalizarTexto(limpio[campo]);
+      }
+    }
+  );
+
+  if (typeof limpio.rut === "string") {
+    limpio.rut = normalizarRutBasico(limpio.rut);
+  }
+
+  if (typeof limpio.correo_personal === "string") {
+    const correoNormalizado = normalizarEmail(limpio.correo_personal);
+    limpio.correo_personal = correoNormalizado || null;
+  }
+
+  if (typeof limpio.telefono === "string") {
+    const telefonoNormalizado = normalizarTelefonoChile(limpio.telefono);
+    limpio.telefono = telefonoNormalizado || null;
+  }
 
   if (limpio.estado === "true") {
     limpio.estado = true;

@@ -1,6 +1,11 @@
 "use strict";
 import Joi from "joi";
 
+import {
+    convertirHoraAMinutos,
+    validarHorarioAtencion,
+} from "./common.validation.js";
+
 export const claseTeoricaBodyValidation = Joi.object({
     tema: Joi.string().min(3).max(150).required().messages({
         "string.empty": "El tema de la clase es obligatorio.",
@@ -27,27 +32,16 @@ export const claseTeoricaBodyValidation = Joi.object({
 
 // Funcion para las reglas de horario
 export function validarReglasHorario(horaInicio, horaFin) {
-    const inicioLimpio = String(horaInicio).slice(0, 5);
-    const finLimpio = String(horaFin).slice(0, 5);
+    const horarioAtencion = validarHorarioAtencion(horaInicio, horaFin);
 
-    // Convierte las horas y minutos a minutos totales para facilitar la comparacion
-    const [inicioHora, inicioMin] = inicioLimpio.split(':').map(Number);
-    const [finHora, finMin] = finLimpio.split(':').map(Number);
-
-    const minutosInicio = (inicioHora * 60) + inicioMin;
-    const minutosFin = (finHora * 60) + finMin;
-
-    // Regla 1: Horario comercial de la escuela
-    if (minutosInicio < 8 * 60 || minutosFin > 22 * 60) {
-        return { valido: false, mensaje: "Las clases solo pueden programarse entre las 08:00 y las 22:00 horas." };
+    if (!horarioAtencion.valido) {
+        return horarioAtencion;
     }
 
-    // Regla 2: Hora de término mayor a hora de inicio
-    if (minutosFin <= minutosInicio) {
-        return { valido: false, mensaje: "La hora de término debe ser mayor a la hora de inicio." };
-    }
+    const minutosInicio = convertirHoraAMinutos(horaInicio);
+    const minutosFin = convertirHoraAMinutos(horaFin);
 
-    // Regla 3: Duración mínima y máxima
+    // Regla 2: Duración mínima y máxima
     const duracion = minutosFin - minutosInicio;
 
     // Mínimo 45 minutos

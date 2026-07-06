@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
+import { validarHorarioAtencion } from "../../utils/validacionesFormulario";
 
 const EditarClaseTeorica = ({ idClase, cambiarVista }) => {
   const [datos, setDatos] = useState(null);
@@ -9,11 +10,7 @@ const EditarClaseTeorica = ({ idClase, cambiarVista }) => {
   const [cargando, setCargando] = useState(true);
   const [erroresCampos, setErroresCampos] = useState([]);
 
-  useEffect(() => {
-    cargarDatosIniciales();
-  }, [idClase]);
-
-  const cargarDatosIniciales = async () => {
+  const cargarDatosIniciales = useCallback(async () => {
     try {
       const resProfesores = await apiFetch(`${import.meta.env.VITE_BASE_URL}/profesores`);
       const dataProfesores = await resProfesores.json();
@@ -40,13 +37,24 @@ const EditarClaseTeorica = ({ idClase, cambiarVista }) => {
     } finally {
       setCargando(false);
     }
-  };
+  }, [idClase]);
+
+  useEffect(() => {
+    Promise.resolve().then(cargarDatosIniciales);
+  }, [cargarDatosIniciales]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMensajeExito('');
     setErroresCampos([]);
     setCargando(true);
+
+    const errorHorario = validarHorarioAtencion(datos.hora_inicio, datos.hora_fin);
+    if (errorHorario) {
+      setErroresCampos([errorHorario]);
+      setCargando(false);
+      return;
+    }
 
     const datosFinales = {
       ...datos,
@@ -179,6 +187,8 @@ const EditarClaseTeorica = ({ idClase, cambiarVista }) => {
             <label className="block text-sm font-semibold text-slate-700 mb-2">Hora Inicio</label>
             <input 
               type="time" 
+              min="09:00"
+              max="20:00"
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none transition-shadow ${tieneError('inicio') ? 'border-red-400 bg-red-50' : 'border-slate-300'}`}
               value={datos.hora_inicio} 
               onChange={e => setDatos({...datos, hora_inicio: e.target.value})} 
@@ -190,6 +200,8 @@ const EditarClaseTeorica = ({ idClase, cambiarVista }) => {
             <label className="block text-sm font-semibold text-slate-700 mb-2">Hora Fin</label>
             <input 
               type="time" 
+              min="09:00"
+              max="20:00"
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none transition-shadow ${tieneError('fin') ? 'border-red-400 bg-red-50' : 'border-slate-300'}`}
               value={datos.hora_fin} 
               onChange={e => setDatos({...datos, hora_fin: e.target.value})} 
@@ -197,6 +209,9 @@ const EditarClaseTeorica = ({ idClase, cambiarVista }) => {
             />
           </div>
         </div>
+        <p className="text-xs text-slate-400 -mt-3">
+          Horario de atencion permitido: 09:00 a 20:00. La hora de fin debe ser posterior al inicio.
+        </p>
 
         <div className="pt-4 border-t mt-6 flex justify-end gap-3">
           <button

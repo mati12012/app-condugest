@@ -1,3 +1,5 @@
+import { obtenerCorreoUsuario, obtenerNombreUsuario } from "../../utils/usuarioSesion";
+
 function formatearPesos(valor) {
   return new Intl.NumberFormat("es-CL", {
     style: "currency",
@@ -19,6 +21,8 @@ function obtenerEstiloEstadoPago(estadoPago) {
 }
 
 function VistaPerfil({ perfil, usuario }) {
+  const nombreUsuario = obtenerNombreUsuario(usuario, "Alumno");
+  const correoUsuario = obtenerCorreoUsuario(usuario);
   const saldoPendiente = Number(perfil?.saldo_pendiente || 0);
   const estadoPago = perfil?.estado_pago || "Pendiente";
   const estadoMatricula = perfil?.estado_matricula || "Sin matrícula activa";
@@ -29,8 +33,12 @@ function VistaPerfil({ perfil, usuario }) {
         <h2 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-4 mb-4">Datos del Alumno</h2>
         <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="rounded-xl border border-slate-100 p-4 bg-slate-50">
+            <dt className="text-sm text-slate-500">Nombre</dt>
+            <dd className="font-semibold text-slate-900 mt-1">{nombreUsuario}</dd>
+          </div>
+          <div className="rounded-xl border border-slate-100 p-4 bg-slate-50">
             <dt className="text-sm text-slate-500">Correo Electrónico</dt>
-            <dd className="font-semibold text-slate-900 mt-1 break-all">{usuario?.correo}</dd>
+            <dd className="font-semibold text-slate-900 mt-1 break-all">{correoUsuario}</dd>
           </div>
           <div className="rounded-xl border border-slate-100 p-4 bg-slate-50">
             <dt className="text-sm text-slate-500">Licencia en curso</dt>

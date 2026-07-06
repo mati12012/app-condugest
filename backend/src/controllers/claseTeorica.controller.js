@@ -115,7 +115,7 @@ export async function updateClaseTeoricaController(req, res) {
 
         const claseFinal = { ...claseExistente, ...claseData };
 
-        const chequeoHorario = validarReglasHorario(claseData.hora_inicio, claseData.hora_fin);
+        const chequeoHorario = validarReglasHorario(claseFinal.hora_inicio, claseFinal.hora_fin);
         if (!chequeoHorario.valido) {
             return handleErrorClient(res, 400, "Error de horario", [chequeoHorario.mensaje]);
         }

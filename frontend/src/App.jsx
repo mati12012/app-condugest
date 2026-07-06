@@ -34,6 +34,7 @@ import VistaReprogramaciones from './pages/secretaria/VistaReprogramaciones';
 import VistaMaterialesEstudio from './pages/secretaria/VistaMaterialesEstudio';
 import VistaSolicitudesExamen from './pages/secretaria/VistaSolicitudesExamen';
 import VistaDisponibilidadProfesores from './pages/secretaria/VistaDisponibilidadProfesores';
+import { obtenerCorreoUsuario, obtenerNombreUsuario } from './utils/usuarioSesion';
 
 const obtenerVistaPorRol = (rol) => {
   if (rol === "secretaria") return "dashboard";
@@ -77,6 +78,8 @@ function App() {
 
   const [alumnoSeleccionado, setAlumnoSeleccionado] = useState(null);
   const [idSeleccionado, setIdSeleccionado] = useState(null);
+  const nombreUsuario = obtenerNombreUsuario(usuario, "Usuario");
+  const correoUsuario = obtenerCorreoUsuario(usuario, "");
 
 
 
@@ -157,7 +160,12 @@ if (usuario.rol === "profesor") {
         {/* barra superior pequeña */}
         <header className="bg-white border-b p-4 flex justify-between items-center">
           <span className="font-medium text-slate-600">Portal de Administración</span>
-          <span className="text-sm text-slate-500">{usuario?.correo}</span>
+          <div className="text-right">
+            <p className="text-sm font-semibold text-slate-700">{nombreUsuario}</p>
+            {correoUsuario && correoUsuario !== nombreUsuario && (
+              <p className="text-xs text-slate-500">{correoUsuario}</p>
+            )}
+          </div>
         </header>
 
         {/* aqui cambia la pantalla segun la vista actual */}

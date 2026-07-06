@@ -1,5 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
+import {
+  normalizarRutBasico,
+  normalizarTexto,
+  validarNombrePersona,
+  validarRutBasico,
+} from "../../utils/validacionesFormulario";
 
 const RegistrarAlumno = ({ cambiarVista }) => {
   const [datos, setDatos] = useState({ 
@@ -20,26 +26,32 @@ const RegistrarAlumno = ({ cambiarVista }) => {
     setErroresCampos([]);
     setCargando(true);
 
-    if (datos.rut.trim() === '') {
-      setErroresCampos(['El RUT es obligatorio']);
+    const errorRut = validarRutBasico(datos.rut);
+    if (errorRut) {
+      setErroresCampos([errorRut]);
       setCargando(false);
       return;
     }
 
-    if (datos.nombre.trim() === '') {
-      setErroresCampos(['El nombre es obligatorio']);
+    const errorNombre = validarNombrePersona(datos.nombre, 'nombre');
+    if (errorNombre) {
+      setErroresCampos([errorNombre]);
       setCargando(false);
       return;
     }
 
-    if (datos.apellido.trim() === '') {
-      setErroresCampos(['El apellido es obligatorio']);
+    const errorApellido = validarNombrePersona(datos.apellido, 'apellido');
+    if (errorApellido) {
+      setErroresCampos([errorApellido]);
       setCargando(false);
       return;
     }
 
     const datosFinales = {
       ...datos,
+      rut: normalizarRutBasico(datos.rut),
+      nombre: normalizarTexto(datos.nombre),
+      apellido: normalizarTexto(datos.apellido),
       total_clases: Number(datos.total_clases),
       clases_completadas: 0,
       estado: 'Matriculado',
@@ -118,7 +130,7 @@ const RegistrarAlumno = ({ cambiarVista }) => {
           <label className="block text-sm font-semibold text-slate-700 mb-2">RUT</label>
           <input 
             type="text" 
-            placeholder="Ej: 12345678-9" 
+            placeholder="12.345.678-9" 
             className={`w-full px-4 py-2 border rounded-lg focus:outline-none transition-shadow ${
               tieneError('rut') 
                 ? 'border-red-400 focus:ring-2 focus:ring-red-100 bg-red-50/30' 
@@ -128,6 +140,9 @@ const RegistrarAlumno = ({ cambiarVista }) => {
             onChange={e => setDatos({...datos, rut: e.target.value})} 
             required 
           />
+          <p className="text-xs text-slate-400 mt-1">
+            Puede ingresarse con o sin puntos. Se normalizara antes de guardar.
+          </p>
         </div>
 
         <div>
@@ -144,6 +159,9 @@ const RegistrarAlumno = ({ cambiarVista }) => {
             onChange={e => setDatos({...datos, nombre: e.target.value})} 
             required 
           />
+          <p className="text-xs text-slate-400 mt-1">
+            2 a 50 caracteres. Solo letras, espacios simples, apostrofe o guion.
+          </p>
         </div>
         
         <div>
@@ -160,6 +178,9 @@ const RegistrarAlumno = ({ cambiarVista }) => {
             onChange={e => setDatos({...datos, apellido: e.target.value})} 
             required 
           />
+          <p className="text-xs text-slate-400 mt-1">
+            2 a 50 caracteres. Solo letras, espacios simples, apostrofe o guion.
+          </p>
           <p className="text-xs text-slate-400 mt-1">El correo institucional se generará automáticamente.</p>
         </div>
 

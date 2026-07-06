@@ -1,4 +1,5 @@
 import { formatearFechaVisual } from "../../utils/formatearFecha";
+import { obtenerNombreUsuario } from "../../utils/usuarioSesion";
 import {
   AgendaHoy,
   TablaClases,
@@ -7,6 +8,7 @@ import {
 import { obtenerResumenClases } from "./profesorPanel.helpers";
 
 function InicioProfesor({ usuario, clases, cargarMisClases, irAMisClases }) {
+  const nombreUsuario = obtenerNombreUsuario(usuario, "profesor");
   const {
     fechaHoy,
     clasesHoy,
@@ -27,7 +29,7 @@ function InicioProfesor({ usuario, clases, cargarMisClases, irAMisClases }) {
             </span>
 
             <h2 className="text-3xl font-bold text-slate-900 mt-4">
-              Hola, {usuario?.correo || "profesor"}
+              Hola, {nombreUsuario}
             </h2>
 
             <p className="text-slate-500 mt-3 text-base leading-relaxed">

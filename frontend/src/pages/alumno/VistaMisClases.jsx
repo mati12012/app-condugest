@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { formatearFechaVisual } from "../../utils/formatearFecha";
 import { apiFetch } from "../../utils/apiFetch";
+import { validarHorarioAtencion } from "../../utils/validacionesFormulario";
 
 const formularioInicial = {
   motivo: "",
@@ -248,6 +249,15 @@ function VistaMisClases({ clasesPracticas, clasesTeoricas }) {
       setMensaje("");
       setErrorSolicitudes("");
 
+      const errorHorario = validarHorarioAtencion(
+        formulario.hora_inicio_solicitada,
+        formulario.hora_fin_solicitada
+      );
+
+      if (errorHorario) {
+        throw new Error(errorHorario);
+      }
+
       const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/alumno-panel/reprogramaciones`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -362,6 +372,8 @@ function VistaMisClases({ clasesPracticas, clasesTeoricas }) {
                 <span className="text-sm font-semibold text-slate-700">Hora inicio solicitada</span>
                 <input
                   type="time"
+                  min="09:00"
+                  max="20:00"
                   value={formulario.hora_inicio_solicitada}
                   onChange={(evento) => actualizarCampo("hora_inicio_solicitada", evento.target.value)}
                   required
@@ -373,6 +385,8 @@ function VistaMisClases({ clasesPracticas, clasesTeoricas }) {
                 <span className="text-sm font-semibold text-slate-700">Hora fin solicitada</span>
                 <input
                   type="time"
+                  min="09:00"
+                  max="20:00"
                   value={formulario.hora_fin_solicitada}
                   onChange={(evento) => actualizarCampo("hora_fin_solicitada", evento.target.value)}
                   required
@@ -380,6 +394,9 @@ function VistaMisClases({ clasesPracticas, clasesTeoricas }) {
                 />
               </label>
             </div>
+            <p className="text-xs text-slate-400 -mt-2">
+              Horario de atencion permitido: 09:00 a 20:00. La hora de fin debe ser posterior al inicio.
+            </p>
 
             <div className="flex justify-end gap-3">
               <button

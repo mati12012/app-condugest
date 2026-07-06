@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
+import { validarHorarioAtencion } from "../../utils/validacionesFormulario";
 
 const RegistrarClasePractica = ({ cambiarVista }) => {
   const [datos, setDatos] = useState({
@@ -22,11 +23,7 @@ const RegistrarClasePractica = ({ cambiarVista }) => {
   const [cargando, setCargando] = useState(false);
   const [mensaje, setMensaje] = useState('');
 
-  useEffect(() => {
-    cargarDatosIniciales();
-  }, []);
-
-  const cargarDatosIniciales = async () => {
+  async function cargarDatosIniciales() {
     try {
       setCargandoDatos(true);
       setMensaje('');
@@ -62,7 +59,11 @@ const RegistrarClasePractica = ({ cambiarVista }) => {
     } finally {
       setCargandoDatos(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    Promise.resolve().then(cargarDatosIniciales);
+  }, []);
 
   const profesoresActivos = profesores.filter((profesor) => profesor.estado === true);
 
@@ -108,6 +109,11 @@ const RegistrarClasePractica = ({ cambiarVista }) => {
 
     if (!datos.hora_fin) {
       return 'Error: Debe ingresar la hora de término';
+    }
+
+    const errorHorarioAtencion = validarHorarioAtencion(datos.hora_inicio, datos.hora_fin);
+    if (errorHorarioAtencion) {
+      return `Error: ${errorHorarioAtencion}`;
     }
 
     if (convertirHoraAMinutos(datos.hora_fin) <= convertirHoraAMinutos(datos.hora_inicio)) {
@@ -348,6 +354,8 @@ const RegistrarClasePractica = ({ cambiarVista }) => {
             </label>
             <input
               type="time"
+              min="09:00"
+              max="20:00"
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
               value={datos.hora_inicio}
               onChange={(e) => setDatos({ ...datos, hora_inicio: e.target.value })}
@@ -361,6 +369,8 @@ const RegistrarClasePractica = ({ cambiarVista }) => {
             </label>
             <input
               type="time"
+              min="09:00"
+              max="20:00"
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
               value={datos.hora_fin}
               onChange={(e) => setDatos({ ...datos, hora_fin: e.target.value })}
@@ -368,6 +378,9 @@ const RegistrarClasePractica = ({ cambiarVista }) => {
             />
           </div>
         </div>
+        <p className="text-xs text-slate-400 -mt-3">
+          Horario de atencion permitido: 09:00 a 20:00. La hora de termino debe ser posterior al inicio.
+        </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>

@@ -6,6 +6,7 @@ import {
 } from "../middlewares/auth.middleware.js";
 
 import {
+  getMiPerfilProfesorController,
   getMisClasesProfesorController,
   getMisClasesTeoricasController, 
   getDetalleClaseTeoricaProfesorController, 
@@ -24,6 +25,13 @@ import { marcarAsistenciaPracticaController } from "../controllers/clasePractica
 
 const router = Router();
 
+
+router.get(
+  "/mi-perfil",
+  verificarToken,
+  permitirRoles("profesor", "Profesor"),
+  getMiPerfilProfesorController
+);
 
 router.get(
   "/mis-clases",

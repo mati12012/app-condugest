@@ -2,6 +2,11 @@
 
 import Joi from "joi";
 
+import {
+  convertirHoraAMinutos,
+  validarHorarioAtencion,
+} from "./common.validation.js";
+
 const horaRegex = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
 const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -9,26 +14,16 @@ const estadosPermitidos = ["Programada", "Realizada", "Cancelada"];
 
 // Función para validar las reglas de horario de las clases teóricas
 export function validarReglasHorarioPractica(horaInicio, horaFin) {
-    const inicioLimpio = String(horaInicio).slice(0, 5);
-    const finLimpio = String(horaFin).slice(0, 5);
+    const horarioAtencion = validarHorarioAtencion(horaInicio, horaFin);
 
-    const [inicioHora, inicioMin] = inicioLimpio.split(':').map(Number);
-    const [finHora, finMin] = finLimpio.split(':').map(Number);
-
-    const minutosInicio = (inicioHora * 60) + inicioMin;
-    const minutosFin = (finHora * 60) + finMin;
-
-    // Regla 1: Horario permitido para clases prácticas en la calle
-    if (minutosInicio < 8 * 60 || minutosFin > 20 * 60) {
-        return { valido: false, mensaje: "Por seguridad, las clases prácticas en la calle solo se realizan entre las 08:00 y las 20:00 horas." };
+    if (!horarioAtencion.valido) {
+        return horarioAtencion;
     }
 
-    // Regla 2: Hora de término mayor a hora de inicio
-    if (minutosFin <= minutosInicio) {
-        return { valido: false, mensaje: "La hora de término debe ser posterior a la hora de inicio." };
-    }
+    const minutosInicio = convertirHoraAMinutos(horaInicio);
+    const minutosFin = convertirHoraAMinutos(horaFin);
 
-    // Regla 3: Duración mínima y máxima de la clase práctica
+    // Regla 2: Duración mínima y máxima de la clase práctica
     const duracion = minutosFin - minutosInicio;
     
     // Mínimo 45 minutos 

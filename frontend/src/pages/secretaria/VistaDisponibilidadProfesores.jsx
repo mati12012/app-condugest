@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../../utils/apiFetch";
 import { formatearHoraVisual } from "../../utils/formatearFecha";
+import { validarHorarioAtencion } from "../../utils/validacionesFormulario";
 
 const DIAS_SEMANA = [
   "Lunes",
@@ -163,6 +164,15 @@ function VistaDisponibilidadProfesores() {
 
     if (!formulario.hora_fin) {
       return "Debe ingresar la hora de término.";
+    }
+
+    const errorHorarioAtencion = validarHorarioAtencion(
+      formulario.hora_inicio,
+      formulario.hora_fin
+    );
+
+    if (errorHorarioAtencion) {
+      return errorHorarioAtencion;
     }
 
     if (
@@ -437,6 +447,8 @@ function VistaDisponibilidadProfesores() {
             <input
               type="time"
               name="hora_inicio"
+              min="09:00"
+              max="20:00"
               value={formulario.hora_inicio}
               onChange={manejarCambio}
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
@@ -451,6 +463,8 @@ function VistaDisponibilidadProfesores() {
             <input
               type="time"
               name="hora_fin"
+              min="09:00"
+              max="20:00"
               value={formulario.hora_fin}
               onChange={manejarCambio}
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
@@ -476,6 +490,9 @@ function VistaDisponibilidadProfesores() {
             </select>
           </div>
         </div>
+        <p className="text-xs text-slate-400 -mt-3">
+          Horario de atencion permitido: 09:00 a 20:00. La hora de termino debe ser posterior al inicio.
+        </p>
 
         <div className="flex justify-end">
           <button

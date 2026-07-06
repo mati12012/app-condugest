@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { formatearFechaVisual } from "../../utils/formatearFecha";
+import { obtenerNombreUsuario } from "../../utils/usuarioSesion";
 
 function TarjetaResumen({ valor, etiqueta, color = "text-slate-900", extraInfo }) {
   return (
@@ -12,6 +13,7 @@ function TarjetaResumen({ valor, etiqueta, color = "text-slate-900", extraInfo }
 }
 
 function VistaInicio({ perfil, clases, usuario }) {
+  const nombreUsuario = obtenerNombreUsuario(usuario, "alumno");
   const totalClasesPracticas = Number(perfil?.total_clases_practicas || 0);
   const clasesRealizadas = Number(perfil?.clases_practicas_realizadas || 0);
   const clasesRestantes = Number(perfil?.clases_practicas_restantes || 0);
@@ -32,7 +34,7 @@ function VistaInicio({ perfil, clases, usuario }) {
     <section className="space-y-6">
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
         <p className="text-sm font-semibold text-blue-700 uppercase tracking-wide">Portal del alumno</p>
-        <h2 className="text-2xl font-bold text-slate-900 mt-2">Bienvenido, {usuario?.correo}</h2>
+        <h2 className="text-2xl font-bold text-slate-900 mt-2">Bienvenido, {nombreUsuario}</h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-5">

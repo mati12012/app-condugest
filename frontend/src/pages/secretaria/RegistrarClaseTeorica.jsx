@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
+import { validarHorarioAtencion } from "../../utils/validacionesFormulario";
 
 const RegistrarClaseTeorica = ({ cambiarVista }) => {
   const [datos, setDatos] = useState({ 
@@ -17,11 +18,7 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
   const [cargando, setCargando] = useState(false);
   const [erroresCampos, setErroresCampos] = useState([]);
 
-  useEffect(() => {
-    obtenerProfesores();
-  }, []);
-
-  const obtenerProfesores = async () => {
+  async function obtenerProfesores() {
     try {
       const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/profesores`);
       const respuestaServidor = await response.json();
@@ -31,7 +28,11 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
     } catch (error) {
       console.error("No se pudieron cargar los profesores", error);
     }
-  };
+  }
+
+  useEffect(() => {
+    Promise.resolve().then(obtenerProfesores);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,6 +42,13 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
 
     if (!datos.id_profesor) {
       setErroresCampos(['Debe seleccionar un profesor para la clase.']);
+      setCargando(false);
+      return;
+    }
+
+    const errorHorario = validarHorarioAtencion(datos.hora_inicio, datos.hora_fin);
+    if (errorHorario) {
+      setErroresCampos([errorHorario]);
       setCargando(false);
       return;
     }
@@ -185,6 +193,8 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
             <label className="block text-sm font-semibold text-slate-700 mb-2">Hora Inicio</label>
             <input 
               type="time" 
+              min="09:00"
+              max="20:00"
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none transition-shadow ${
                 tieneError('inicio') ? 'border-red-400 focus:ring-2 focus:ring-red-100 bg-red-50/30' : 'border-slate-300 focus:ring-2 focus:ring-blue-600'
               }`}
@@ -198,6 +208,8 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
             <label className="block text-sm font-semibold text-slate-700 mb-2">Hora Fin</label>
             <input 
               type="time" 
+              min="09:00"
+              max="20:00"
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none transition-shadow ${
                 tieneError('fin') ? 'border-red-400 focus:ring-2 focus:ring-red-100 bg-red-50/30' : 'border-slate-300 focus:ring-2 focus:ring-blue-600'
               }`}
@@ -207,6 +219,9 @@ const RegistrarClaseTeorica = ({ cambiarVista }) => {
             />
           </div>
         </div>
+        <p className="text-xs text-slate-400 -mt-3">
+          Horario de atencion permitido: 09:00 a 20:00. La hora de fin debe ser posterior al inicio.
+        </p>
 
         <div className="pt-4 border-t mt-6 flex justify-end gap-3">
           <button

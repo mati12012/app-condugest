@@ -1,47 +1,81 @@
 "use strict";
 import Joi from "joi";
 
+import {
+    validarEmail,
+    validarNombrePersona,
+    validarRutBasico,
+} from "./common.validation.js";
+
+function validarNombreJoi(campo) {
+    return (value, helpers) => {
+        const resultado = validarNombrePersona(value, campo, true);
+
+        if (!resultado.valido) {
+            return helpers.message(resultado.mensaje);
+        }
+
+        return resultado.valor;
+    };
+}
+
+function validarRutJoi(value, helpers) {
+    const resultado = validarRutBasico(value, true);
+
+    if (!resultado.valido) {
+        return helpers.message(resultado.mensaje);
+    }
+
+    return resultado.valor;
+}
+
+function validarCorreoJoi(value, helpers) {
+    const resultado = validarEmail(value, true, "correo");
+
+    if (!resultado.valido) {
+        return helpers.message(resultado.mensaje);
+    }
+
+    return resultado.valor;
+}
+
 export const alumnoQueryValidation = Joi.object({
     id_alumno: Joi.number()
         .integer()
         .positive()
         .messages({
-            "number.base": "El ID del alumno debe ser un número",
-            "number.positive": "El ID del alumno debe ser un número positivo"
+            "number.base": "El ID del alumno debe ser un numero",
+            "number.positive": "El ID del alumno debe ser un numero positivo"
         })
 });
 
 export const alumnoBodyValidation = Joi.object({
     nombre: Joi.string()
-        .min(2)
-        .max(50)
-        .pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+        .custom(validarNombreJoi("nombre"))
         .required()
         .messages({
             "string.empty": "El nombre es obligatorio.",
-            "string.pattern.base": "El nombre solo puede contener letras y espacios."
+            "any.required": "El nombre es obligatorio."
         }),
     apellido: Joi.string()
-        .min(2)
-        .max(50)
-        .pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+        .custom(validarNombreJoi("apellido"))
         .required()
         .messages({
             "string.empty": "El apellido es obligatorio.",
-            "string.pattern.base": "El apellido solo puede contener letras y espacios."
+            "any.required": "El apellido es obligatorio."
         }),
     rut: Joi.string()
-        .pattern(/^[0-9]+-[0-9kK]{1}$/)
+        .custom(validarRutJoi)
         .required()
         .messages({
             "string.empty": "El RUT es obligatorio.",
-            "string.pattern.base": "El RUT debe tener un formato válido con guion (ej: 12345678-9)."
+            "any.required": "El RUT es obligatorio."
         }),
     licencia: Joi.string().required(),
     sede: Joi.string().required(),
     clases_completadas: Joi.number().integer().min(0).required(),
     total_clases: Joi.number().integer().min(1).required(),
-    correo: Joi.string().email().required(),
+    correo: Joi.string().custom(validarCorreoJoi).required(),
     estado: Joi.string().required()
 });
 

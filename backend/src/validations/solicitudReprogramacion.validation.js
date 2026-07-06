@@ -1,5 +1,7 @@
 import Joi from "joi";
 
+import { validarHorarioAtencion } from "./common.validation.js";
+
 const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
 const horaRegex = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
 
@@ -12,18 +14,13 @@ function formatValidationErrors(error) {
 }
 
 function validarRangoHorario(value, helpers) {
-  const inicio = String(value.hora_inicio_solicitada || "").slice(0, 5);
-  const fin = String(value.hora_fin_solicitada || "").slice(0, 5);
+  const horarioAtencion = validarHorarioAtencion(
+    value.hora_inicio_solicitada,
+    value.hora_fin_solicitada
+  );
 
-  if (!inicio || !fin) return value;
-
-  const [inicioHora, inicioMin] = inicio.split(":").map(Number);
-  const [finHora, finMin] = fin.split(":").map(Number);
-  const minutosInicio = inicioHora * 60 + inicioMin;
-  const minutosFin = finHora * 60 + finMin;
-
-  if (minutosFin <= minutosInicio) {
-    return helpers.error("horario.rango");
+  if (!horarioAtencion.valido) {
+    return helpers.message(horarioAtencion.mensaje);
   }
 
   return value;

@@ -1,5 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
+import {
+  normalizarRutBasico,
+  normalizarTexto,
+  validarNombrePersona,
+  validarRutBasico,
+  validarTelefonoChile,
+} from "../../utils/validacionesFormulario";
 
 const RegistrarProfesor = ({ cambiarVista }) => {
   const [datos, setDatos] = useState({
@@ -18,7 +25,7 @@ const RegistrarProfesor = ({ cambiarVista }) => {
   const [cargando, setCargando] = useState(false);
 
 const validarRutFormato = (rut) => {
-  return /^(\d{1,2}\.?\d{3}\.?\d{3}-[\dkK])$/.test(rut.trim());
+  return !validarRutBasico(rut);
 };
 
 const validarCorreo = (correo) => {
@@ -27,10 +34,7 @@ const validarCorreo = (correo) => {
 };
 
 const validarTelefono = (telefono) => {
-  if (telefono.trim() === '') return true;
-
-  const telefonoLimpio = telefono.replace(/\s/g, '').replace(/-/g, '');
-  return /^(\+56)?\d{8,9}$/.test(telefonoLimpio);
+  return !validarTelefonoChile(telefono, false);
 };
 
 const validarFormulario = () => {
@@ -42,12 +46,14 @@ const validarFormulario = () => {
     return 'Error: El RUT debe tener un formato válido. Ejemplo: 12.345.678-9';
   }
 
-  if (datos.nombre.trim() === '') {
-    return 'Error: El nombre es obligatorio';
+  const errorNombre = validarNombrePersona(datos.nombre, 'nombre');
+  if (errorNombre) {
+    return `Error: ${errorNombre}`;
   }
 
-  if (datos.apellido.trim() === '') {
-    return 'Error: El apellido es obligatorio';
+  const errorApellido = validarNombrePersona(datos.apellido, 'apellido');
+  if (errorApellido) {
+    return `Error: ${errorApellido}`;
   }
 
   if (!validarCorreo(datos.correo_personal)) {
@@ -74,9 +80,9 @@ const validarFormulario = () => {
     setCargando(true);
 
     const datosFinales = {
-      rut: datos.rut.trim(),
-      nombre: datos.nombre.trim(),
-      apellido: datos.apellido.trim(),
+      rut: normalizarRutBasico(datos.rut),
+      nombre: normalizarTexto(datos.nombre),
+      apellido: normalizarTexto(datos.apellido),
       correo_personal:
         datos.correo_personal.trim() === ''
           ? null
@@ -84,7 +90,7 @@ const validarFormulario = () => {
       telefono:
         datos.telefono.trim() === ''
           ? null
-          : datos.telefono.replace(/\s/g, '').replace(/-/g, ''),
+          : datos.telefono.replace(/\s/g, ''),
       licencia_autorizada: datos.licencia_autorizada.trim(),
       sede: datos.sede.trim(),
       especialidad: datos.especialidad.trim(),
@@ -158,14 +164,14 @@ const validarFormulario = () => {
           </label>
           <input
             type="text"
-            placeholder="Ej: 12345678-9"
+            placeholder="12.345.678-9"
             className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
             value={datos.rut}
             onChange={e => setDatos({ ...datos, rut: e.target.value })}
             required
           />
           <p className="text-xs text-slate-400 mt-1">
-            Puede ingresarse con o sin puntos. Ejemplo: 12.345.678-9 o 12345678-9.
+            Puede ingresarse con o sin puntos. Se normalizara antes de guardar.
           </p>
         </div>
 
@@ -181,6 +187,9 @@ const validarFormulario = () => {
             onChange={e => setDatos({ ...datos, nombre: e.target.value })}
             required
           />
+          <p className="text-xs text-slate-400 mt-1">
+            2 a 50 caracteres. Solo letras, espacios simples, apostrofe o guion.
+          </p>
         </div>
 
         <div>
@@ -222,13 +231,13 @@ const validarFormulario = () => {
           </label>
           <input
             type="text"
-            placeholder="Ej: +56912345678"
+            placeholder="+56912345678"
             className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
             value={datos.telefono}
             onChange={e => setDatos({ ...datos, telefono: e.target.value })}
           />
           <p className="text-xs text-slate-400 mt-1">
-            Campo opcional. Ejemplo recomendado: +56912345678 o 912345678.
+            Campo opcional. Debe usar formato chileno +569XXXXXXXX.
           </p>
         </div>
 

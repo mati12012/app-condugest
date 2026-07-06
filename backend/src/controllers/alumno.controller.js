@@ -9,6 +9,31 @@ import {
 import { validateAlumnoData } from "../validations/alumno.validation.js";
 import { handleErrorClient, handleErrorServer, handleSuccess } from "../handlers/responseHandlers.js";
 import { crearUsuarioAuth } from "../services/auth.services.js";
+import {
+    normalizarEmail,
+    normalizarRutBasico,
+    normalizarTexto,
+} from "../validations/common.validation.js";
+
+function limpiarDatosAlumno(data) {
+    const limpio = { ...data };
+
+    ["nombre", "apellido", "licencia", "sede", "estado"].forEach((campo) => {
+        if (typeof limpio[campo] === "string") {
+            limpio[campo] = normalizarTexto(limpio[campo]);
+        }
+    });
+
+    if (typeof limpio.rut === "string") {
+        limpio.rut = normalizarRutBasico(limpio.rut);
+    }
+
+    if (typeof limpio.correo === "string") {
+        limpio.correo = normalizarEmail(limpio.correo);
+    }
+
+    return limpio;
+}
 
 export async function getAlumnosController(req, res) {
     try {
@@ -34,7 +59,7 @@ export async function getAlumnoController(req, res) {
 
 export async function createAlumnoController(req, res) {
     try {
-        const alumnoData = req.body;
+        const alumnoData = limpiarDatosAlumno(req.body);
 
         if (alumnoData.nombre && alumnoData.apellido) {
             alumnoData.correo = await generarCorreoAlumnoUnico(
@@ -78,13 +103,14 @@ export async function updateAlumnoController(req, res) {
     try {
         const { id } = req.params;
         const { id_alumno, id: bodyId, ...alumnoDataSeguro } = req.body;
-        const validationErrors = validateAlumnoData(alumnoDataSeguro);
+        const alumnoDataLimpio = limpiarDatosAlumno(alumnoDataSeguro);
+        const validationErrors = validateAlumnoData(alumnoDataLimpio);
 
         if (validationErrors.length > 0) {
             return handleErrorClient(res, 400, "Datos del alumno invalidos", validationErrors);
         }
 
-        const alumnoActualizado = await updateAlumno(id, alumnoDataSeguro);
+        const alumnoActualizado = await updateAlumno(id, alumnoDataLimpio);
 
         // Para error de superar clases completadas sobre total de clases del plan
         if (alumnoActualizado && alumnoActualizado.errorNegocio) {

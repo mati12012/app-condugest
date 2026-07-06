@@ -22,6 +22,83 @@ export async function getProfesorIdDesdeUsuario(idUsuario) {
   return resultado[0].id_profesor;
 }
 
+export async function getMiPerfilProfesor(idProfesor) {
+  const resultado = await AppDataSource.query(
+    `
+    SELECT
+      p.id_profesor,
+      p.nombre,
+      p.apellido,
+      CONCAT_WS(' ', p.nombre, p.apellido) AS nombre_completo,
+      p.rut,
+      p.correo_institucional,
+      p.correo_personal,
+      p.telefono,
+      p.sede,
+      p.licencia_autorizada,
+      p.especialidad,
+      p.estado,
+      COALESCE((
+        SELECT COUNT(*)
+        FROM clases_practicas cp
+        WHERE cp.id_profesor = p.id_profesor
+      ), 0)::int AS cantidad_clases_practicas_asignadas,
+      COALESCE((
+        SELECT COUNT(*)
+        FROM clases_teoricas ct
+        WHERE ct.id_profesor = p.id_profesor
+      ), 0)::int AS cantidad_clases_teoricas_asignadas,
+      COALESCE((
+        SELECT COUNT(*)
+        FROM evaluaciones_practicas ep
+        WHERE ep.id_profesor = p.id_profesor
+      ), 0)::int AS cantidad_evaluaciones_registradas
+    FROM profesores p
+    WHERE p.id_profesor = $1
+    LIMIT 1
+    `,
+    [Number(idProfesor)]
+  );
+
+  if (resultado.length === 0) {
+    return null;
+  }
+
+  const disponibilidadHorariaActiva = await AppDataSource.query(
+    `
+    SELECT
+      dia_semana,
+      hora_inicio,
+      hora_fin,
+      sede,
+      estado
+    FROM disponibilidad_profesores
+    WHERE id_profesor = $1
+      AND LOWER(estado) = 'activa'
+    ORDER BY
+      CASE dia_semana
+        WHEN 'Lunes' THEN 1
+        WHEN 'Martes' THEN 2
+        WHEN 'Miercoles' THEN 3
+        WHEN 'Miércoles' THEN 3
+        WHEN 'Jueves' THEN 4
+        WHEN 'Viernes' THEN 5
+        WHEN 'Sabado' THEN 6
+        WHEN 'Sábado' THEN 6
+        WHEN 'Domingo' THEN 7
+        ELSE 8
+      END,
+      hora_inicio ASC
+    `,
+    [Number(idProfesor)]
+  );
+
+  return {
+    ...resultado[0],
+    disponibilidad_horaria_activa: disponibilidadHorariaActiva,
+  };
+}
+
 export async function getClasesPracticasPorProfesor(idProfesor) {
   return await AppDataSource.query(
     `

@@ -1,5 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
+import {
+  normalizarRutBasico,
+  normalizarTexto,
+  validarNombrePersona,
+  validarRutBasico,
+  validarTelefonoChile,
+} from "../../utils/validacionesFormulario";
 
 const EditarProfesor = ({ profesorId, cambiarVista }) => {
   const [datos, setDatos] = useState({
@@ -19,11 +26,7 @@ const EditarProfesor = ({ profesorId, cambiarVista }) => {
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState('');
 
-  useEffect(() => {
-    obtenerProfesor();
-  }, [profesorId]);
-
-  const obtenerProfesor = async () => {
+  const obtenerProfesor = useCallback(async () => {
     try {
       const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/profesores/${profesorId}`);
       const respuestaServidor = await response.json();
@@ -52,11 +55,15 @@ const EditarProfesor = ({ profesorId, cambiarVista }) => {
     } finally {
       setCargando(false);
     }
-  };
+  }, [profesorId]);
+
+  useEffect(() => {
+    Promise.resolve().then(obtenerProfesor);
+  }, [obtenerProfesor]);
 
   const validarRutFormato = (rut) => {
-    return /^(\d{1,2}\.?\d{3}\.?\d{3}-[\dkK])$/.test(rut.trim());
-  };
+    return !validarRutBasico(rut);
+  }
 
   const validarCorreo = (correo) => {
     if (correo.trim() === '') return true;
@@ -64,10 +71,7 @@ const EditarProfesor = ({ profesorId, cambiarVista }) => {
   };
 
   const validarTelefono = (telefono) => {
-    if (telefono.trim() === '') return true;
-
-    const telefonoLimpio = telefono.replace(/\s/g, '').replace(/-/g, '');
-    return /^(\+56)?\d{8,9}$/.test(telefonoLimpio);
+    return !validarTelefonoChile(telefono, false);
   };
 
   const validarFormulario = () => {
@@ -79,12 +83,14 @@ const EditarProfesor = ({ profesorId, cambiarVista }) => {
       return 'Error: El RUT debe tener un formato válido. Ejemplo: 12.345.678-9';
     }
 
-    if (datos.nombre.trim() === '') {
-      return 'Error: El nombre es obligatorio';
+    const errorNombre = validarNombrePersona(datos.nombre, 'nombre');
+    if (errorNombre) {
+      return `Error: ${errorNombre}`;
     }
 
-    if (datos.apellido.trim() === '') {
-      return 'Error: El apellido es obligatorio';
+    const errorApellido = validarNombrePersona(datos.apellido, 'apellido');
+    if (errorApellido) {
+      return `Error: ${errorApellido}`;
     }
 
     if (!validarCorreo(datos.correo_personal)) {
@@ -124,9 +130,9 @@ const EditarProfesor = ({ profesorId, cambiarVista }) => {
     setGuardando(true);
 
     const datosActualizados = {
-      rut: datos.rut.trim(),
-      nombre: datos.nombre.trim(),
-      apellido: datos.apellido.trim(),
+      rut: normalizarRutBasico(datos.rut),
+      nombre: normalizarTexto(datos.nombre),
+      apellido: normalizarTexto(datos.apellido),
       correo_personal:
         datos.correo_personal.trim() === ''
           ? null
@@ -134,7 +140,7 @@ const EditarProfesor = ({ profesorId, cambiarVista }) => {
       telefono:
         datos.telefono.trim() === ''
           ? null
-          : datos.telefono.trim(),
+          : datos.telefono.replace(/\s/g, ''),
       licencia_autorizada: datos.licencia_autorizada,
       sede: datos.sede,
       especialidad: datos.especialidad,
@@ -208,11 +214,15 @@ const EditarProfesor = ({ profesorId, cambiarVista }) => {
           </label>
           <input
             type="text"
+            placeholder="12.345.678-9"
             className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
             value={datos.rut}
             onChange={e => setDatos({ ...datos, rut: e.target.value })}
             required
           />
+          <p className="text-xs text-slate-400 mt-1">
+            Puede ingresarse con o sin puntos. Se normalizara antes de guardar.
+          </p>
         </div>
 
         <div>
@@ -221,11 +231,15 @@ const EditarProfesor = ({ profesorId, cambiarVista }) => {
           </label>
           <input
             type="text"
+            placeholder="Ej: Juan"
             className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
             value={datos.nombre}
             onChange={e => setDatos({ ...datos, nombre: e.target.value })}
             required
           />
+          <p className="text-xs text-slate-400 mt-1">
+            2 a 50 caracteres. Solo letras, espacios simples, apostrofe o guion.
+          </p>
         </div>
 
         <div>
@@ -234,6 +248,7 @@ const EditarProfesor = ({ profesorId, cambiarVista }) => {
           </label>
           <input
             type="text"
+            placeholder="Ej: Perez"
             className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
             value={datos.apellido}
             onChange={e => setDatos({ ...datos, apellido: e.target.value })}
@@ -260,11 +275,14 @@ const EditarProfesor = ({ profesorId, cambiarVista }) => {
           </label>
           <input
             type="text"
-            placeholder="Ej: +56912345678"
+            placeholder="+56912345678"
             className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
             value={datos.telefono}
             onChange={e => setDatos({ ...datos, telefono: e.target.value })}
           />
+          <p className="text-xs text-slate-400 mt-1">
+            Campo opcional. Debe usar formato chileno +569XXXXXXXX.
+          </p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">

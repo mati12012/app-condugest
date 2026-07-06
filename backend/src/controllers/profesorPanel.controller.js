@@ -8,6 +8,7 @@ import {
 
 import {
   getProfesorIdDesdeUsuario,
+  getMiPerfilProfesor,
   getClasesPracticasPorProfesor,
   getClasesTeoricasPorProfesor,
   getClaseTeoricaProfesorById,
@@ -48,6 +49,34 @@ async function obtenerProfesorAutenticado(req, res) {
   }
 
   return idProfesor;
+}
+
+export async function getMiPerfilProfesorController(req, res) {
+  try {
+    const idProfesor = await obtenerProfesorAutenticado(req, res);
+
+    if (!idProfesor) return;
+
+    const perfil = await getMiPerfilProfesor(idProfesor);
+
+    if (!perfil) {
+      return handleErrorClient(res, 404, "Perfil de profesor no encontrado");
+    }
+
+    return handleSuccess(
+      res,
+      200,
+      "Perfil del profesor obtenido exitosamente",
+      perfil
+    );
+  } catch (error) {
+    return handleErrorServer(
+      res,
+      500,
+      "Error al obtener el perfil del profesor",
+      error.message
+    );
+  }
 }
 
 export async function getMisClasesProfesorController(req, res) {

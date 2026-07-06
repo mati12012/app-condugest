@@ -12,6 +12,7 @@ import {
   UserCircle,
   Users,
 } from "lucide-react";
+import { obtenerCorreoUsuario, obtenerNombreUsuario } from "../utils/usuarioSesion";
 
 const opcionesMenu = [
   {
@@ -113,6 +114,9 @@ const opcionesMenu = [
 ];
 
 function Sidebar({ cambiarVista, vistaActual, cerrarSesion, usuario }) {
+  const nombreUsuario = obtenerNombreUsuario(usuario, "Secretaría ConduGest");
+  const correoUsuario = obtenerCorreoUsuario(usuario, "");
+
   return (
     <aside className="w-64 bg-slate-900 text-white flex flex-col min-h-screen">
       <div className="p-6 border-b border-slate-800">
@@ -145,8 +149,13 @@ function Sidebar({ cambiarVista, vistaActual, cerrarSesion, usuario }) {
       <div className="p-4 border-t border-slate-800 space-y-4">
         <div className="px-2">
           <strong className="block text-sm text-slate-200 truncate">
-            {usuario?.correo || "Secretaría Central"}
+            {nombreUsuario}
           </strong>
+          {correoUsuario && correoUsuario !== nombreUsuario && (
+            <p className="text-xs text-slate-400 truncate mt-1">
+              {correoUsuario}
+            </p>
+          )}
           <p className="text-sm text-green-400 flex items-center gap-2 mt-1">
             <span className="w-2 h-2 bg-green-400 rounded-full"></span>
             En línea

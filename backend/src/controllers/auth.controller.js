@@ -13,6 +13,7 @@ import { validateLogin } from "../validations/auth.validation.js";
 import {
   getUsuarioByCorreo,
   compararPassword,
+  construirUsuarioSesion,
 } from "../services/auth.services.js";
 
 import {
@@ -99,20 +100,15 @@ export async function loginController(req, res) {
       }
     );
 
+    const usuarioSesion = await construirUsuarioSesion(usuario);
+
     return handleSuccess(
       res,
       200,
       "Inicio de sesión exitoso",
       {
         token,
-        usuario: {
-          id_usuario: usuario.id_usuario,
-          correo: usuario.correo,
-          rol: usuario.rol,
-          id_profesor: usuario.id_profesor,
-          id_alumno: usuario.id_alumno,
-          debe_cambiar_password: usuario.debe_cambiar_password,
-        },
+        usuario: usuarioSesion,
       }
     );
   } catch (error) {

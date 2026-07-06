@@ -1,16 +1,20 @@
 import Joi from "joi";
 
-const rutRegex = /^\d{1,2}\.?\d{3}\.?\d{3}-[\dkK]$/;
-
-const nombreRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
-
-const telefonoRegex = /^(\+56)?\d{8,9}$/;
+import {
+  validarEmail,
+  validarNombrePersona,
+  validarRutBasico,
+  validarTelefonoChile,
+} from "./common.validation.js";
 
 const licenciasPermitidas = ["B", "C", "A2", "A3", "A4", "A5", "D"];
 
 const especialidadesPermitidas = [
+  "Clases practicas",
   "Clases prácticas",
+  "Clases teoricas",
   "Clases teóricas",
+  "Evaluacion psicotecnica",
   "Evaluación psicotécnica",
   "Mixto",
 ];
@@ -21,38 +25,76 @@ function formatValidationErrors(error) {
   return error.details.map((detail) => detail.message);
 }
 
+function validarNombreJoi(campo) {
+  return (value, helpers) => {
+    const resultado = validarNombrePersona(value, campo, true);
+
+    if (!resultado.valido) {
+      return helpers.message(resultado.mensaje);
+    }
+
+    return resultado.valor;
+  };
+}
+
+function validarRutJoi(value, helpers) {
+  const resultado = validarRutBasico(value, true);
+
+  if (!resultado.valido) {
+    return helpers.message(resultado.mensaje);
+  }
+
+  return resultado.valor;
+}
+
+function validarCorreoOpcionalJoi(value, helpers) {
+  const resultado = validarEmail(value, false, "correo personal");
+
+  if (!resultado.valido) {
+    return helpers.message(resultado.mensaje);
+  }
+
+  return resultado.valor || null;
+}
+
+function validarTelefonoOpcionalJoi(value, helpers) {
+  const resultado = validarTelefonoChile(value, false);
+
+  if (!resultado.valido) {
+    return helpers.message(resultado.mensaje);
+  }
+
+  return resultado.valor || null;
+}
+
 const profesorCreateSchema = Joi.object({
-  rut: Joi.string().trim().pattern(rutRegex).required().messages({
-    "string.empty": "El RUT es obligatorio",
-    "string.pattern.base":
-      "El RUT debe tener un formato válido, por ejemplo 12.345.678-9 o 12345678-9",
-    "any.required": "El RUT es obligatorio",
+  rut: Joi.string().custom(validarRutJoi).required().messages({
+    "string.empty": "El RUT es obligatorio.",
+    "any.required": "El RUT es obligatorio.",
   }),
 
-  nombre: Joi.string().trim().min(2).max(100).pattern(nombreRegex).required().messages({
-    "string.empty": "El nombre es obligatorio",
-    "string.min": "El nombre debe tener al menos 2 caracteres",
-    "string.max": "El nombre no puede superar los 100 caracteres",
-    "string.pattern.base": "El nombre solo debe contener letras y espacios",
-    "any.required": "El nombre es obligatorio",
+  nombre: Joi.string().custom(validarNombreJoi("nombre")).required().messages({
+    "string.empty": "El nombre es obligatorio.",
+    "any.required": "El nombre es obligatorio.",
   }),
 
-  apellido: Joi.string().trim().min(2).max(100).pattern(nombreRegex).required().messages({
-    "string.empty": "El apellido es obligatorio",
-    "string.min": "El apellido debe tener al menos 2 caracteres",
-    "string.max": "El apellido no puede superar los 100 caracteres",
-    "string.pattern.base": "El apellido solo debe contener letras y espacios",
-    "any.required": "El apellido es obligatorio",
-  }),
+  apellido: Joi.string()
+    .custom(validarNombreJoi("apellido"))
+    .required()
+    .messages({
+      "string.empty": "El apellido es obligatorio.",
+      "any.required": "El apellido es obligatorio.",
+    }),
 
-  correo_personal: Joi.string().trim().email().allow("", null).optional().messages({
-    "string.email": "El correo personal debe tener un formato válido",
-  }),
+  correo_personal: Joi.any()
+    .custom(validarCorreoOpcionalJoi)
+    .allow("", null)
+    .optional(),
 
-  telefono: Joi.string().trim().pattern(telefonoRegex).allow("", null).optional().messages({
-    "string.pattern.base":
-      "El teléfono debe tener un formato válido, por ejemplo +56912345678 o 912345678",
-  }),
+  telefono: Joi.any()
+    .custom(validarTelefonoOpcionalJoi)
+    .allow("", null)
+    .optional(),
 
   sede: Joi.string().trim().min(2).max(50).required().messages({
     "string.empty": "La sede es obligatoria",
@@ -77,7 +119,7 @@ const profesorCreateSchema = Joi.object({
     .required()
     .messages({
       "any.only":
-        "La especialidad debe ser una de: Clases prácticas, Clases teóricas, Evaluación psicotécnica o Mixto",
+        "La especialidad debe ser: Clases practicas, Clases teoricas, Evaluacion psicotecnica o Mixto",
       "string.empty": "La especialidad es obligatoria",
       "any.required": "La especialidad es obligatoria",
     }),
@@ -86,31 +128,30 @@ const profesorCreateSchema = Joi.object({
 });
 
 const profesorUpdateSchema = Joi.object({
-  rut: Joi.string().trim().pattern(rutRegex).optional().messages({
-    "string.pattern.base":
-      "El RUT debe tener un formato válido, por ejemplo 12.345.678-9 o 12345678-9",
+  rut: Joi.string().custom(validarRutJoi).optional().messages({
+    "string.empty": "El RUT no puede estar vacio.",
   }),
 
-  nombre: Joi.string().trim().min(2).max(100).pattern(nombreRegex).optional().messages({
-    "string.min": "El nombre debe tener al menos 2 caracteres",
-    "string.max": "El nombre no puede superar los 100 caracteres",
-    "string.pattern.base": "El nombre solo debe contener letras y espacios",
+  nombre: Joi.string().custom(validarNombreJoi("nombre")).optional().messages({
+    "string.empty": "El nombre no puede estar vacio.",
   }),
 
-  apellido: Joi.string().trim().min(2).max(100).pattern(nombreRegex).optional().messages({
-    "string.min": "El apellido debe tener al menos 2 caracteres",
-    "string.max": "El apellido no puede superar los 100 caracteres",
-    "string.pattern.base": "El apellido solo debe contener letras y espacios",
-  }),
+  apellido: Joi.string()
+    .custom(validarNombreJoi("apellido"))
+    .optional()
+    .messages({
+      "string.empty": "El apellido no puede estar vacio.",
+    }),
 
-  correo_personal: Joi.string().trim().email().allow("", null).optional().messages({
-    "string.email": "El correo personal debe tener un formato válido",
-  }),
+  correo_personal: Joi.any()
+    .custom(validarCorreoOpcionalJoi)
+    .allow("", null)
+    .optional(),
 
-  telefono: Joi.string().trim().pattern(telefonoRegex).allow("", null).optional().messages({
-    "string.pattern.base":
-      "El teléfono debe tener un formato válido, por ejemplo +56912345678 o 912345678",
-  }),
+  telefono: Joi.any()
+    .custom(validarTelefonoOpcionalJoi)
+    .allow("", null)
+    .optional(),
 
   sede: Joi.string().trim().min(2).max(50).optional().messages({
     "string.min": "La sede debe tener al menos 2 caracteres",
@@ -131,7 +172,7 @@ const profesorUpdateSchema = Joi.object({
     .optional()
     .messages({
       "any.only":
-        "La especialidad debe ser una de: Clases prácticas, Clases teóricas, Evaluación psicotécnica o Mixto",
+        "La especialidad debe ser: Clases practicas, Clases teoricas, Evaluacion psicotecnica o Mixto",
     }),
 
   estado: Joi.boolean().optional(),
@@ -141,8 +182,8 @@ const profesorUpdateSchema = Joi.object({
 
 const profesorIdParamSchema = Joi.object({
   id: Joi.number().integer().positive().required().messages({
-    "number.base": "El ID debe ser un número",
-    "number.integer": "El ID debe ser un número entero",
+    "number.base": "El ID debe ser un numero",
+    "number.integer": "El ID debe ser un numero entero",
     "number.positive": "El ID debe ser positivo",
     "any.required": "El ID es obligatorio",
   }),

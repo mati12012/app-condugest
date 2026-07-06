@@ -1,5 +1,10 @@
 import Joi from "joi";
 
+import {
+  convertirHoraAMinutos as convertirHoraAMinutosComun,
+  validarHorarioAtencion,
+} from "./common.validation.js";
+
 export const DIAS_SEMANA_DISPONIBILIDAD = [
   "Lunes",
   "Martes",
@@ -20,11 +25,16 @@ function formatValidationErrors(error) {
 }
 
 export function convertirHoraAMinutos(hora) {
-  const [horas, minutos] = String(hora).slice(0, 5).split(":").map(Number);
-  return horas * 60 + minutos;
+  return convertirHoraAMinutosComun(hora);
 }
 
 export function validarRangoHorario(horaInicio, horaFin) {
+  const horarioAtencion = validarHorarioAtencion(horaInicio, horaFin);
+
+  if (!horarioAtencion.valido) {
+    return horarioAtencion.mensaje;
+  }
+
   if (convertirHoraAMinutos(horaFin) <= convertirHoraAMinutos(horaInicio)) {
     return "La hora de término debe ser mayor que la hora de inicio.";
   }
