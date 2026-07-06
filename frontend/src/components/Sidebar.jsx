@@ -55,6 +55,12 @@ const opcionesMenu = [
     vistasActivas: ["pagos"],
   },
   {
+    id: "reprogramaciones",
+    etiqueta: "Reprogramaciones",
+    Icono: CalendarDays,
+    vistasActivas: ["reprogramaciones"],
+  },
+  {
     id: "clasesTeoricas",
     etiqueta: "Clases teóricas",
     Icono: BookOpenCheck,

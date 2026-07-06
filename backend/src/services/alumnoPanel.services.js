@@ -144,15 +144,3 @@ export async function getClasesTeoricasPorAlumno(idAlumno) {
     [idAlumno]
   );
 }
-
-export async function cancelarClasePractica(idClase, idAlumno) {
-  const resultado = await AppDataSource.query(
-    `UPDATE clases_practicas
-     SET estado = 'Cancelada'
-     WHERE id_clase_practica = $1 AND id_alumno = $2 AND estado = 'Programada'
-     RETURNING *`,
-    [idClase, idAlumno]
-  );
-  
-  return resultado.length > 0 ? resultado[0] : null;
-}
