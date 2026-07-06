@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
 import { formatearFechaVisual } from '../../utils/formatearFecha';
 
@@ -7,11 +7,7 @@ const VerClasePractica = ({ claseId, cambiarVista, volverA = 'clasesPracticas' }
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    obtenerClasePractica();
-  }, [claseId]);
-
-  const obtenerClasePractica = async () => {
+  const obtenerClasePractica = useCallback(async () => {
     try {
       setCargando(true);
       setError('');
@@ -30,7 +26,11 @@ const VerClasePractica = ({ claseId, cambiarVista, volverA = 'clasesPracticas' }
     } finally {
       setCargando(false);
     }
-  };
+  }, [claseId]);
+
+  useEffect(() => {
+    Promise.resolve().then(obtenerClasePractica);
+  }, [obtenerClasePractica]);
 
   const obtenerClaseEstado = (estado) => {
     if (estado === 'Programada') {
@@ -51,18 +51,6 @@ const VerClasePractica = ({ claseId, cambiarVista, volverA = 'clasesPracticas' }
   const formatearHora = (hora) => {
     if (!hora) return '';
     return String(hora).slice(0, 5);
-  };
-
-  const formatearFecha = (fecha) => {
-    if (!fecha) return '';
-
-    const fechaTexto = String(fecha);
-
-    if (fechaTexto.includes('T')) {
-      return fechaTexto.split('T')[0];
-    }
-
-    return fechaTexto;
   };
 
   if (cargando) {

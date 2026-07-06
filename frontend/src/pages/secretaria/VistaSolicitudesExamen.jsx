@@ -378,7 +378,7 @@ function VistaSolicitudesExamen() {
                   <tr>
                     <th className="p-4 font-bold">Alumno</th>
                     <th className="p-4 font-bold">Solicitud</th>
-                    <th className="p-4 font-bold">Matricula</th>
+                    <th className="p-4 font-bold">Plan asociado</th>
                     <th className="p-4 font-bold">Estado</th>
                     <th className="p-4 font-bold">Resultado</th>
                     <th className="p-4 font-bold">Acciones</th>
@@ -414,10 +414,10 @@ function VistaSolicitudesExamen() {
 
                       <td className="p-4 min-w-52">
                         <p className="font-semibold text-slate-800">
-                          #{solicitud.id_matricula} · {solicitud.matricula_estado}
+                          {solicitud.plan_nombre}
                         </p>
                         <p className="text-sm text-slate-500">
-                          {solicitud.plan_nombre}
+                          Matricula {solicitud.matricula_estado}
                         </p>
                       </td>
 
@@ -487,7 +487,7 @@ function VistaSolicitudesExamen() {
                   Vehiculo: {solicitudSeleccionada.tipo_vehiculo}
                 </p>
                 <p className="text-sm text-slate-500">
-                  Matricula #{solicitudSeleccionada.id_matricula} · {solicitudSeleccionada.plan_nombre}
+                  {solicitudSeleccionada.plan_nombre} · Matricula {solicitudSeleccionada.matricula_estado}
                 </p>
               </div>
 

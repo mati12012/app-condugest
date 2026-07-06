@@ -1,16 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
+
+const API_ORIGIN = import.meta.env.VITE_BASE_URL.replace("/api", "");
 
 const VerVehiculo = ({ vehiculoId, cambiarVista }) => {
   const [vehiculo, setVehiculo] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    obtenerVehiculo();
-  }, [vehiculoId]);
-
-  const obtenerVehiculo = async () => {
+  const obtenerVehiculo = useCallback(async () => {
     try {
       setCargando(true);
       setError('');
@@ -29,7 +27,11 @@ const VerVehiculo = ({ vehiculoId, cambiarVista }) => {
     } finally {
       setCargando(false);
     }
-  };
+  }, [vehiculoId]);
+
+  useEffect(() => {
+    Promise.resolve().then(obtenerVehiculo);
+  }, [obtenerVehiculo]);
 
   const obtenerClaseEstado = (estado) => {
     if (estado === 'Disponible') {
@@ -143,7 +145,7 @@ const VerVehiculo = ({ vehiculoId, cambiarVista }) => {
           <div className="bg-blue-50 p-5 rounded-xl border border-blue-200 mt-6 md:col-span-2">
             <p className="text-sm text-blue-700 font-medium mb-2">Documento Adjunto</p>
             <a 
-              href={`http://localhost:3000${vehiculo.url_revision_tecnica}`} 
+              href={`${API_ORIGIN}${vehiculo.url_revision_tecnica}`} 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-lg font-bold text-blue-600 hover:underline flex items-center gap-2"

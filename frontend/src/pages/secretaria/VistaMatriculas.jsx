@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../../utils/apiFetch";
+import { formatearFechaVisual } from "../../utils/formatearFecha";
 
 const ESTADOS_MATRICULA = [
   "Activa",
@@ -28,13 +29,7 @@ function formatearPesos(valor) {
 }
 
 function formatearFecha(fecha) {
-  if (!fecha) return "Sin fecha";
-
-  return new Intl.DateTimeFormat("es-CL", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(new Date(fecha));
+  return formatearFechaVisual(fecha);
 }
 
 function obtenerClaseEstado(estado) {
@@ -741,7 +736,7 @@ function VistaMatriculas() {
                       {resumenFinanciero?.estado_pago || "Sin estado"}
                     </span>
                     <p className="text-sm text-slate-500 mt-4">
-                      Matricula #{resumenMatricula.id_matricula}
+                      Matricula del alumno seleccionado
                     </p>
                   </div>
                 </div>

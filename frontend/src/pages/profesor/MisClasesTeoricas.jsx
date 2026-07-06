@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../../utils/apiFetch";
+import { formatearFechaVisual, formatearHoraVisual } from "../../utils/formatearFecha";
 
 async function obtenerClasesTeoricasProfesor() {
   const res = await apiFetch(`${import.meta.env.VITE_BASE_URL}/profesor/mis-clases-teoricas`);
@@ -66,8 +67,8 @@ function MisClasesTeoricas({ verDetalleClase }) {
               <tr key={clase.id_clase_teorica} className="hover:bg-slate-50">
                 <td className="px-4 py-3 font-bold text-slate-800">{clase.tema}</td>
                 <td className="px-4 py-3 text-slate-600">
-                  {String(clase.fecha).split('T')[0]} <br/>
-                  <span className="text-xs text-slate-400">{String(clase.hora_inicio).slice(0,5)} a {String(clase.hora_fin).slice(0,5)}</span>
+                  {formatearFechaVisual(clase.fecha)} <br/>
+                  <span className="text-xs text-slate-400">{formatearHoraVisual(clase.hora_inicio)} a {formatearHoraVisual(clase.hora_fin)}</span>
                 </td>
                 <td className="px-4 py-3 text-slate-600">{clase.sede}</td>
                 <td className="px-4 py-3 font-semibold text-slate-700">{clase.total_alumnos} alumnos</td>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
 import {formatearFechaVisual} from '../../utils/formatearFecha';
 
@@ -12,15 +12,7 @@ const VistaClasesPracticas = ({ cambiarVista }) => {
   const [paginaActual, setPaginaActual] = useState(1);
   const registrosPorPagina = 5;
 
-  useEffect(() => {
-    obtenerClasesPracticas();
-  }, []);
-
-  useEffect(() => {
-    setPaginaActual(1);
-  }, [busqueda, filtroEstado]);
-
-  const obtenerClasesPracticas = async () => {
+  const obtenerClasesPracticas = useCallback(async () => {
     try {
       setCargando(true);
 
@@ -39,6 +31,20 @@ const VistaClasesPracticas = ({ cambiarVista }) => {
     } finally {
       setCargando(false);
     }
+  }, []);
+
+  useEffect(() => {
+    Promise.resolve().then(obtenerClasesPracticas);
+  }, [obtenerClasesPracticas]);
+
+  const actualizarBusqueda = (valor) => {
+    setBusqueda(valor);
+    setPaginaActual(1);
+  };
+
+  const actualizarFiltroEstado = (estado) => {
+    setFiltroEstado(estado);
+    setPaginaActual(1);
   };
 
   const obtenerClaseEstado = (estado) => {
@@ -61,18 +67,6 @@ const VistaClasesPracticas = ({ cambiarVista }) => {
     if (!hora) return '';
 
     return String(hora).slice(0, 5);
-  };
-
-  const formatearFecha = (fecha) => {
-    if (!fecha) return '';
-
-    const fechaTexto = String(fecha);
-
-    if (fechaTexto.includes('T')) {
-      return fechaTexto.split('T')[0];
-    }
-
-    return fechaTexto;
   };
 
   const cambiarEstadoClase = async (clase, nuevoEstado) => {
@@ -229,13 +223,13 @@ const clasesPaginadas = clasesFiltradas.slice(
               placeholder="Buscar por alumno, profesor, vehículo, sede o fecha..."
               className="w-full max-w-xl px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
               value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
+              onChange={(e) => actualizarBusqueda(e.target.value)}
             />
 
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
-                onClick={() => setFiltroEstado('todas')}
+                onClick={() => actualizarFiltroEstado('todas')}
                 className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
                   filtroEstado === 'todas'
                     ? 'bg-blue-600 text-white'
@@ -247,7 +241,7 @@ const clasesPaginadas = clasesFiltradas.slice(
 
               <button
                 type="button"
-                onClick={() => setFiltroEstado('Programada')}
+                onClick={() => actualizarFiltroEstado('Programada')}
                 className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
                   filtroEstado === 'Programada'
                     ? 'bg-blue-600 text-white'
@@ -259,7 +253,7 @@ const clasesPaginadas = clasesFiltradas.slice(
 
               <button
                 type="button"
-                onClick={() => setFiltroEstado('Realizada')}
+                onClick={() => actualizarFiltroEstado('Realizada')}
                 className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
                   filtroEstado === 'Realizada'
                     ? 'bg-green-600 text-white'
@@ -271,7 +265,7 @@ const clasesPaginadas = clasesFiltradas.slice(
 
               <button
                 type="button"
-                onClick={() => setFiltroEstado('Cancelada')}
+                onClick={() => actualizarFiltroEstado('Cancelada')}
                 className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
                   filtroEstado === 'Cancelada'
                     ? 'bg-red-600 text-white'

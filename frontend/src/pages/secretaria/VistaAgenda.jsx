@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
 import { formatearFechaVisual } from '../../utils/formatearFecha';
 
@@ -39,11 +39,7 @@ const VistaAgenda = ({ cambiarVista }) => {
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        obtenerDatosAgenda();
-    }, []);
-
-    const obtenerDatosAgenda = async () => {
+    const obtenerDatosAgenda = useCallback(async () => {
         try {
             setCargando(true);
 
@@ -79,28 +75,11 @@ const VistaAgenda = ({ cambiarVista }) => {
         } finally {
             setCargando(false);
         }
-    };
+    }, []);
 
-    const formatearFechaInput = (fecha) => {
-        if (!fecha) return '';
-
-        const fechaTexto = String(fecha);
-
-        if (fechaTexto.includes('T')) {
-            return fechaTexto.split('T')[0];
-        }
-
-        return fechaTexto;
-    };
-
-    const formatearFechaVisual = (fecha) => {
-        if (!fecha) return '';
-
-        const fechaLimpia = formatearFechaInput(fecha);
-        const [anio, mes, dia] = fechaLimpia.split('-');
-
-        return `${dia}-${mes}-${anio}`;
-    };
+    useEffect(() => {
+        Promise.resolve().then(obtenerDatosAgenda);
+    }, [obtenerDatosAgenda]);
 
     const formatearHora = (hora) => {
         if (!hora) return '';

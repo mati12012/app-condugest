@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
+
+const MAX_REVISION_BYTES = 5 * 1024 * 1024;
+const EXTENSIONES_REVISION = [".pdf", ".jpg", ".jpeg", ".png"];
 
 const RegistrarVehiculo = ({ cambiarVista }) => {
   const [datos, setDatos] = useState({
@@ -18,7 +21,8 @@ const RegistrarVehiculo = ({ cambiarVista }) => {
   const [mensaje, setMensaje] = useState('');
   const [cargando, setCargando] = useState(false);
   const [archivo, setArchivo] = useState(null);
-  const [subiendoArchivo, setSubiendoArchivo] = useState(false);
+  const [errorArchivo, setErrorArchivo] = useState('');
+  const [archivoInputKey, setArchivoInputKey] = useState(0);
 
   const limpiarPatente = (patente) => {
     return patente
@@ -81,6 +85,40 @@ const RegistrarVehiculo = ({ cambiarVista }) => {
     return null;
   };
 
+  const validarArchivoRevision = (archivoSeleccionado) => {
+    if (!archivoSeleccionado) return '';
+
+    if (archivoSeleccionado.size > MAX_REVISION_BYTES) {
+      return 'Error: El documento no puede superar los 5 MB';
+    }
+
+    const nombre = archivoSeleccionado.name.toLowerCase();
+    const extensionValida = EXTENSIONES_REVISION.some((extension) =>
+      nombre.endsWith(extension)
+    );
+
+    if (!extensionValida) {
+      return 'Error: Solo se permiten archivos PDF, JPG o PNG';
+    }
+
+    return '';
+  };
+
+  const manejarCambioArchivo = (e) => {
+    const archivoSeleccionado = e.target.files?.[0] || null;
+    const errorValidacion = validarArchivoRevision(archivoSeleccionado);
+
+    if (errorValidacion) {
+      setArchivo(null);
+      setErrorArchivo(errorValidacion);
+      setArchivoInputKey((key) => key + 1);
+      return;
+    }
+
+    setArchivo(archivoSeleccionado);
+    setErrorArchivo('');
+  };
+
   const obtenerMensajeErrorServidor = (respuestaServidor) => {
     if (Array.isArray(respuestaServidor.errorDetails)) {
       return respuestaServidor.errorDetails.join(' | ');
@@ -101,6 +139,13 @@ const RegistrarVehiculo = ({ cambiarVista }) => {
 
     if (errorValidacion) {
       setMensaje(errorValidacion);
+      return;
+    }
+
+    const errorValidacionArchivo = validarArchivoRevision(archivo);
+
+    if (errorValidacionArchivo) {
+      setErrorArchivo(errorValidacionArchivo);
       return;
     }
 
@@ -133,28 +178,30 @@ const RegistrarVehiculo = ({ cambiarVista }) => {
 
         if (archivo && idNuevoVehiculo) {
           setMensaje('Vehículo creado. Subiendo documento...');
-          setSubiendoArchivo(true);
-          
           const formData = new FormData();
           formData.append('documento', archivo);
-          const token = localStorage.getItem('tokenCondugest');
 
-          await fetch(`${import.meta.env.VITE_BASE_URL}/vehiculos/${idNuevoVehiculo}/revision-tecnica`, {
+          const responseDocumento = await apiFetch(`${import.meta.env.VITE_BASE_URL}/vehiculos/${idNuevoVehiculo}/revision-tecnica`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
             body: formData
           });
+
+          const respuestaDocumento = await responseDocumento.json();
+
+          if (!responseDocumento.ok) {
+            throw new Error(obtenerMensajeErrorServidor(respuestaDocumento));
+          }
         }
 
         setMensaje('Éxito: vehículo y documentos registrados correctamente');
-        setSubiendoArchivo(false);
-
         setDatos({
           patente: '', marca: '', modelo: '', anio: '', tipo_transmision: 'Manual',
           licencia_requerida: 'B', sede: 'Sede Concepcion', kilometraje: '',
           estado_operativo: 'Disponible', observacion: ''
         });
         setArchivo(null); 
+        setErrorArchivo('');
+        setArchivoInputKey((key) => key + 1);
 
       } else {
         setMensaje(`Error: ${obtenerMensajeErrorServidor(respuestaServidor)}`);
@@ -162,7 +209,6 @@ const RegistrarVehiculo = ({ cambiarVista }) => {
     } catch (error) {
       console.error(error);
       setMensaje('Error: Sin conexión al servidor');
-      setSubiendoArchivo(false);
     } finally {
       setCargando(false);
     }
@@ -346,15 +392,26 @@ const RegistrarVehiculo = ({ cambiarVista }) => {
           </label>
           <div className="flex items-center gap-3">
             <input 
+              key={archivoInputKey}
               type="file" 
               accept=".pdf,.jpg,.jpeg,.png"
-              onChange={(e) => setArchivo(e.target.files[0])}
+              onChange={manejarCambioArchivo}
               className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
             />
           </div>
           <p className="text-xs text-slate-400 mt-2">
-            Puedes adjuntar el documento ahora o hacerlo más tarde desde la opción "Editar".
+            Puedes adjuntar el documento ahora o hacerlo más tarde desde la opción "Editar". Tamaño máximo: 5 MB.
           </p>
+          {archivo && (
+            <p className="text-xs font-semibold text-blue-700 mt-2">
+              Archivo seleccionado: {archivo.name}
+            </p>
+          )}
+          {errorArchivo && (
+            <p className="text-xs font-semibold text-red-600 mt-2">
+              {errorArchivo}
+            </p>
+          )}
         </div>
 
         <div className="pt-4 border-t mt-6 flex justify-between">

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
+import { formatearFechaVisual } from '../../utils/formatearFecha';
 
 const VerClaseTeorica = ({ idClase, cambiarVista }) => {
   const [clase, setClase] = useState(null);
@@ -11,11 +12,7 @@ const VerClaseTeorica = ({ idClase, cambiarVista }) => {
   const [procesando, setProcesando] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (idClase) obtenerDatosCompletos();
-  }, [idClase]);
-
-  const obtenerDatosCompletos = async () => {
+  const obtenerDatosCompletos = useCallback(async () => {
     try {
       setCargando(true);
       const [resClase, resAlumnos, resInscritos] = await Promise.all([
@@ -38,7 +35,7 @@ const VerClaseTeorica = ({ idClase, cambiarVista }) => {
     } finally {
       setCargando(false);
     }
-  };
+  }, [idClase]);
 
   const handleInscribir = async () => {
     if (!idAlumnoSeleccionado) return;
@@ -56,7 +53,7 @@ const VerClaseTeorica = ({ idClase, cambiarVista }) => {
         const data = await res.json();
         alert(`Error: ${data.message}`);
       }
-    } catch (error) {
+    } catch {
       alert('Error de conexión al inscribir alumno');
     } finally {
       setProcesando(false);
@@ -71,7 +68,7 @@ const VerClaseTeorica = ({ idClase, cambiarVista }) => {
         method: 'DELETE'
       });
       if (res.ok) await obtenerDatosCompletos();
-    } catch (error) {
+    } catch {
       alert('Error de conexión al remover alumno');
     } finally {
       setProcesando(false);
@@ -79,10 +76,12 @@ const VerClaseTeorica = ({ idClase, cambiarVista }) => {
   };
 
   const formatearFecha = (fecha) => {
-    if (!fecha) return '';
-    const [year, month, day] = String(fecha).split('T')[0].split('-');
-    return `${day}-${month}-${year}`;
+    return formatearFechaVisual(fecha);
   };
+
+  useEffect(() => {
+    if (idClase) Promise.resolve().then(obtenerDatosCompletos);
+  }, [idClase, obtenerDatosCompletos]);
 
   const alumnosDisponibles = alumnos.filter(a => !inscritos.some(i => i.id_alumno === a.id_alumno) && a.estado !== 'Cancelado');
 

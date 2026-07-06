@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
+import { formatearFechaVisual } from '../../utils/formatearFecha';
 
 const VistaClasesTeoricas = ({ cambiarVista }) => {
   const [clases, setClases] = useState([]);
@@ -9,11 +10,7 @@ const VistaClasesTeoricas = ({ cambiarVista }) => {
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('todas');
 
-  useEffect(() => {
-    obtenerClases();
-  }, []);
-
-  const obtenerClases = async () => {
+  const obtenerClases = useCallback(async () => {
     try {
       setCargando(true);
       const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/clases-teoricas`);
@@ -31,14 +28,15 @@ const VistaClasesTeoricas = ({ cambiarVista }) => {
     } finally {
       setCargando(false);
     }
-  };
+  }, []);
 
   const formatearFecha = (fecha) => {
-    if (!fecha) return '';
-    const fechaLimpia = String(fecha).split('T')[0];
-    const [year, month, day] = fechaLimpia.split('-');
-    return `${day}-${month}-${year}`;
+    return formatearFechaVisual(fecha);
   };
+
+  useEffect(() => {
+    Promise.resolve().then(obtenerClases);
+  }, [obtenerClases]);
 
   const getColorEstado = (estado) => {
     switch (estado) {

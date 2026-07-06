@@ -20,7 +20,7 @@ export const handleErrorServer = (res, statusCode, message, errorDetails = null)
   console.error("Server Error:", message, errorDetails);
   res.status(statusCode).json({
     message,
-    errorDetails,
+    errorDetails: "Ocurrio un error interno. Intenta nuevamente o contacta a soporte.",
     status: "Server error",
   });
 };

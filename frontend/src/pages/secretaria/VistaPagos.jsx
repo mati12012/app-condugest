@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../../utils/apiFetch";
+import { formatearFechaVisual, formatearHoraVisual } from "../../utils/formatearFecha";
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -30,13 +31,7 @@ function formatearPesos(valor) {
 function formatearFecha(fecha) {
   if (!fecha) return "Sin fecha";
 
-  return new Intl.DateTimeFormat("es-CL", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(fecha));
+  return `${formatearFechaVisual(fecha)} ${formatearHoraVisual(fecha)}`;
 }
 
 function normalizarTexto(valor) {
@@ -584,7 +579,7 @@ function VistaPagos() {
               <option value="">Seleccione una matricula</option>
               {matriculas.map((matricula) => (
                 <option key={matricula.id_matricula} value={matricula.id_matricula}>
-                  #{matricula.id_matricula} - {obtenerNombreAlumno(matricula) || "Alumno sin nombre"} - {matricula.plan_nombre || "Plan no disponible"} - {formatearPesos(matricula.valor_total)}
+                  {obtenerNombreAlumno(matricula) || "Alumno sin nombre"} - {matricula.plan_nombre || "Plan no disponible"} - {formatearPesos(matricula.valor_total)}
                 </option>
               ))}
             </select>
@@ -798,7 +793,7 @@ function VistaPagos() {
                         {pago.alumno_rut || "Sin RUT"}
                       </p>
                       <p className="text-xs text-slate-400 mt-1">
-                        Matricula #{pago.id_matricula}
+                        {pago.alumno_rut || "RUT no disponible"}
                       </p>
                     </td>
 

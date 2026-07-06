@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../../utils/apiFetch";
+import { formatearFechaVisual, formatearHoraVisual } from "../../utils/formatearFecha";
 
 const ESTADOS_SOLICITUD = [
   "Pendiente",
@@ -11,13 +12,7 @@ const ESTADOS_SOLICITUD = [
 function formatearFecha(fecha) {
   if (!fecha) return "Sin fecha";
 
-  return new Intl.DateTimeFormat("es-CL", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(fecha));
+  return `${formatearFechaVisual(fecha)} ${formatearHoraVisual(fecha)}`;
 }
 
 function formatearPesos(valor) {
@@ -74,7 +69,7 @@ function VistaSolicitudesMatricula() {
   const [errorDetalle, setErrorDetalle] = useState("");
   const [actualizandoId, setActualizandoId] = useState(null);
 
-  async function obtenerSolicitudes() {
+  const obtenerSolicitudes = useCallback(async () => {
     try {
       setCargando(true);
       setError("");
@@ -96,11 +91,11 @@ function VistaSolicitudesMatricula() {
     } finally {
       setCargando(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
-    obtenerSolicitudes();
-  }, []);
+    Promise.resolve().then(obtenerSolicitudes);
+  }, [obtenerSolicitudes]);
 
   const solicitudesFiltradas = useMemo(() => {
     const textoBusqueda = busqueda.trim().toLowerCase();

@@ -2,7 +2,6 @@ function PerfilProfesor({ usuario, cerrarSesion }) {
   const datosFaltantes = [
     !usuario?.correo && "correo",
     !usuario?.rol && "rol",
-    !usuario?.id_profesor && "ID de profesor",
   ].filter(Boolean);
 
   const tieneDatosFaltantes = datosFaltantes.length > 0;
@@ -53,13 +52,6 @@ function PerfilProfesor({ usuario, cerrarSesion }) {
           <p className="text-sm text-slate-500">Rol</p>
           <p className="font-bold text-slate-900 mt-2">
             {usuario?.rol || "No disponible"}
-          </p>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-          <p className="text-sm text-slate-500">ID profesor</p>
-          <p className="font-bold text-slate-900 mt-2">
-            {usuario?.id_profesor || "No disponible"}
           </p>
         </div>
 

@@ -1,5 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
+
+const MAX_REVISION_BYTES = 5 * 1024 * 1024;
+const EXTENSIONES_REVISION = [".pdf", ".jpg", ".jpeg", ".png"];
+const API_ORIGIN = import.meta.env.VITE_BASE_URL.replace("/api", "");
 
 const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
   const [datos, setDatos] = useState({
@@ -22,14 +26,12 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
   
   
   const [archivo, setArchivo] = useState(null);
+  const [errorArchivo, setErrorArchivo] = useState('');
+  const [archivoInputKey, setArchivoInputKey] = useState(0);
   const [subiendoArchivo, setSubiendoArchivo] = useState(false);
   const [mensajeArchivo, setMensajeArchivo] = useState('');
 
-  useEffect(() => {
-    obtenerVehiculo();
-  }, [vehiculoId]);
-
-  const obtenerVehiculo = async () => {
+  const obtenerVehiculo = useCallback(async () => {
     try {
       setCargando(true);
       setMensaje('');
@@ -62,7 +64,7 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
     } finally {
       setCargando(false);
     }
-  };
+  }, [vehiculoId]);
 
   const limpiarPatente = (patente) => {
     return patente.trim().toUpperCase().replace(/\s/g, '').replace(/-/g, '').replace(/\./g, '');
@@ -92,8 +94,55 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
     return null;
   };
 
+  useEffect(() => {
+    Promise.resolve().then(obtenerVehiculo);
+  }, [obtenerVehiculo]);
+
+  const validarArchivoRevision = (archivoSeleccionado) => {
+    if (!archivoSeleccionado) return '';
+
+    if (archivoSeleccionado.size > MAX_REVISION_BYTES) {
+      return 'Error: El documento no puede superar los 5 MB';
+    }
+
+    const nombre = archivoSeleccionado.name.toLowerCase();
+    const extensionValida = EXTENSIONES_REVISION.some((extension) =>
+      nombre.endsWith(extension)
+    );
+
+    if (!extensionValida) {
+      return 'Error: Solo se permiten archivos PDF, JPG o PNG';
+    }
+
+    return '';
+  };
+
+  const manejarCambioArchivo = (e) => {
+    const archivoSeleccionado = e.target.files?.[0] || null;
+    const errorValidacion = validarArchivoRevision(archivoSeleccionado);
+
+    if (errorValidacion) {
+      setArchivo(null);
+      setErrorArchivo(errorValidacion);
+      setArchivoInputKey((key) => key + 1);
+      return;
+    }
+
+    setArchivo(archivoSeleccionado);
+    setErrorArchivo('');
+    setMensajeArchivo('');
+  };
+
   const handleSubirDocumento = async () => {
     if (!archivo) return;
+
+    const errorValidacion = validarArchivoRevision(archivo);
+
+    if (errorValidacion) {
+      setErrorArchivo(errorValidacion);
+      return;
+    }
+
     setSubiendoArchivo(true);
     setMensajeArchivo('');
 
@@ -101,23 +150,22 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
     formData.append('documento', archivo);
 
     try {
-      const token = localStorage.getItem('tokenCondugest'); 
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/vehiculos/${vehiculoId}/revision-tecnica`, {
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/vehiculos/${vehiculoId}/revision-tecnica`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
         body: formData
       });
 
       const data = await response.json();
       if (response.ok) {
         setMensajeArchivo('Documento subido correctamente');
+        setArchivo(null);
+        setErrorArchivo('');
+        setArchivoInputKey((key) => key + 1);
         obtenerVehiculo(); 
       } else {
-        setMensajeArchivo(`Error: ${data.message}`);
+        setMensajeArchivo(`Error: ${data.errorDetails?.[0] || data.message || 'No se pudo subir el documento'}`);
       }
-    } catch (error) {
+    } catch {
       setMensajeArchivo('Error de conexión al subir documento');
     } finally {
       setSubiendoArchivo(false);
@@ -339,7 +387,7 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
           {datos.url_revision_tecnica && (
             <div className="mb-3">
               <a 
-                href={`http://localhost:3000${datos.url_revision_tecnica}`} 
+                href={`${API_ORIGIN}${datos.url_revision_tecnica}`} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-blue-600 font-medium hover:underline flex items-center gap-2"
@@ -351,9 +399,10 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
 
           <div className="flex flex-col md:flex-row gap-3 items-start md:items-center">
             <input 
+              key={archivoInputKey}
               type="file" 
               accept=".pdf,.jpg,.jpeg,.png"
-              onChange={(e) => setArchivo(e.target.files[0])}
+              onChange={manejarCambioArchivo}
               className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
             />
             <button
@@ -367,6 +416,19 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
               {subiendoArchivo ? 'Subiendo...' : 'Subir Documento'}
             </button>
           </div>
+          <p className="text-xs text-slate-400 mt-2">
+            Formatos permitidos: PDF, JPG o PNG. Tamaño máximo: 5 MB.
+          </p>
+          {archivo && (
+            <p className="text-xs font-semibold text-blue-700 mt-2">
+              Archivo seleccionado: {archivo.name}
+            </p>
+          )}
+          {errorArchivo && (
+            <p className="text-xs font-semibold text-red-600 mt-2">
+              {errorArchivo}
+            </p>
+          )}
           {mensajeArchivo && (
             <p className={`text-sm mt-2 font-medium ${mensajeArchivo.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
               {mensajeArchivo}
