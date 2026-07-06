@@ -12,6 +12,13 @@ import {
   marcarAsistenciaTeoricaController,
 } from "../controllers/profesorPanel.controller.js";
 
+import {
+  createEvaluacionPracticaProfesorController,
+  getEvaluacionProfesorPorClaseController,
+  getEvaluacionesProfesorController,
+  updateEvaluacionPracticaProfesorController,
+} from "../controllers/evaluacionPractica.controller.js";
+
 
 import { marcarAsistenciaPracticaController } from "../controllers/clasePractica.controller.js";
 
@@ -54,6 +61,34 @@ router.patch(
   verificarToken, 
   permitirRoles("profesor", "Profesor"), 
   marcarAsistenciaTeoricaController
+);
+
+router.get(
+  "/evaluaciones",
+  verificarToken,
+  permitirRoles("profesor"),
+  getEvaluacionesProfesorController
+);
+
+router.get(
+  "/evaluaciones/clase/:id_clase_practica",
+  verificarToken,
+  permitirRoles("profesor"),
+  getEvaluacionProfesorPorClaseController
+);
+
+router.post(
+  "/evaluaciones",
+  verificarToken,
+  permitirRoles("profesor"),
+  createEvaluacionPracticaProfesorController
+);
+
+router.patch(
+  "/evaluaciones/:id",
+  verificarToken,
+  permitirRoles("profesor"),
+  updateEvaluacionPracticaProfesorController
 );
 
 export default router;

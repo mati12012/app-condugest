@@ -14,6 +14,7 @@ import planRoutes from "./plan.routes.js";
 import solicitudMatriculaRoutes from "./solicitudMatricula.routes.js";
 import matriculaRoutes from "./matricula.routes.js";
 import pagoRoutes from "./pago.routes.js";
+import evaluacionPracticaRoutes from "./evaluacionPractica.routes.js";
 import publicRoutes from "./public.routes.js";
 
 export function routerApi(app) {
@@ -33,6 +34,7 @@ export function routerApi(app) {
   router.use("/solicitudes-matricula", soloSecretaria, solicitudMatriculaRoutes);
   router.use("/matriculas", soloSecretaria, matriculaRoutes);
   router.use("/pagos", soloSecretaria, pagoRoutes);
+  router.use("/evaluaciones-practicas", soloSecretaria, evaluacionPracticaRoutes);
   router.use("/public", publicRoutes);
   router.use("/auth", authRoutes);
   router.use("/alumno-panel", alumnoPanelRoutes);
