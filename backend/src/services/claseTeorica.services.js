@@ -146,7 +146,17 @@ export async function buscarChoqueSalaTeorica({
 
 export async function obtenerInscritos(id_clase) {
     return await AppDataSource.query(`
-        SELECT ast.id_asistencia, ast.estado_asistencia, a.id_alumno, a.rut, a.nombre, a.apellido, a.correo
+        SELECT
+          ast.id_asistencia,
+          ast.estado_asistencia,
+          ast.modo_participacion,
+          ast.fecha_registro,
+          a.id_alumno,
+          a.rut,
+          a.nombre,
+          a.apellido,
+          a.correo,
+          a.sede
         FROM asistencias_teoricas ast
         INNER JOIN alumnos a ON ast.id_alumno = a.id_alumno
         WHERE ast.id_clase_teorica = $1
@@ -154,12 +164,16 @@ export async function obtenerInscritos(id_clase) {
     `, [Number(id_clase)]);
 }
 
-export async function inscribirAlumno(id_clase, id_alumno) {
+export async function inscribirAlumno(id_clase, id_alumno, modo_participacion = "Presencial") {
     const repo = AppDataSource.getRepository(AsistenciaTeorica);
     const existe = await repo.findOneBy({ id_clase_teorica: Number(id_clase), id_alumno: Number(id_alumno) });
     if (existe) return null;
 
-    const nueva = repo.create({ id_clase_teorica: Number(id_clase), id_alumno: Number(id_alumno) });
+    const nueva = repo.create({
+        id_clase_teorica: Number(id_clase),
+        id_alumno: Number(id_alumno),
+        modo_participacion,
+    });
     return await repo.save(nueva);
 }
 

@@ -110,6 +110,9 @@ export async function getClasesPracticasPorProfesor(idProfesor) {
       cp.sede,
       cp.estado,
       cp.observacion,
+      COALESCE(ap.estado_asistencia, cp.asistencia, 'Pendiente') AS asistencia,
+      ap.observacion AS asistencia_observacion,
+      ap.fecha_registro AS asistencia_fecha_registro,
 
       a.id_alumno,
       a.nombre AS alumno_nombre,
@@ -125,6 +128,8 @@ export async function getClasesPracticasPorProfesor(idProfesor) {
       v.licencia_requerida
 
     FROM clases_practicas cp
+    LEFT JOIN asistencias_practicas ap
+      ON ap.id_clase_practica = cp.id_clase_practica
     INNER JOIN alumnos a ON cp.id_alumno = a.id_alumno
     INNER JOIN vehiculos v ON cp.id_vehiculo = v.id_vehiculo
     WHERE cp.id_profesor = $1
@@ -184,6 +189,172 @@ export async function getClaseTeoricaProfesorById(idClase, idProfesor) {
         clase: resultado[0],
         perteneceProfesor: Number(resultado[0].id_profesor) === Number(idProfesor),
     };
+}
+
+export async function getAlumnosInscritosClaseTeorica(idClase) {
+    return await AppDataSource.query(`
+        SELECT
+          ast.id_asistencia,
+          ast.id_clase_teorica,
+          ast.id_alumno,
+          ast.estado_asistencia,
+          ast.modo_participacion,
+          ast.fecha_registro,
+          a.nombre,
+          a.apellido,
+          a.rut,
+          a.correo,
+          a.sede,
+          a.licencia,
+          a.estado AS alumno_estado
+        FROM asistencias_teoricas ast
+        INNER JOIN alumnos a
+          ON a.id_alumno = ast.id_alumno
+        WHERE ast.id_clase_teorica = $1
+        ORDER BY a.apellido ASC, a.nombre ASC
+    `, [Number(idClase)]);
+}
+
+export async function getAlumnosDisponiblesClaseTeorica(clase) {
+    const params = [Number(clase.id_clase_teorica)];
+    let filtroSede = "";
+
+    if (clase.modalidad === "Presencial") {
+        params.push(clase.sede);
+        filtroSede = "AND a.sede = $2";
+    }
+
+    const alumnos = await AppDataSource.query(`
+        SELECT
+          a.id_alumno,
+          a.nombre,
+          a.apellido,
+          a.rut,
+          a.correo,
+          a.sede,
+          a.licencia,
+          a.estado
+        FROM alumnos a
+        WHERE NOT EXISTS (
+          SELECT 1
+          FROM asistencias_teoricas ast
+          WHERE ast.id_clase_teorica = $1
+            AND ast.id_alumno = a.id_alumno
+        )
+          AND COALESCE(a.estado, '') <> 'Cancelado'
+          ${filtroSede}
+        ORDER BY a.apellido ASC, a.nombre ASC
+    `, params);
+
+    return alumnos.map((alumno) => {
+        const mismaSede = alumno.sede === clase.sede;
+        const esHibrida = clase.modalidad === "Híbrida" || clase.modalidad === "Hibrida";
+        const puedePresencial = clase.modalidad === "Presencial" || (esHibrida && mismaSede);
+        const puedeOnline = clase.modalidad === "Online" || esHibrida;
+
+        return {
+            ...alumno,
+            puede_presencial: puedePresencial,
+            puede_online: puedeOnline,
+            modo_sugerido: clase.modalidad === "Online" || (!mismaSede && esHibrida)
+                ? "Online"
+                : "Presencial",
+        };
+    });
+}
+
+export async function getAlumnoParaInscripcionTeorica(idAlumno) {
+    const resultado = await AppDataSource.query(`
+        SELECT
+          id_alumno,
+          nombre,
+          apellido,
+          rut,
+          correo,
+          sede,
+          licencia,
+          estado
+        FROM alumnos
+        WHERE id_alumno = $1
+        LIMIT 1
+    `, [Number(idAlumno)]);
+
+    return resultado.length > 0 ? resultado[0] : null;
+}
+
+export async function getInscripcionTeorica(idClase, idAlumno) {
+    const resultado = await AppDataSource.query(`
+        SELECT *
+        FROM asistencias_teoricas
+        WHERE id_clase_teorica = $1
+          AND id_alumno = $2
+        LIMIT 1
+    `, [Number(idClase), Number(idAlumno)]);
+
+    return resultado.length > 0 ? resultado[0] : null;
+}
+
+export async function getResumenCapacidadClaseTeorica(idClase) {
+    const resultado = await AppDataSource.query(`
+        SELECT
+          ct.id_clase_teorica,
+          ct.modalidad,
+          ct.id_sala_teorica,
+          st.capacidad AS sala_capacidad,
+          COALESCE((
+            SELECT COUNT(*)
+            FROM asistencias_teoricas ast
+            WHERE ast.id_clase_teorica = ct.id_clase_teorica
+              AND ast.modo_participacion = 'Presencial'
+          ), 0)::int AS capacidad_presencial_usada
+        FROM clases_teoricas ct
+        LEFT JOIN salas_teoricas st
+          ON st.id_sala_teorica = ct.id_sala_teorica
+        WHERE ct.id_clase_teorica = $1
+        LIMIT 1
+    `, [Number(idClase)]);
+
+    if (resultado.length === 0) return null;
+
+    const resumen = resultado[0];
+    const capacidad = resumen.sala_capacidad === null || resumen.sala_capacidad === undefined
+        ? null
+        : Number(resumen.sala_capacidad);
+    const usados = Number(resumen.capacidad_presencial_usada || 0);
+
+    return {
+        capacidad_sala: capacidad,
+        capacidad_presencial_usada: usados,
+        cupos_presenciales_disponibles: capacidad === null
+            ? null
+            : Math.max(capacidad - usados, 0),
+    };
+}
+
+export async function inscribirAlumnoClaseTeorica(idClase, idAlumno, modoParticipacion) {
+    const resultado = await AppDataSource.query(`
+        INSERT INTO asistencias_teoricas (
+          id_clase_teorica,
+          id_alumno,
+          estado_asistencia,
+          modo_participacion
+        )
+        VALUES ($1, $2, 'Pendiente', $3)
+        RETURNING *
+    `, [Number(idClase), Number(idAlumno), modoParticipacion]);
+
+    return resultado.length > 0 ? resultado[0] : null;
+}
+
+export async function quitarAlumnoClaseTeorica(idClase, idAlumno) {
+    const resultado = await AppDataSource.query(`
+        DELETE FROM asistencias_teoricas
+        WHERE id_clase_teorica = $1
+          AND id_alumno = $2
+        RETURNING *
+    `, [Number(idClase), Number(idAlumno)]);
+
+    return resultado.length > 0 ? resultado[0] : null;
 }
 
 export async function actualizarRecursosClaseTeoricaProfesor(idClase, idProfesor, recursos) {

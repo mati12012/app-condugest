@@ -4,8 +4,8 @@ import {
   createSolicitudExamenAlumno,
   getAllSolicitudesExamen,
   getMatriculaValidaMasRecienteAlumno,
+  getRequisitosExamenAlumno,
   getSolicitudExamenById,
-  getSolicitudExamenPendientePorAlumno,
   getSolicitudesExamenPorAlumno,
   updateSolicitudExamen,
 } from "../services/solicitudExamen.services.js";
@@ -65,9 +65,9 @@ export async function createSolicitudExamenAlumnoController(req, res) {
       );
     }
 
-    const matricula = await getMatriculaValidaMasRecienteAlumno(idAlumno);
+    const requisitos = await getRequisitosExamenAlumno(idAlumno);
 
-    if (!matricula) {
+    if (!requisitos.cumple_matricula) {
       return handleErrorClient(
         res,
         409,
@@ -75,17 +75,50 @@ export async function createSolicitudExamenAlumnoController(req, res) {
       );
     }
 
-    const solicitudPendiente = await getSolicitudExamenPendientePorAlumno(
-      idAlumno
-    );
-
-    if (solicitudPendiente) {
+    if (!requisitos.sin_solicitud_pendiente) {
       return handleErrorClient(
         res,
         409,
         "Ya tienes una solicitud de examen pendiente"
       );
     }
+
+    if (!requisitos.sin_solicitud_aprobada_o_gestionada_pendiente) {
+      return handleErrorClient(
+        res,
+        409,
+        "Ya tienes una solicitud aprobada o gestionada con resultado pendiente"
+      );
+    }
+
+    if (!requisitos.sin_examen_aprobado) {
+      return handleErrorClient(
+        res,
+        409,
+        "Ya tienes un examen municipal aprobado"
+      );
+    }
+
+    if (
+      !requisitos.cumple_asistencia_practica ||
+      !requisitos.cumple_asistencia_teorica
+    ) {
+      return handleErrorClient(
+        res,
+        409,
+        "No cumples el porcentaje mínimo de asistencia requerido para solicitar examen."
+      );
+    }
+
+    if (!requisitos.tiene_evaluaciones) {
+      return handleErrorClient(
+        res,
+        409,
+        "Aún no tienes evaluaciones prácticas registradas."
+      );
+    }
+
+    const matricula = await getMatriculaValidaMasRecienteAlumno(idAlumno);
 
     const nuevaSolicitud = await createSolicitudExamenAlumno(
       idAlumno,
@@ -104,6 +137,30 @@ export async function createSolicitudExamenAlumnoController(req, res) {
       res,
       500,
       "Error al crear solicitud de examen",
+      error.message
+    );
+  }
+}
+
+export async function getRequisitosExamenAlumnoController(req, res) {
+  try {
+    const idAlumno = await obtenerAlumnoAutenticado(req, res);
+
+    if (!idAlumno) return;
+
+    const requisitos = await getRequisitosExamenAlumno(idAlumno);
+
+    return handleSuccess(
+      res,
+      200,
+      "Requisitos de examen obtenidos exitosamente",
+      requisitos
+    );
+  } catch (error) {
+    return handleErrorServer(
+      res,
+      500,
+      "Error al obtener requisitos de examen",
       error.message
     );
   }

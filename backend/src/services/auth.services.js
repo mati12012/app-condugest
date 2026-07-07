@@ -26,10 +26,12 @@ export async function crearUsuarioAuth({
   id_alumno = null,
   estado = true,
   debe_cambiar_password = true,
+  manager = AppDataSource.manager,
 }) {
   const passwordHash = await bcrypt.hash(password, 10);
+  const repo = manager.getRepository(Usuario);
 
-  const nuevoUsuario = usuarioRepository().create({
+  const nuevoUsuario = repo.create({
     correo,
     password_hash: passwordHash,
     rol,
@@ -39,7 +41,7 @@ export async function crearUsuarioAuth({
     debe_cambiar_password,
   });
 
-  return await usuarioRepository().save(nuevoUsuario);
+  return await repo.save(nuevoUsuario);
 }
 
 export async function updateEstadoUsuarioProfesor(idProfesor, estado) {

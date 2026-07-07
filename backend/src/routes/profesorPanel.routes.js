@@ -10,6 +10,10 @@ import {
   getMisClasesProfesorController,
   getMisClasesTeoricasController, 
   getDetalleClaseTeoricaProfesorController, 
+  getAlumnosDisponiblesClaseTeoricaProfesorController,
+  getAlumnosInscritosClaseTeoricaProfesorController,
+  inscribirAlumnoClaseTeoricaProfesorController,
+  quitarAlumnoClaseTeoricaProfesorController,
   updateRecursosClaseTeoricaProfesorController,
   marcarAsistenciaTeoricaController,
 } from "../controllers/profesorPanel.controller.js";
@@ -21,8 +25,11 @@ import {
   updateEvaluacionPracticaProfesorController,
 } from "../controllers/evaluacionPractica.controller.js";
 
-
-import { marcarAsistenciaPracticaController } from "../controllers/clasePractica.controller.js";
+import {
+  getAsistenciaPracticaClaseProfesorController,
+  getAsistenciasPracticasProfesorController,
+  upsertAsistenciaPracticaProfesorController,
+} from "../controllers/asistenciaPractica.controller.js";
 
 const router = Router();
 
@@ -41,12 +48,25 @@ router.get(
   getMisClasesProfesorController
 );
 
+router.get(
+  "/asistencias-practicas",
+  verificarToken,
+  permitirRoles("profesor", "Profesor"),
+  getAsistenciasPracticasProfesorController
+);
+
+router.get(
+  "/clase-practica/:id/asistencia",
+  verificarToken,
+  permitirRoles("profesor", "Profesor"),
+  getAsistenciaPracticaClaseProfesorController
+);
 
 router.patch(
   "/clase-practica/:id/asistencia",
   verificarToken,
   permitirRoles("profesor", "Profesor"), 
-  marcarAsistenciaPracticaController
+  upsertAsistenciaPracticaProfesorController
 );
 
 
@@ -62,6 +82,34 @@ router.get(
   "/clase-teorica/:idClase/alumnos", 
   verificarToken, permitirRoles("profesor", "Profesor"), 
   getDetalleClaseTeoricaProfesorController
+);
+
+router.get(
+  "/clase-teorica/:idClase/alumnos-disponibles",
+  verificarToken,
+  permitirRoles("profesor", "Profesor"),
+  getAlumnosDisponiblesClaseTeoricaProfesorController
+);
+
+router.get(
+  "/clase-teorica/:idClase/alumnos-inscritos",
+  verificarToken,
+  permitirRoles("profesor", "Profesor"),
+  getAlumnosInscritosClaseTeoricaProfesorController
+);
+
+router.post(
+  "/clase-teorica/:idClase/alumnos",
+  verificarToken,
+  permitirRoles("profesor", "Profesor"),
+  inscribirAlumnoClaseTeoricaProfesorController
+);
+
+router.delete(
+  "/clase-teorica/:idClase/alumnos/:idAlumno",
+  verificarToken,
+  permitirRoles("profesor", "Profesor"),
+  quitarAlumnoClaseTeoricaProfesorController
 );
 
 router.patch(

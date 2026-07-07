@@ -18,15 +18,17 @@ const titulosVista = {
 };
 
 async function obtenerDatosAlumnoPanel() {
-  const [resMiPerfil, resMisClases] = await Promise.all([
+  const [resMiPerfil, resMisClases, resMiAsistencia] = await Promise.all([
     apiFetch(`${import.meta.env.VITE_BASE_URL}/alumno-panel/mi-perfil`),
     apiFetch(`${import.meta.env.VITE_BASE_URL}/alumno-panel/mis-clases`),
+    apiFetch(`${import.meta.env.VITE_BASE_URL}/alumno-panel/mi-asistencia`),
   ]);
 
   const dataMiPerfil = await resMiPerfil.json();
   const dataMisClases = await resMisClases.json();
+  const dataMiAsistencia = await resMiAsistencia.json();
 
-  if (!resMiPerfil.ok || !resMisClases.ok) {
+  if (!resMiPerfil.ok || !resMisClases.ok || !resMiAsistencia.ok) {
     throw new Error("Error al cargar los datos del alumno");
   }
 
@@ -34,6 +36,7 @@ async function obtenerDatosAlumnoPanel() {
     perfil: dataMiPerfil.data,
     clasesPracticas: dataMisClases.data.clases_practicas || [],
     clasesTeoricas: dataMisClases.data.clases_teoricas || [],
+    asistenciaPractica: dataMiAsistencia.data || { resumen: {}, historial: [] },
   };
 }
 
@@ -44,6 +47,10 @@ function PanelAlumno({ usuario, cerrarSesion }) {
   const [error, setError] = useState("");
   const [clasesPracticas, setClasesPracticas] = useState([]);
   const [clasesTeoricas, setClasesTeoricas] = useState([]);
+  const [asistenciaPractica, setAsistenciaPractica] = useState({
+    resumen: {},
+    historial: [],
+  });
 
   const cargarDatosPanel = async () => {
     try {
@@ -55,6 +62,7 @@ function PanelAlumno({ usuario, cerrarSesion }) {
       setPerfil(datosPanel.perfil);
       setClasesPracticas(datosPanel.clasesPracticas);
       setClasesTeoricas(datosPanel.clasesTeoricas);
+      setAsistenciaPractica(datosPanel.asistenciaPractica);
     } catch (errorCarga) {
       setError(errorCarga.message);
     } finally {
@@ -73,6 +81,7 @@ function PanelAlumno({ usuario, cerrarSesion }) {
           setPerfil(datosPanel.perfil);
           setClasesPracticas(datosPanel.clasesPracticas);
           setClasesTeoricas(datosPanel.clasesTeoricas);
+          setAsistenciaPractica(datosPanel.asistenciaPractica);
         }
       } catch (errorCarga) {
         if (!cancelado) {
@@ -105,6 +114,7 @@ function PanelAlumno({ usuario, cerrarSesion }) {
           <VistaMisClases
             clasesPracticas={clasesPracticas}
             clasesTeoricas={clasesTeoricas}
+            asistenciaPractica={asistenciaPractica}
             recargarDatos={cargarDatosPanel}
           />
         );

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
+import RevisionTecnicaAsistente from "../../components/RevisionTecnicaAsistente";
 
 const API_ORIGIN = import.meta.env.VITE_BASE_URL.replace("/api", "");
 
@@ -152,6 +153,15 @@ const VerVehiculo = ({ vehiculoId, cambiarVista }) => {
             >
               Ver Revisión Técnica
             </a>
+          </div>
+        )}
+
+        {(vehiculo.url_revision_tecnica || vehiculo.estado_revision_tecnica) && (
+          <div className="mt-6">
+            <RevisionTecnicaAsistente
+              revision={vehiculo}
+              mostrarFormulario={false}
+            />
           </div>
         )}
 

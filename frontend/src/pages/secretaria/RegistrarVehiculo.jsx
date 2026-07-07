@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
+import RevisionTecnicaAsistente from "../../components/RevisionTecnicaAsistente";
 
 const MAX_REVISION_BYTES = 5 * 1024 * 1024;
 const EXTENSIONES_REVISION = [".pdf", ".jpg", ".jpeg", ".png"];
@@ -23,6 +24,9 @@ const RegistrarVehiculo = ({ cambiarVista }) => {
   const [archivo, setArchivo] = useState(null);
   const [errorArchivo, setErrorArchivo] = useState('');
   const [archivoInputKey, setArchivoInputKey] = useState(0);
+  const [analisisRevision, setAnalisisRevision] = useState(null);
+  const [vehiculoRegistradoId, setVehiculoRegistradoId] = useState(null);
+  const [guardandoRevision, setGuardandoRevision] = useState(false);
 
   const limpiarPatente = (patente) => {
     return patente
@@ -175,6 +179,8 @@ const RegistrarVehiculo = ({ cambiarVista }) => {
 
       if (response.ok) {
         const idNuevoVehiculo = respuestaServidor.data?.id_vehiculo || respuestaServidor.data?.id;
+        setVehiculoRegistradoId(idNuevoVehiculo || null);
+        setAnalisisRevision(null);
 
         if (archivo && idNuevoVehiculo) {
           setMensaje('Vehículo creado. Subiendo documento...');
@@ -191,6 +197,12 @@ const RegistrarVehiculo = ({ cambiarVista }) => {
           if (!responseDocumento.ok) {
             throw new Error(obtenerMensajeErrorServidor(respuestaDocumento));
           }
+
+          setAnalisisRevision(
+            respuestaDocumento.data?.vehiculo ||
+              respuestaDocumento.data?.analisis_revision_tecnica ||
+              null
+          );
         }
 
         setMensaje('Éxito: vehículo y documentos registrados correctamente');
@@ -208,9 +220,40 @@ const RegistrarVehiculo = ({ cambiarVista }) => {
       }
     } catch (error) {
       console.error(error);
-      setMensaje('Error: Sin conexión al servidor');
+      setMensaje(`Error: ${error.message || 'Sin conexion al servidor'}`);
     } finally {
       setCargando(false);
+    }
+  };
+
+  const confirmarFechaRevision = async (fechaManual) => {
+    if (!vehiculoRegistradoId) return;
+
+    try {
+      setGuardandoRevision(true);
+      setMensaje('');
+
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/vehiculos/${vehiculoRegistradoId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fecha_vencimiento_revision_tecnica: fechaManual
+        })
+      });
+      const respuestaServidor = await response.json();
+
+      if (!response.ok) {
+        setMensaje(`Error: ${obtenerMensajeErrorServidor(respuestaServidor)}`);
+        return;
+      }
+
+      setAnalisisRevision(respuestaServidor.data);
+      setMensaje('Fecha de revision tecnica confirmada correctamente');
+    } catch (error) {
+      console.error(error);
+      setMensaje('Error: No se pudo confirmar la fecha de revision tecnica');
+    } finally {
+      setGuardandoRevision(false);
     }
   };
 
@@ -413,6 +456,15 @@ const RegistrarVehiculo = ({ cambiarVista }) => {
             </p>
           )}
         </div>
+
+        {analisisRevision && (
+          <RevisionTecnicaAsistente
+            key={`${analisisRevision.fecha_vencimiento_revision_tecnica || 'sin-fecha'}-${analisisRevision.estado_revision_tecnica || 'manual'}`}
+            revision={analisisRevision}
+            onConfirmarFecha={confirmarFechaRevision}
+            guardando={guardandoRevision}
+          />
+        )}
 
         <div className="pt-4 border-t mt-6 flex justify-between">
           <button

@@ -22,6 +22,13 @@ function obtenerClaseEstado(estado) {
   return "bg-blue-100 text-blue-700";
 }
 
+function obtenerClaseAsistenciaPractica(estado) {
+  if (estado === "Presente") return "bg-emerald-100 text-emerald-700";
+  if (estado === "Ausente") return "bg-red-100 text-red-700";
+  if (estado === "Justificado") return "bg-amber-100 text-amber-700";
+  return "bg-slate-100 text-slate-600";
+}
+
 function obtenerClaseEstadoSolicitud(estado) {
   if (estado === "Aprobada") {
     return "bg-emerald-100 text-emerald-700 border-emerald-200";
@@ -36,6 +43,16 @@ function obtenerClaseEstadoSolicitud(estado) {
   }
 
   return "bg-amber-100 text-amber-700 border-amber-200";
+}
+
+function normalizarHistorialAsistenciaPractica(historial) {
+  return (historial || []).map((asistencia) => ({
+    ...asistencia,
+    fecha: asistencia.fecha || asistencia.clase_fecha,
+    estado: asistencia.clase_estado || asistencia.estado,
+    asistencia: asistencia.estado_asistencia || asistencia.asistencia || "Pendiente",
+    asistencia_observacion: asistencia.observacion || asistencia.asistencia_observacion,
+  }));
 }
 
 function obtenerMensajeError(data, fallback) {
@@ -135,6 +152,9 @@ function TablaClases({
                       {clase.codigo_reunion && (
                         <p className="text-xs text-slate-500 mt-1">Codigo: {clase.codigo_reunion}</p>
                       )}
+                      {clase.modo_participacion && (
+                        <p className="text-xs text-slate-500 mt-1">Participacion: {clase.modo_participacion}</p>
+                      )}
                     </td>
                   )}
                   <td className="px-4 py-3">
@@ -142,6 +162,11 @@ function TablaClases({
                       <span className={`rounded-full px-3 py-1 text-xs font-bold ${obtenerClaseEstado(clase.estado)}`}>
                         {clase.estado}
                       </span>
+                      {!esTeorica && clase.asistencia && (
+                        <span className={`rounded-full px-3 py-1 text-xs font-bold ${obtenerClaseAsistenciaPractica(clase.asistencia)}`}>
+                          Asistencia: {clase.asistencia}
+                        </span>
+                      )}
                       {!esHistorial && !esTeorica && clase.estado === "Programada" && (
                         solicitudPendiente ? (
                           <span className="rounded-full bg-amber-100 text-amber-700 px-3 py-1 text-xs font-bold">
@@ -189,7 +214,7 @@ function TablaClases({
                   )}
                   {esHistorial && (
                     <td className="px-4 py-3 text-slate-600">
-                      {clase.observacion || (clase.estado === "Cancelada" ? "Clase cancelada." : "Sin observaciones.")}
+                      {clase.asistencia_observacion || clase.observacion || (clase.estado === "Cancelada" ? "Clase cancelada." : "Sin observaciones.")}
                     </td>
                   )}
                 </tr>
@@ -202,7 +227,27 @@ function TablaClases({
   );
 }
 
-function VistaMisClases({ clasesPracticas, clasesTeoricas }) {
+function ResumenAsistenciaPractica({ resumen }) {
+  const items = [
+    { etiqueta: "Presente", valor: resumen.presentes || 0, clase: "text-emerald-700" },
+    { etiqueta: "Ausente", valor: resumen.ausentes || 0, clase: "text-red-700" },
+    { etiqueta: "Justificado", valor: resumen.justificados || 0, clase: "text-amber-700" },
+    { etiqueta: "Pendiente", valor: resumen.pendientes || 0, clase: "text-slate-600" },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {items.map((item) => (
+        <div key={item.etiqueta} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{item.etiqueta}</p>
+          <p className={`mt-2 text-2xl font-bold ${item.clase}`}>{item.valor}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function VistaMisClases({ clasesPracticas, clasesTeoricas, asistenciaPractica }) {
   const [pestanaActiva, setPestanaActiva] = useState("practicas");
   const [solicitudes, setSolicitudes] = useState([]);
   const [cargandoSolicitudes, setCargandoSolicitudes] = useState(true);
@@ -225,6 +270,10 @@ function VistaMisClases({ clasesPracticas, clasesTeoricas }) {
   const historialTeoricas = clasesTeoricas.filter((clase) =>
     ["Realizada", "Cancelada"].includes(clase.estado)
   );
+  const historialAsistenciaPractica = normalizarHistorialAsistenciaPractica(
+    asistenciaPractica?.historial
+  );
+  const resumenAsistenciaPractica = asistenciaPractica?.resumen || {};
 
   const solicitudesPendientesPorClase = useMemo(() => {
     return solicitudes.reduce((mapa, solicitud) => {
@@ -475,6 +524,23 @@ function VistaMisClases({ clasesPracticas, clasesTeoricas }) {
         </div>
       )}
 
+      {mostrandoPracticas && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">Resumen de asistencia practica</h2>
+              <p className="text-sm text-slate-500 mt-1">
+                Registro historico de tus clases practicas.
+              </p>
+            </div>
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+              Total: {resumenAsistenciaPractica.total || 0}
+            </span>
+          </div>
+          <ResumenAsistenciaPractica resumen={resumenAsistenciaPractica} />
+        </div>
+      )}
+
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
         <h2 className="text-xl font-bold text-slate-900 mb-4">Próximas clases</h2>
         <TablaClases
@@ -496,6 +562,21 @@ function VistaMisClases({ clasesPracticas, clasesTeoricas }) {
           abrirFormularioReprogramacion={abrirFormularioReprogramacion}
         />
       </div>
+
+      {mostrandoPracticas && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <h2 className="text-xl font-bold text-slate-900 mb-4">
+            Historial de asistencia practica
+          </h2>
+          <TablaClases
+            datos={historialAsistenciaPractica}
+            esHistorial
+            esTeorica={false}
+            solicitudesPendientesPorClase={solicitudesPendientesPorClase}
+            abrirFormularioReprogramacion={abrirFormularioReprogramacion}
+          />
+        </div>
+      )}
 
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
         <h2 className="text-xl font-bold text-slate-900 mb-4">Mis solicitudes de reprogramación</h2>

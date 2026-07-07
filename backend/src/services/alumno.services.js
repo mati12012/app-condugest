@@ -4,11 +4,13 @@ import {
     obtenerDominioAlumno,
     generarCorreoBaseAlumno
 } from "../helpers/correoInstitucional.helper.js";
+import { crearUsuarioAuth } from "./auth.services.js";
 
 
 const alumnoRepository = AppDataSource.getRepository(Alumno);
-export async function existeCorreoAlumno(correo) {
-    const alumno = await alumnoRepository.findOne({
+export async function existeCorreoAlumno(correo, manager = AppDataSource.manager) {
+    const repo = manager.getRepository(Alumno);
+    const alumno = await repo.findOne({
         where: {
             correo,
         },
@@ -17,14 +19,14 @@ export async function existeCorreoAlumno(correo) {
     return Boolean(alumno);
 }
 
-export async function generarCorreoAlumnoUnico(nombre, apellido) {
+export async function generarCorreoAlumnoUnico(nombre, apellido, manager = AppDataSource.manager) {
     const dominio = obtenerDominioAlumno();
     const base = generarCorreoBaseAlumno(nombre, apellido);
 
     let correo = `${base}@${dominio}`;
     let contador = 2;
 
-    while (await existeCorreoAlumno(correo)) {
+    while (await existeCorreoAlumno(correo, manager)) {
         correo = `${base}${contador}@${dominio}`;
         contador++;
     }
@@ -32,10 +34,53 @@ export async function generarCorreoAlumnoUnico(nombre, apellido) {
     return correo;
 }
 
+export async function getAlumnoByRutOrCorreo(rut, correo, manager = AppDataSource.manager) {
+    const resultado = await manager.query(
+        `
+        SELECT *
+        FROM alumnos
+        WHERE rut = $1
+           OR LOWER(correo) = LOWER($2)
+        LIMIT 1
+        `,
+        [rut, correo]
+    );
+
+    return resultado.length > 0 ? resultado[0] : null;
+}
+
 // Es como INSERT INTO alumnos
-export async function createAlumno(data) {
-    const nuevoAlumno = alumnoRepository.create(data);
-    return await alumnoRepository.save(nuevoAlumno);
+export async function createAlumno(data, manager = AppDataSource.manager) {
+    const repo = manager.getRepository(Alumno);
+    const nuevoAlumno = repo.create(data);
+    return await repo.save(nuevoAlumno);
+}
+
+export async function crearAlumnoConUsuario(data, manager = AppDataSource.manager) {
+    const alumnoData = { ...data };
+
+    if (alumnoData.nombre && alumnoData.apellido) {
+        alumnoData.correo = await generarCorreoAlumnoUnico(
+            alumnoData.nombre,
+            alumnoData.apellido,
+            manager
+        );
+    }
+
+    const nuevoAlumno = await createAlumno(alumnoData, manager);
+
+    await crearUsuarioAuth({
+        correo: nuevoAlumno.correo,
+        password: "Alumno1234",
+        rol: "alumno",
+        id_profesor: null,
+        id_alumno: nuevoAlumno.id_alumno,
+        estado: true,
+        debe_cambiar_password: true,
+        manager,
+    });
+
+    return nuevoAlumno;
 }
 
 // Es como SELECT * FROM alumnos

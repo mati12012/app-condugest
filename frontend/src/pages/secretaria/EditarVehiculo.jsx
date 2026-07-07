@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
+import RevisionTecnicaAsistente from "../../components/RevisionTecnicaAsistente";
 
 const MAX_REVISION_BYTES = 5 * 1024 * 1024;
 const EXTENSIONES_REVISION = [".pdf", ".jpg", ".jpeg", ".png"];
@@ -17,7 +18,12 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
     kilometraje: '',
     estado_operativo: 'Disponible',
     observacion: '',
-    url_revision_tecnica: null 
+    url_revision_tecnica: null,
+    fecha_vencimiento_revision_tecnica: null,
+    estado_revision_tecnica: 'Requiere revisión manual',
+    patente_detectada_revision: null,
+    confianza_revision_tecnica: 'Baja',
+    observacion_revision_tecnica: null
   });
 
   const [cargando, setCargando] = useState(true);
@@ -30,6 +36,7 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
   const [archivoInputKey, setArchivoInputKey] = useState(0);
   const [subiendoArchivo, setSubiendoArchivo] = useState(false);
   const [mensajeArchivo, setMensajeArchivo] = useState('');
+  const [guardandoRevision, setGuardandoRevision] = useState(false);
 
   const obtenerVehiculo = useCallback(async () => {
     try {
@@ -53,7 +60,12 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
           kilometraje: vehiculo.kilometraje ?? '',
           estado_operativo: vehiculo.estado_operativo || 'Disponible',
           observacion: vehiculo.observacion || '',
-          url_revision_tecnica: vehiculo.url_revision_tecnica || null 
+          url_revision_tecnica: vehiculo.url_revision_tecnica || null,
+          fecha_vencimiento_revision_tecnica: vehiculo.fecha_vencimiento_revision_tecnica || null,
+          estado_revision_tecnica: vehiculo.estado_revision_tecnica || 'Requiere revisión manual',
+          patente_detectada_revision: vehiculo.patente_detectada_revision || null,
+          confianza_revision_tecnica: vehiculo.confianza_revision_tecnica || 'Baja',
+          observacion_revision_tecnica: vehiculo.observacion_revision_tecnica || null
         });
       } else {
         setMensaje(`Error: ${respuestaServidor.message || 'No se pudo cargar el vehículo'}`);
@@ -157,7 +169,19 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
 
       const data = await response.json();
       if (response.ok) {
-        setMensajeArchivo('Documento subido correctamente');
+        setMensajeArchivo(data.message || 'Documento subido correctamente');
+        if (data.data?.vehiculo) {
+          const vehiculo = data.data.vehiculo;
+          setDatos((actual) => ({
+            ...actual,
+            url_revision_tecnica: vehiculo.url_revision_tecnica || null,
+            fecha_vencimiento_revision_tecnica: vehiculo.fecha_vencimiento_revision_tecnica || null,
+            estado_revision_tecnica: vehiculo.estado_revision_tecnica || 'Requiere revisión manual',
+            patente_detectada_revision: vehiculo.patente_detectada_revision || null,
+            confianza_revision_tecnica: vehiculo.confianza_revision_tecnica || 'Baja',
+            observacion_revision_tecnica: vehiculo.observacion_revision_tecnica || null
+          }));
+        }
         setArchivo(null);
         setErrorArchivo('');
         setArchivoInputKey((key) => key + 1);
@@ -169,6 +193,43 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
       setMensajeArchivo('Error de conexión al subir documento');
     } finally {
       setSubiendoArchivo(false);
+    }
+  };
+
+  const confirmarFechaRevision = async (fechaManual) => {
+    try {
+      setGuardandoRevision(true);
+      setMensajeArchivo('');
+
+      const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/vehiculos/${vehiculoId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fecha_vencimiento_revision_tecnica: fechaManual
+        })
+      });
+      const respuestaServidor = await response.json();
+
+      if (!response.ok) {
+        setMensajeArchivo(`Error: ${obtenerMensajeErrorServidor(respuestaServidor)}`);
+        return;
+      }
+
+      const vehiculo = respuestaServidor.data;
+      setDatos((actual) => ({
+        ...actual,
+        fecha_vencimiento_revision_tecnica: vehiculo.fecha_vencimiento_revision_tecnica || null,
+        estado_revision_tecnica: vehiculo.estado_revision_tecnica || 'Requiere revisión manual',
+        patente_detectada_revision: vehiculo.patente_detectada_revision || null,
+        confianza_revision_tecnica: vehiculo.confianza_revision_tecnica || 'Baja',
+        observacion_revision_tecnica: vehiculo.observacion_revision_tecnica || null
+      }));
+      setMensajeArchivo('Fecha de revision tecnica confirmada correctamente');
+    } catch (error) {
+      console.error(error);
+      setMensajeArchivo('Error: No se pudo confirmar la fecha de revision tecnica');
+    } finally {
+      setGuardandoRevision(false);
     }
   };
 
@@ -435,6 +496,15 @@ const EditarVehiculo = ({ vehiculoId, cambiarVista }) => {
             </p>
           )}
         </div>
+
+        {(datos.url_revision_tecnica || datos.estado_revision_tecnica) && (
+          <RevisionTecnicaAsistente
+            key={`${datos.fecha_vencimiento_revision_tecnica || 'sin-fecha'}-${datos.estado_revision_tecnica || 'manual'}`}
+            revision={datos}
+            onConfirmarFecha={confirmarFechaRevision}
+            guardando={guardandoRevision}
+          />
+        )}
 
         <div className="pt-4 border-t mt-6 flex flex-col md:flex-row justify-between gap-3">
           <button

@@ -1,14 +1,12 @@
 import {
-    createAlumno,
     getAllAlumnos,
     getAlumnoById,
     updateAlumno,
     deleteAlumno,
-    generarCorreoAlumnoUnico
+    crearAlumnoConUsuario
 } from "../services/alumno.services.js";
 import { validateAlumnoData } from "../validations/alumno.validation.js";
 import { handleErrorClient, handleErrorServer, handleSuccess } from "../handlers/responseHandlers.js";
-import { crearUsuarioAuth } from "../services/auth.services.js";
 import {
     normalizarEmail,
     normalizarRutBasico,
@@ -61,28 +59,13 @@ export async function createAlumnoController(req, res) {
     try {
         const alumnoData = limpiarDatosAlumno(req.body);
 
-        if (alumnoData.nombre && alumnoData.apellido) {
-            alumnoData.correo = await generarCorreoAlumnoUnico(
-                alumnoData.nombre,
-                alumnoData.apellido
-            );
-        }
+        alumnoData.correo = "autogenerado@condugest.cl";
 
         const validationErrors = validateAlumnoData(alumnoData);
         if (validationErrors.length > 0) {
             return handleErrorClient(res, 400, "Datos del alumno invalidos", validationErrors);
         }
-        const nuevoAlumno = await createAlumno(alumnoData);
-
-        await crearUsuarioAuth({
-            correo: nuevoAlumno.correo,
-            password: "Alumno1234",
-            rol: "alumno",
-            id_profesor: null,
-            id_alumno: nuevoAlumno.id_alumno,
-            estado: true,
-            debe_cambiar_password: true,
-        });
+        const nuevoAlumno = await crearAlumnoConUsuario(alumnoData);
 
         return handleSuccess(
             res,

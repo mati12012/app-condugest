@@ -132,6 +132,13 @@ function VistaSolicitudesMatricula() {
   async function cambiarEstadoSolicitud(solicitud, nuevoEstado) {
     if (!solicitud?.id_solicitud || solicitud.estado === nuevoEstado) return;
 
+    if (
+      nuevoEstado === "Matriculado"
+      && !window.confirm("Esta acción creará el alumno y su matrícula asociada. ¿Deseas continuar?")
+    ) {
+      return;
+    }
+
     try {
       setActualizandoId(solicitud.id_solicitud);
       setError("");
@@ -159,13 +166,17 @@ function VistaSolicitudesMatricula() {
         estado: nuevoEstado,
       };
 
-      setSolicitudes((solicitudesActuales) =>
-        solicitudesActuales.map((item) =>
-          item.id_solicitud === solicitud.id_solicitud
-            ? { ...item, ...solicitudActualizada }
-            : item
-        )
-      );
+      if (nuevoEstado === "Matriculado") {
+        await obtenerSolicitudes();
+      } else {
+        setSolicitudes((solicitudesActuales) =>
+          solicitudesActuales.map((item) =>
+            item.id_solicitud === solicitud.id_solicitud
+              ? { ...item, ...solicitudActualizada }
+              : item
+          )
+        );
+      }
 
       if (detalle?.id_solicitud === solicitud.id_solicitud) {
         setDetalle((detalleActual) => ({
@@ -174,7 +185,7 @@ function VistaSolicitudesMatricula() {
         }));
       }
 
-      setMensaje("Estado de la solicitud actualizado exitosamente.");
+      setMensaje(data.message || "Estado de la solicitud actualizado exitosamente.");
     } catch (error) {
       setError(error.message || "No se pudo actualizar el estado");
     } finally {

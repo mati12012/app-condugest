@@ -89,8 +89,8 @@ export async function getAllMatriculas() {
   `);
 }
 
-export async function getMatriculaDetalleById(idMatricula) {
-  const resultado = await AppDataSource.query(
+export async function getMatriculaDetalleById(idMatricula, manager = AppDataSource.manager) {
+  const resultado = await manager.query(
     `
     SELECT
       m.id_matricula,
@@ -259,8 +259,9 @@ export async function getResumenMatriculaById(idMatricula) {
   };
 }
 
-export async function createMatriculaDesdePlan({ id_alumno, plan }) {
-  const nuevaMatricula = matriculaRepository().create({
+export async function createMatriculaDesdePlan({ id_alumno, plan, manager = AppDataSource.manager }) {
+  const repo = manager.getRepository(Matricula);
+  const nuevaMatricula = repo.create({
     id_alumno: Number(id_alumno),
     id_plan: Number(plan.id_plan),
     cantidad_clases_practicas: plan.cantidad_clases_practicas,
@@ -269,9 +270,9 @@ export async function createMatriculaDesdePlan({ id_alumno, plan }) {
     estado: "Activa",
   });
 
-  const matriculaGuardada = await matriculaRepository().save(nuevaMatricula);
+  const matriculaGuardada = await repo.save(nuevaMatricula);
 
-  return await getMatriculaDetalleById(matriculaGuardada.id_matricula);
+  return await getMatriculaDetalleById(matriculaGuardada.id_matricula, manager);
 }
 
 export async function updateMatricula(idMatricula, matriculaData) {

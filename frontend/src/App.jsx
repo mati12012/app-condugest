@@ -35,6 +35,7 @@ import VistaReprogramaciones from './pages/secretaria/VistaReprogramaciones';
 import VistaMaterialesEstudio from './pages/secretaria/VistaMaterialesEstudio';
 import VistaSolicitudesExamen from './pages/secretaria/VistaSolicitudesExamen';
 import VistaDisponibilidadProfesores from './pages/secretaria/VistaDisponibilidadProfesores';
+import VistaAsistenciasPracticas from './pages/secretaria/VistaAsistenciasPracticas';
 import { obtenerCorreoUsuario, obtenerNombreUsuario } from './utils/usuarioSesion';
 
 const obtenerVistaPorRol = (rol) => {
@@ -182,6 +183,7 @@ if (usuario.rol === "profesor") {
           {vistaActual === 'reprogramaciones' && <VistaReprogramaciones />}
           {vistaActual === 'materiales' && <VistaMaterialesEstudio />}
           {vistaActual === 'solicitudesExamen' && <VistaSolicitudesExamen />}
+          {vistaActual === 'asistenciasPracticas' && <VistaAsistenciasPracticas />}
           {vistaActual === "salasPsicotecnicas" && <ModuloSalasPsicotecnicas />}
           {vistaActual === "salasTeoricas" && <VistaSalasTeoricas />}
           {vistaActual === "profesores" && <VistaProfesores cambiarVista={manejarCambioVista} />}

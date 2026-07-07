@@ -61,8 +61,143 @@ async function obtenerMisSolicitudesExamen() {
   return data.data || [];
 }
 
+async function obtenerRequisitosExamen() {
+  const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/alumno-panel/requisitos-examen`);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(obtenerMensajeError(data, "No se pudieron cargar los requisitos"));
+  }
+
+  return data.data || null;
+}
+
+function formatearPorcentaje(valor) {
+  return `${Number(valor || 0).toLocaleString("es-CL", {
+    maximumFractionDigits: 2,
+  })}%`;
+}
+
+function formatearMonto(valor) {
+  return Number(valor || 0).toLocaleString("es-CL", {
+    style: "currency",
+    currency: "CLP",
+    maximumFractionDigits: 0,
+  });
+}
+
+function RequisitoFila({ etiqueta, cumple, detalle }) {
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+      <div>
+        <p className="font-semibold text-slate-800">{etiqueta}</p>
+        {detalle && <p className="text-xs text-slate-500 mt-1">{detalle}</p>}
+      </div>
+      <span
+        className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-bold ${
+          cumple
+            ? "bg-emerald-100 text-emerald-700"
+            : "bg-red-100 text-red-700"
+        }`}
+      >
+        {cumple ? "Cumple" : "No cumple"}
+      </span>
+    </div>
+  );
+}
+
+function TarjetaRequisitosExamen({ requisitos }) {
+  if (!requisitos) return null;
+
+  const saldoPendiente = Number(requisitos.saldo_pendiente || 0);
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-5">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900">
+            Requisitos para solicitar examen
+          </h2>
+          <p className="text-sm text-slate-500 mt-1">
+            Debes cumplir los requisitos academicos y administrativos antes de enviar la solicitud.
+          </p>
+        </div>
+        <span
+          className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-bold ${
+            requisitos.puede_solicitar
+              ? "bg-emerald-100 text-emerald-700"
+              : "bg-amber-100 text-amber-700"
+          }`}
+        >
+          {requisitos.puede_solicitar ? "Puede solicitar" : "Requiere revision"}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <RequisitoFila
+          etiqueta="Matricula activa o finalizada"
+          cumple={requisitos.cumple_matricula}
+        />
+        <RequisitoFila
+          etiqueta="Sin solicitud pendiente"
+          cumple={requisitos.sin_solicitud_pendiente}
+        />
+        <RequisitoFila
+          etiqueta="Sin solicitud aprobada o gestionada pendiente"
+          cumple={requisitos.sin_solicitud_aprobada_o_gestionada_pendiente}
+        />
+        <RequisitoFila
+          etiqueta="Sin examen aprobado previamente"
+          cumple={requisitos.sin_examen_aprobado}
+        />
+        <RequisitoFila
+          etiqueta="Asistencia practica minima 80%"
+          cumple={requisitos.cumple_asistencia_practica}
+          detalle={`Actual: ${formatearPorcentaje(requisitos.porcentaje_asistencia_practica)}`}
+        />
+        <RequisitoFila
+          etiqueta="Asistencia teorica minima 80%"
+          cumple={requisitos.cumple_asistencia_teorica}
+          detalle={`Actual: ${formatearPorcentaje(requisitos.porcentaje_asistencia_teorica)}`}
+        />
+        <RequisitoFila
+          etiqueta="Evaluaciones practicas registradas"
+          cumple={requisitos.tiene_evaluaciones}
+        />
+        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+          <p className="font-semibold text-slate-800">Estado de pago</p>
+          <p className="text-xs text-slate-500 mt-1">
+            {requisitos.estado_pago || "Sin informacion"} - Saldo: {formatearMonto(saldoPendiente)}
+          </p>
+          <span className="mt-2 inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">
+            No bloqueante
+          </span>
+        </div>
+      </div>
+
+      {saldoPendiente > 0 && (
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-800">
+          Tienes saldo pendiente. Puedes solicitar el examen, pero secretaria podria revisarlo antes de gestionar la fecha.
+        </div>
+      )}
+
+      {requisitos.motivos_bloqueo?.length > 0 && (
+        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <p className="font-bold mb-2">Motivos de bloqueo</p>
+          <ul className="space-y-1">
+            {requisitos.motivos_bloqueo.map((motivo) => (
+              <li key={motivo}>{motivo}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function VistaSolicitudExamen() {
   const [solicitudes, setSolicitudes] = useState([]);
+  const [requisitos, setRequisitos] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
@@ -74,8 +209,12 @@ function VistaSolicitudExamen() {
       setCargando(true);
       setError("");
 
-      const solicitudesData = await obtenerMisSolicitudesExamen();
+      const [solicitudesData, requisitosData] = await Promise.all([
+        obtenerMisSolicitudesExamen(),
+        obtenerRequisitosExamen(),
+      ]);
       setSolicitudes(solicitudesData);
+      setRequisitos(requisitosData);
     } catch (errorCarga) {
       setError(errorCarga.message || "No se pudieron cargar tus solicitudes");
     } finally {
@@ -88,10 +227,14 @@ function VistaSolicitudExamen() {
 
     async function cargarInicial() {
       try {
-        const solicitudesData = await obtenerMisSolicitudesExamen();
+        const [solicitudesData, requisitosData] = await Promise.all([
+          obtenerMisSolicitudesExamen(),
+          obtenerRequisitosExamen(),
+        ]);
 
         if (activo) {
           setSolicitudes(solicitudesData);
+          setRequisitos(requisitosData);
         }
       } catch (errorCarga) {
         if (activo) {
@@ -114,6 +257,7 @@ function VistaSolicitudExamen() {
   const solicitudPendiente = useMemo(() => {
     return solicitudes.find((solicitud) => solicitud.estado === "Pendiente");
   }, [solicitudes]);
+  const puedeSolicitar = Boolean(requisitos?.puede_solicitar) && !solicitudPendiente;
 
   function actualizarCampo(campo, valor) {
     setFormulario((actual) => ({
@@ -177,6 +321,8 @@ function VistaSolicitudExamen() {
           {error}
         </div>
       )}
+
+      <TarjetaRequisitosExamen requisitos={requisitos} />
 
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-5">
@@ -250,7 +396,7 @@ function VistaSolicitudExamen() {
             <div className="flex justify-end">
               <button
                 type="submit"
-                disabled={enviando}
+                disabled={enviando || !puedeSolicitar}
                 className="px-5 py-2.5 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {enviando ? "Enviando..." : "Enviar solicitud"}

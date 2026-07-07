@@ -5,8 +5,12 @@ import {
   getVehiculoById,
   getVehiculoByPatente,
   updateVehiculo,
-  actualizarDocumentoVehiculo,
+  actualizarRevisionTecnicaVehiculo,
 } from "../services/vehiculo.services.js";
+import {
+  analizarRevisionTecnicaDocumento,
+  calcularEstadoRevisionTecnica,
+} from "../services/revisionTecnicaIA.services.js";
 
 import {
   validateVehiculoCreate,
@@ -20,6 +24,14 @@ import {
   handleSuccess,
 } from "../handlers/responseHandlers.js";
 
+function normalizarPatente(valor) {
+  return String(valor || "")
+    .toUpperCase()
+    .replace(/\s/g, "")
+    .replace(/-/g, "")
+    .replace(/\./g, "");
+}
+
 function limpiarDatosVehiculo(data) {
   const limpio = { ...data };
 
@@ -32,6 +44,10 @@ function limpiarDatosVehiculo(data) {
     "sede",
     "estado_operativo",
     "observacion",
+    "estado_revision_tecnica",
+    "patente_detectada_revision",
+    "confianza_revision_tecnica",
+    "observacion_revision_tecnica",
   ];
 
   camposTexto.forEach((campo) => {
@@ -41,15 +57,25 @@ function limpiarDatosVehiculo(data) {
   });
 
   if (typeof limpio.patente === "string") {
-    limpio.patente = limpio.patente
-      .toUpperCase()
-      .replace(/\s/g, "")
-      .replace(/-/g, "")
-      .replace(/\./g, "");
+    limpio.patente = normalizarPatente(limpio.patente);
+  }
+
+  if (typeof limpio.patente_detectada_revision === "string") {
+    limpio.patente_detectada_revision = normalizarPatente(
+      limpio.patente_detectada_revision
+    );
   }
 
   if (limpio.observacion === "") {
     limpio.observacion = null;
+  }
+
+  if (limpio.observacion_revision_tecnica === "") {
+    limpio.observacion_revision_tecnica = null;
+  }
+
+  if (limpio.fecha_vencimiento_revision_tecnica === "") {
+    limpio.fecha_vencimiento_revision_tecnica = null;
   }
 
   if (
@@ -71,21 +97,21 @@ function limpiarDatosVehiculo(data) {
   return limpio;
 }
 
-export async function getVehiculosController(req, res) {
+export async function getVehiculosController(_req, res) {
   try {
     const vehiculos = await getAllVehiculos();
 
     return handleSuccess(
       res,
       200,
-      "Vehículos obtenidos exitosamente",
+      "Vehiculos obtenidos exitosamente",
       vehiculos
     );
   } catch (error) {
     return handleErrorServer(
       res,
       500,
-      "Error al obtener vehículos",
+      "Error al obtener vehiculos",
       error.message
     );
   }
@@ -94,35 +120,29 @@ export async function getVehiculosController(req, res) {
 export async function getVehiculoController(req, res) {
   try {
     const { id } = req.params;
-
     const paramErrors = validateVehiculoIdParam(req.params);
 
     if (paramErrors.length > 0) {
-      return handleErrorClient(
-        res,
-        400,
-        "Parámetros inválidos",
-        paramErrors
-      );
+      return handleErrorClient(res, 400, "Parametros invalidos", paramErrors);
     }
 
     const vehiculo = await getVehiculoById(id);
 
     if (!vehiculo) {
-      return handleErrorClient(res, 404, "Vehículo no encontrado");
+      return handleErrorClient(res, 404, "Vehiculo no encontrado");
     }
 
     return handleSuccess(
       res,
       200,
-      "Vehículo obtenido exitosamente",
+      "Vehiculo obtenido exitosamente",
       vehiculo
     );
   } catch (error) {
     return handleErrorServer(
       res,
       500,
-      "Error al obtener vehículo",
+      "Error al obtener vehiculo",
       error.message
     );
   }
@@ -131,14 +151,13 @@ export async function getVehiculoController(req, res) {
 export async function createVehiculoController(req, res) {
   try {
     const vehiculoData = limpiarDatosVehiculo(req.body);
-
     const validationErrors = validateVehiculoCreate(vehiculoData);
 
     if (validationErrors.length > 0) {
       return handleErrorClient(
         res,
         400,
-        "Datos de vehículo inválidos",
+        "Datos de vehiculo invalidos",
         validationErrors
       );
     }
@@ -149,7 +168,7 @@ export async function createVehiculoController(req, res) {
       return handleErrorClient(
         res,
         409,
-        "Ya existe un vehículo registrado con esa patente"
+        "Ya existe un vehiculo registrado con esa patente"
       );
     }
 
@@ -162,14 +181,14 @@ export async function createVehiculoController(req, res) {
     return handleSuccess(
       res,
       201,
-      "Vehículo creado exitosamente",
+      "Vehiculo creado exitosamente",
       nuevoVehiculo
     );
   } catch (error) {
     return handleErrorServer(
       res,
       500,
-      "Error al crear vehículo",
+      "Error al crear vehiculo",
       error.message
     );
   }
@@ -179,16 +198,10 @@ export async function updateVehiculoController(req, res) {
   try {
     const { id } = req.params;
     const vehiculoData = limpiarDatosVehiculo(req.body);
-
     const paramErrors = validateVehiculoIdParam(req.params);
 
     if (paramErrors.length > 0) {
-      return handleErrorClient(
-        res,
-        400,
-        "Parámetros inválidos",
-        paramErrors
-      );
+      return handleErrorClient(res, 400, "Parametros invalidos", paramErrors);
     }
 
     const validationErrors = validateVehiculoUpdate(vehiculoData);
@@ -197,7 +210,7 @@ export async function updateVehiculoController(req, res) {
       return handleErrorClient(
         res,
         400,
-        "Datos de vehículo inválidos",
+        "Datos de vehiculo invalidos",
         validationErrors
       );
     }
@@ -205,7 +218,7 @@ export async function updateVehiculoController(req, res) {
     const vehiculoExistente = await getVehiculoById(id);
 
     if (!vehiculoExistente) {
-      return handleErrorClient(res, 404, "Vehículo no encontrado");
+      return handleErrorClient(res, 404, "Vehiculo no encontrado");
     }
 
     if (
@@ -218,9 +231,24 @@ export async function updateVehiculoController(req, res) {
         return handleErrorClient(
           res,
           409,
-          "Ya existe otro vehículo registrado con esa patente"
+          "Ya existe otro vehiculo registrado con esa patente"
         );
       }
+    }
+
+    if (
+      vehiculoData.fecha_vencimiento_revision_tecnica !== undefined &&
+      vehiculoData.fecha_vencimiento_revision_tecnica &&
+      vehiculoData.estado_revision_tecnica === undefined
+    ) {
+      vehiculoData.estado_revision_tecnica = calcularEstadoRevisionTecnica(
+        vehiculoData.fecha_vencimiento_revision_tecnica
+      );
+      vehiculoData.confianza_revision_tecnica =
+        vehiculoData.confianza_revision_tecnica || "Alta";
+      vehiculoData.observacion_revision_tecnica =
+        vehiculoData.observacion_revision_tecnica ||
+        "Fecha de vencimiento confirmada manualmente por secretaria.";
     }
 
     const vehiculoActualizado = await updateVehiculo(id, vehiculoData);
@@ -228,14 +256,14 @@ export async function updateVehiculoController(req, res) {
     return handleSuccess(
       res,
       200,
-      "Vehículo actualizado exitosamente",
+      "Vehiculo actualizado exitosamente",
       vehiculoActualizado
     );
   } catch (error) {
     return handleErrorServer(
       res,
       500,
-      "Error al actualizar vehículo",
+      "Error al actualizar vehiculo",
       error.message
     );
   }
@@ -244,35 +272,29 @@ export async function updateVehiculoController(req, res) {
 export async function deleteVehiculoController(req, res) {
   try {
     const { id } = req.params;
-
     const paramErrors = validateVehiculoIdParam(req.params);
 
     if (paramErrors.length > 0) {
-      return handleErrorClient(
-        res,
-        400,
-        "Parámetros inválidos",
-        paramErrors
-      );
+      return handleErrorClient(res, 400, "Parametros invalidos", paramErrors);
     }
 
     const vehiculoEliminado = await deleteVehiculo(id);
 
     if (!vehiculoEliminado) {
-      return handleErrorClient(res, 404, "Vehículo no encontrado");
+      return handleErrorClient(res, 404, "Vehiculo no encontrado");
     }
 
     return handleSuccess(
       res,
       200,
-      "Vehículo eliminado exitosamente",
+      "Vehiculo eliminado exitosamente",
       vehiculoEliminado
     );
   } catch (error) {
     return handleErrorServer(
       res,
       500,
-      "Error al eliminar vehículo",
+      "Error al eliminar vehiculo",
       error.message
     );
   }
@@ -281,15 +303,54 @@ export async function deleteVehiculoController(req, res) {
 export async function subirRevisionController(req, res) {
   try {
     const { id } = req.params;
-    
-    if (!req.file) {
-      return res.status(400).json({ message: "No se subió ningún archivo" });
+    const paramErrors = validateVehiculoIdParam(req.params);
+
+    if (paramErrors.length > 0) {
+      return handleErrorClient(res, 400, "Parametros invalidos", paramErrors);
     }
 
-    const urlDocumento = await actualizarDocumentoVehiculo(id, req.file.filename);
-    
-    return handleSuccess(res, 200, "Documento subido con éxito", { url_revision_tecnica: urlDocumento });
+    if (!req.file) {
+      return handleErrorClient(res, 400, "No se subio ningun archivo");
+    }
+
+    const vehiculo = await getVehiculoById(id);
+
+    if (!vehiculo) {
+      return handleErrorClient(res, 404, "Vehiculo no encontrado");
+    }
+
+    const analisisRevision = await analizarRevisionTecnicaDocumento({
+      rutaArchivo: req.file.path,
+      mimetype: req.file.mimetype,
+      patenteRegistrada: vehiculo.patente,
+    });
+    const vehiculoActualizado = await actualizarRevisionTecnicaVehiculo(
+      id,
+      req.file.filename,
+      analisisRevision
+    );
+
+    return handleSuccess(res, 200, "Documento subido con exito", {
+      url_revision_tecnica: vehiculoActualizado.url_revision_tecnica,
+      analisis_revision_tecnica: {
+        fecha_vencimiento_revision_tecnica:
+          vehiculoActualizado.fecha_vencimiento_revision_tecnica,
+        estado_revision_tecnica: vehiculoActualizado.estado_revision_tecnica,
+        patente_detectada_revision:
+          vehiculoActualizado.patente_detectada_revision,
+        confianza_revision_tecnica:
+          vehiculoActualizado.confianza_revision_tecnica,
+        observacion_revision_tecnica:
+          vehiculoActualizado.observacion_revision_tecnica,
+      },
+      vehiculo: vehiculoActualizado,
+    });
   } catch (error) {
-    return handleErrorServer(res, 500, "Error al subir el documento", error.message);
+    return handleErrorServer(
+      res,
+      500,
+      "Error al subir el documento",
+      error.message
+    );
   }
 }

@@ -69,3 +69,35 @@ export async function actualizarDocumentoVehiculo(idVehiculo, nombreArchivo) {
   );
   return urlArchivo;
 }
+
+export async function actualizarRevisionTecnicaVehiculo(
+  idVehiculo,
+  nombreArchivo,
+  analisisRevision
+) {
+  const urlArchivo = `/uploads/vehiculos/${nombreArchivo}`;
+
+  await AppDataSource.query(
+    `
+    UPDATE vehiculos
+    SET url_revision_tecnica = $1,
+        fecha_vencimiento_revision_tecnica = $2,
+        estado_revision_tecnica = $3,
+        patente_detectada_revision = $4,
+        confianza_revision_tecnica = $5,
+        observacion_revision_tecnica = $6
+    WHERE id_vehiculo = $7
+    `,
+    [
+      urlArchivo,
+      analisisRevision.fecha_vencimiento_revision_tecnica,
+      analisisRevision.estado_revision_tecnica,
+      analisisRevision.patente_detectada_revision,
+      analisisRevision.confianza_revision_tecnica,
+      analisisRevision.observacion_revision_tecnica,
+      Number(idVehiculo),
+    ]
+  );
+
+  return await getVehiculoById(idVehiculo);
+}

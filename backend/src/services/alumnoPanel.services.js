@@ -24,9 +24,11 @@ export async function getPerfilAlumno(idAlumno) {
       COALESCE((
         SELECT COUNT(*)
         FROM clases_practicas cp
+        LEFT JOIN asistencias_practicas ap
+          ON ap.id_clase_practica = cp.id_clase_practica
         WHERE cp.id_alumno = a.id_alumno
           AND cp.estado = 'Realizada'
-          AND cp.asistencia = 'Presente'
+          AND COALESCE(ap.estado_asistencia, cp.asistencia) = 'Presente'
       ), 0)::int AS clases_practicas_realizadas,
       COALESCE((
         SELECT SUM(pg.monto)
@@ -109,10 +111,15 @@ export async function getPerfilAlumno(idAlumno) {
 
 export async function getClasesPracticasPorAlumno(idAlumno) {
   return await AppDataSource.query(
-    `SELECT cp.*, 
+    `SELECT
+            cp.*,
+            COALESCE(ap.estado_asistencia, cp.asistencia, 'Pendiente') AS asistencia,
+            ap.observacion AS asistencia_observacion,
+            ap.fecha_registro AS asistencia_fecha_registro,
             p.nombre AS profesor_nombre, p.apellido AS profesor_apellido,
             v.patente AS vehiculo_patente, v.marca AS vehiculo_marca, v.modelo AS vehiculo_modelo
      FROM clases_practicas cp
+     LEFT JOIN asistencias_practicas ap ON ap.id_clase_practica = cp.id_clase_practica
      INNER JOIN profesores p ON cp.id_profesor = p.id_profesor
      INNER JOIN vehiculos v ON cp.id_vehiculo = v.id_vehiculo
      WHERE cp.id_alumno = $1
@@ -141,6 +148,8 @@ export async function getClasesTeoricasPorAlumno(idAlumno) {
             st.capacidad AS sala_capacidad,
             ast.id_asistencia,
             ast.estado_asistencia,
+            ast.modo_participacion,
+            ast.fecha_registro,
             p.nombre AS profesor_nombre,
             p.apellido AS profesor_apellido
      FROM asistencias_teoricas ast

@@ -66,7 +66,32 @@ const Vehiculo = new EntitySchema({
       length: 255,
       nullable: true,
     },
+    fecha_vencimiento_revision_tecnica: {
+      type: "date",
+      nullable: true,
+    },
+    estado_revision_tecnica: {
+      type: "varchar",
+      length: 30,
+      nullable: false,
+      default: "Requiere revisión manual",
+    },
+    patente_detectada_revision: {
+      type: "varchar",
+      length: 10,
+      nullable: true,
+    },
+    confianza_revision_tecnica: {
+      type: "varchar",
+      length: 20,
+      nullable: false,
+      default: "Baja",
+    },
+    observacion_revision_tecnica: {
+      type: "text",
+      nullable: true,
+    },
   },
 });
 
-export default Vehiculo;    
+export default Vehiculo;

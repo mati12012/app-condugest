@@ -24,6 +24,12 @@ const AsistenciaTeorica = new EntitySchema({
             nullable: false,
             default: "Pendiente", 
         },
+        modo_participacion: {
+            type: "varchar",
+            length: 20,
+            nullable: false,
+            default: "Presencial",
+        },
         fecha_registro: {
             type: "timestamp",
             createDate: true,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiFetch } from "../../utils/apiFetch";
 
 const VistaVehiculos = ({ cambiarVista }) => {
@@ -10,15 +10,17 @@ const VistaVehiculos = ({ cambiarVista }) => {
   const [paginaActual, setPaginaActual] = useState(1);
   const registrosPorPagina = 5;
 
-  useEffect(() => {
-    obtenerVehiculos();
-  }, []);
-
-  useEffect(() => {
+  const actualizarBusqueda = (valor) => {
+    setBusqueda(valor);
     setPaginaActual(1);
-  }, [busqueda, filtroEstado]);
+  };
 
-  const obtenerVehiculos = async () => {
+  const actualizarFiltroEstado = (valor) => {
+    setFiltroEstado(valor);
+    setPaginaActual(1);
+  };
+
+  async function obtenerVehiculos() {
     try {
       setCargando(true);
 
@@ -37,7 +39,44 @@ const VistaVehiculos = ({ cambiarVista }) => {
     } finally {
       setCargando(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    let activo = true;
+
+    async function cargarInicial() {
+      try {
+        setCargando(true);
+
+        const response = await apiFetch(`${import.meta.env.VITE_BASE_URL}/vehiculos`);
+        const respuestaServidor = await response.json();
+
+        if (!activo) return;
+
+        if (response.ok) {
+          setVehiculos(respuestaServidor.data || []);
+          setError(null);
+        } else {
+          setError(respuestaServidor.message || 'No se pudieron obtener los vehiculos');
+        }
+      } catch (error) {
+        console.error(error);
+        if (activo) {
+          setError('Error de conexion con el servidor');
+        }
+      } finally {
+        if (activo) {
+          setCargando(false);
+        }
+      }
+    }
+
+    cargarInicial();
+
+    return () => {
+      activo = false;
+    };
+  }, []);
 
   const obtenerClaseEstado = (estado) => {
     if (estado === 'Disponible') {
@@ -53,6 +92,21 @@ const VistaVehiculos = ({ cambiarVista }) => {
     }
 
     return 'bg-slate-100 text-slate-700 border-slate-200';
+  };
+
+  const formatearFechaRevision = (fecha) => {
+    if (!fecha) return 'Sin fecha';
+    const texto = String(fecha).split('T')[0];
+    const partes = texto.split('-');
+    if (partes.length !== 3) return texto;
+    return `${partes[2]}-${partes[1]}-${partes[0]}`;
+  };
+
+  const obtenerClaseEstadoRevision = (estado) => {
+    if (estado === 'Vigente') return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+    if (estado === 'Por vencer') return 'bg-amber-100 text-amber-700 border-amber-200';
+    if (estado === 'Vencida') return 'bg-red-100 text-red-700 border-red-200';
+    return 'bg-blue-100 text-blue-700 border-blue-200';
   };
 
   const cambiarEstadoOperativo = async (vehiculo, nuevoEstado) => {
@@ -212,13 +266,13 @@ const VistaVehiculos = ({ cambiarVista }) => {
               placeholder="Buscar por patente, marca, modelo, sede, licencia o transmisión..."
               className="w-full max-w-xl px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
               value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
+              onChange={(e) => actualizarBusqueda(e.target.value)}
             />
 
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
-                onClick={() => setFiltroEstado('todos')}
+                onClick={() => actualizarFiltroEstado('todos')}
                 className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${filtroEstado === 'todos'
                     ? 'bg-blue-600 text-white'
                     : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
@@ -229,7 +283,7 @@ const VistaVehiculos = ({ cambiarVista }) => {
 
               <button
                 type="button"
-                onClick={() => setFiltroEstado('Disponible')}
+                onClick={() => actualizarFiltroEstado('Disponible')}
                 className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${filtroEstado === 'Disponible'
                     ? 'bg-green-600 text-white'
                     : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
@@ -240,7 +294,7 @@ const VistaVehiculos = ({ cambiarVista }) => {
 
               <button
                 type="button"
-                onClick={() => setFiltroEstado('En mantención')}
+                onClick={() => actualizarFiltroEstado('En mantención')}
                 className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${filtroEstado === 'En mantención'
                     ? 'bg-yellow-500 text-white'
                     : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
@@ -251,7 +305,7 @@ const VistaVehiculos = ({ cambiarVista }) => {
 
               <button
                 type="button"
-                onClick={() => setFiltroEstado('Fuera de servicio')}
+                onClick={() => actualizarFiltroEstado('Fuera de servicio')}
                 className={`px-3 py-2 rounded-lg text-sm font-bold transition-colors ${filtroEstado === 'Fuera de servicio'
                     ? 'bg-red-600 text-white'
                     : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
@@ -270,6 +324,7 @@ const VistaVehiculos = ({ cambiarVista }) => {
                 <th className="p-4 font-bold">Vehículo</th>
                 <th className="p-4 font-bold">Datos técnicos</th>
                 <th className="p-4 font-bold">Sede</th>
+                <th className="p-4 font-bold">Revision tecnica</th>
                 <th className="p-4 font-bold">Estado</th>
                 <th className="p-4 font-bold">Acciones</th>
               </tr>
@@ -304,6 +359,18 @@ const VistaVehiculos = ({ cambiarVista }) => {
 
                   <td className="p-4 text-sm text-slate-700">
                     {vehiculo.sede}
+                  </td>
+
+                  <td className="p-4">
+                    <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold border ${obtenerClaseEstadoRevision(vehiculo.estado_revision_tecnica)}`}>
+                      {vehiculo.estado_revision_tecnica || 'Requiere revisión manual'}
+                    </span>
+                    <p className="mt-2 text-xs text-slate-500">
+                      Vence: {formatearFechaRevision(vehiculo.fecha_vencimiento_revision_tecnica)}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Confianza: {vehiculo.confianza_revision_tecnica || 'Baja'}
+                    </p>
                   </td>
 
                   <td className="p-4">

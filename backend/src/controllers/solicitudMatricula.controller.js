@@ -4,6 +4,8 @@ import {
   getAllSolicitudesMatricula,
   getPlanActivoById,
   getSolicitudMatriculaDetalleById,
+  matricularSolicitudMatricula,
+  SolicitudMatriculaBusinessError,
   updateSolicitudMatricula,
 } from "../services/solicitudMatricula.services.js";
 
@@ -183,6 +185,25 @@ export async function updateSolicitudMatriculaController(req, res) {
       );
     }
 
+    if (value.estado === "Matriculado") {
+      const resultadoMatricula = await matricularSolicitudMatricula(id);
+      const mensaje = resultadoMatricula.alumno_existente
+        ? "Ya existe un alumno con este RUT o correo. Se usó el alumno existente y se creó la matrícula."
+        : "Solicitud matriculada correctamente. Alumno y matrícula creados.";
+
+      return handleSuccess(
+        res,
+        200,
+        mensaje,
+        {
+          ...resultadoMatricula.solicitud,
+          alumno: resultadoMatricula.alumno,
+          matricula: resultadoMatricula.matricula,
+          alumno_existente: resultadoMatricula.alumno_existente,
+        }
+      );
+    }
+
     const solicitudActualizada = await updateSolicitudMatricula(id, value);
 
     if (!solicitudActualizada) {
@@ -200,6 +221,15 @@ export async function updateSolicitudMatriculaController(req, res) {
       solicitudActualizada
     );
   } catch (error) {
+    if (error instanceof SolicitudMatriculaBusinessError) {
+      return handleErrorClient(
+        res,
+        error.statusCode,
+        error.message,
+        error.details
+      );
+    }
+
     return handleErrorServer(
       res,
       500,
