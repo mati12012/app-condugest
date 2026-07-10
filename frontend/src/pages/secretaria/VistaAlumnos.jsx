@@ -74,13 +74,6 @@ const alumnosPaginados = alumnosFiltrados.slice(
           <h2 className="text-2xl font-bold text-slate-800">Gestion de Alumnos</h2>
           <p className="text-slate-500 mt-1">Administra las matriculas y revisa el estado de los estudiantes</p>
         </div>
-        
-        <button 
-          onClick={() => cambiarVista('registrar')} 
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-colors"
-        >
-          <span>+ Nuevo Alumno</span>
-        </button>
       </div>
 
       {/* Tarjetas de resumenes */}

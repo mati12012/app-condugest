@@ -3,12 +3,12 @@ import { apiFetch } from "../../utils/apiFetch";
 import { formatearFechaVisual } from '../../utils/formatearFecha';
 
 const VistaAgenda = ({ cambiarVista }) => {
+
     const obtenerFechaHoy = () => {
         const hoy = new Date();
         const anio = hoy.getFullYear();
         const mes = String(hoy.getMonth() + 1).padStart(2, '0');
         const dia = String(hoy.getDate()).padStart(2, '0');
-
         return `${anio}-${mes}-${dia}`;
     };
 
@@ -16,17 +16,15 @@ const VistaAgenda = ({ cambiarVista }) => {
         const fecha = new Date(`${fechaTexto}T00:00:00`);
         const diaSemana = fecha.getDay();
         const diferencia = diaSemana === 0 ? -6 : 1 - diaSemana;
-
         fecha.setDate(fecha.getDate() + diferencia);
-
         const anio = fecha.getFullYear();
         const mes = String(fecha.getMonth() + 1).padStart(2, '0');
         const dia = String(fecha.getDate()).padStart(2, '0');
-
         return `${anio}-${mes}-${dia}`;
     };
 
     const [clasesPracticas, setClasesPracticas] = useState([]);
+    const [clasesTeoricas, setClasesTeoricas] = useState([]); 
     const [reservasSalas, setReservasSalas] = useState([]);
     const [salas, setSalas] = useState([]);
 
@@ -42,32 +40,28 @@ const VistaAgenda = ({ cambiarVista }) => {
     const obtenerDatosAgenda = useCallback(async () => {
         try {
             setCargando(true);
-
-            const [resClasesPracticas, resReservasSalas, resSalas] = await Promise.all([
+            const [resClasesPracticas, resReservasSalas, resSalas, resClasesTeoricas] = await Promise.all([
                 apiFetch(`${import.meta.env.VITE_BASE_URL}/clases-practicas`),
                 apiFetch(`${import.meta.env.VITE_BASE_URL}/reservas-salas`),
-                apiFetch(`${import.meta.env.VITE_BASE_URL}/salas-psicotecnicas`)
+                apiFetch(`${import.meta.env.VITE_BASE_URL}/salas-psicotecnicas`),
+                apiFetch(`${import.meta.env.VITE_BASE_URL}/clases-teoricas`) 
             ]);
 
             const dataClasesPracticas = await resClasesPracticas.json();
             const dataReservasSalas = await resReservasSalas.json();
             const dataSalas = await resSalas.json();
+            const dataClasesTeoricas = await resClasesTeoricas.json();
 
-            if (!resClasesPracticas.ok) {
-                throw new Error(dataClasesPracticas.message || 'No se pudieron obtener las clases prácticas');
-            }
-
-            if (!resReservasSalas.ok) {
-                throw new Error(dataReservasSalas.message || 'No se pudieron obtener las reservas de salas');
-            }
-
-            if (!resSalas.ok) {
-                throw new Error(dataSalas.message || 'No se pudieron obtener las salas psicotécnicas');
-            }
+            if (!resClasesPracticas.ok) throw new Error(dataClasesPracticas.message || 'Error en clases prácticas');
+            if (!resReservasSalas.ok) throw new Error(dataReservasSalas.message || 'Error en reservas de salas');
+            if (!resSalas.ok) throw new Error(dataSalas.message || 'Error en salas psicotécnicas');
+            if (!resClasesTeoricas.ok) throw new Error(dataClasesTeoricas.message || 'Error en clases teóricas');
 
             setClasesPracticas(dataClasesPracticas.data || []);
             setReservasSalas(dataReservasSalas.data || []);
             setSalas(dataSalas.data || []);
+            setClasesTeoricas(dataClasesTeoricas.data || []); 
+            
             setError(null);
         } catch (error) {
             console.error(error);
@@ -88,53 +82,42 @@ const VistaAgenda = ({ cambiarVista }) => {
 
     const obtenerHoraBloque = (hora) => {
         if (!hora) return '';
-
         const horaFormateada = formatearHora(hora);
         const [horas] = horaFormateada.split(':');
-
         return `${horas}:00`;
     };
 
-    const normalizarEstado = (estado) => {
-        return String(estado || '').toLowerCase();
-    };
+    const normalizarEstado = (estado) => String(estado || '').toLowerCase();
 
     const mostrarEstado = (estado) => {
         const estadoNormalizado = normalizarEstado(estado);
-
         if (estadoNormalizado === 'programada') return 'Programada';
         if (estadoNormalizado === 'realizada') return 'Realizada';
         if (estadoNormalizado === 'cancelada') return 'Cancelada';
         if (estadoNormalizado === 'reservada') return 'Reservada';
         if (estadoNormalizado === 'pendiente') return 'Pendiente';
-
         return estado || 'Sin estado';
     };
 
     const obtenerFechaDesdeInicio = (inicioSemana, diasASumar) => {
         const fecha = new Date(`${inicioSemana}T00:00:00`);
         fecha.setDate(fecha.getDate() + diasASumar);
-
         const anio = fecha.getFullYear();
         const mes = String(fecha.getMonth() + 1).padStart(2, '0');
         const dia = String(fecha.getDate()).padStart(2, '0');
-
         return `${anio}-${mes}-${dia}`;
     };
 
     const cambiarSemana = (cantidadSemanas) => {
         const fecha = new Date(`${fechaBase}T00:00:00`);
         fecha.setDate(fecha.getDate() + cantidadSemanas * 7);
-
         const anio = fecha.getFullYear();
         const mes = String(fecha.getMonth() + 1).padStart(2, '0');
         const dia = String(fecha.getDate()).padStart(2, '0');
-
         setFechaBase(`${anio}-${mes}-${dia}`);
     };
 
     const inicioSemana = obtenerInicioSemana(fechaBase);
-
     const diasSemana = [
         { nombre: 'Lunes', fecha: obtenerFechaDesdeInicio(inicioSemana, 0) },
         { nombre: 'Martes', fecha: obtenerFechaDesdeInicio(inicioSemana, 1) },
@@ -145,28 +128,13 @@ const VistaAgenda = ({ cambiarVista }) => {
     ];
 
     const horasAgenda = [
-        '08:00',
-        '09:00',
-        '10:00',
-        '11:00',
-        '12:00',
-        '13:00',
-        '14:00',
-        '15:00',
-        '16:00',
-        '17:00',
-        '18:00',
-        '19:00',
-        '20:00',
+        '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', 
+        '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00',
     ];
 
     const salasPorId = useMemo(() => {
         const mapa = new Map();
-
-        salas.forEach((sala) => {
-            mapa.set(Number(sala.id_sala), sala);
-        });
-
+        salas.forEach((sala) => mapa.set(Number(sala.id_sala), sala));
         return mapa;
     }, [salas]);
 
@@ -176,7 +144,7 @@ const VistaAgenda = ({ cambiarVista }) => {
             id_origen: clase.id_clase_practica,
             tipo: 'practica',
             titulo: 'Práctica',
-            fecha: formatearFechaVisual(clase.fecha),
+            fecha: String(clase.fecha).split('T')[0],
             hora_inicio: clase.hora_inicio,
             hora_fin: clase.hora_fin,
             estado: clase.estado,
@@ -184,19 +152,18 @@ const VistaAgenda = ({ cambiarVista }) => {
             id_profesor: clase.id_profesor,
             principal: `${clase.alumno_nombre || ''} ${clase.alumno_apellido || ''}`.trim(),
             secundario: `Profesor: ${clase.profesor_nombre || ''} ${clase.profesor_apellido || ''}`.trim(),
-            detalle: `${clase.vehiculo_patente || ''} · ${clase.vehiculo_marca || ''} ${clase.vehiculo_modelo || ''}`.trim(),
-            vistaDetalle: 'verClasePractica',
+            detalle: `${clase.vehiculo_patente || ''} | ${clase.vehiculo_marca || ''} ${clase.vehiculo_modelo || ''}`.trim(),
+            vistaDetalle: 'verClasePracticaAgenda',
         }));
 
         const eventosPsicotecnicos = reservasSalas.map((reserva) => {
             const sala = salasPorId.get(Number(reserva.id_sala));
-
             return {
                 id: `psicotecnica-${reserva.id_reserva}`,
                 id_origen: reserva.id_reserva,
                 tipo: 'psicotecnica',
                 titulo: 'Psicotécnica',
-                fecha: formatearFechaVisual(reserva.fecha),
+                fecha: String(reserva.fecha).split('T')[0], 
                 hora_inicio: reserva.hora_inicio,
                 hora_fin: reserva.hora_fin,
                 estado: reserva.estado,
@@ -204,25 +171,38 @@ const VistaAgenda = ({ cambiarVista }) => {
                 id_profesor: null,
                 principal: sala?.nombre || `Sala ${reserva.id_sala}`,
                 secundario: `${reserva.cantidad_alumnos} alumno(s)`,
-                detalle: sala ? `${sala.sede} · Capacidad ${sala.capacidad}` : 'Sala psicotécnica',
+                detalle: sala ? `${sala.sede} | Capacidad ${sala.capacidad}` : 'Sala psicotécnica',
                 vistaDetalle: null,
             };
         });
 
-        return [...eventosPracticos, ...eventosPsicotecnicos];
-    }, [clasesPracticas, reservasSalas, salasPorId]);
+        const eventosTeoricos = clasesTeoricas.map((clase) => ({
+            id: `teorica-${clase.id_clase_teorica}`,
+            id_origen: clase.id_clase_teorica,
+            tipo: 'teorica',
+            titulo: 'Teórica',
+            fecha: String(clase.fecha).split('T')[0], 
+            hora_inicio: clase.hora_inicio,
+            hora_fin: clase.hora_fin,
+            estado: clase.estado,
+            sede: clase.modalidad === 'Online' ? 'Online' : (clase.salaTeorica?.sede || clase.sede || ''),
+            id_profesor: clase.profesor?.id_profesor || clase.id_profesor,
+            principal: clase.tema || 'Clase Teórica',
+            secundario: `Profesor: ${clase.profesor?.nombre || ''} ${clase.profesor?.apellido || ''}`.trim(),
+            detalle: clase.modalidad === 'Online' ? 'Online' : (clase.salaTeorica?.nombre || 'Sala no asignada'),
+            vistaDetalle: 'verClaseTeorica'
+        }));
+
+        return [...eventosPracticos, ...eventosPsicotecnicos, ...eventosTeoricos];
+    }, [clasesPracticas, reservasSalas, clasesTeoricas, salasPorId]);
 
     const sedesDisponibles = useMemo(() => {
-        const sedes = eventosAgenda
-            .map((evento) => evento.sede)
-            .filter(Boolean);
-
+        const sedes = eventosAgenda.map((evento) => evento.sede).filter(Boolean);
         return [...new Set(sedes)];
     }, [eventosAgenda]);
 
     const profesoresDisponibles = useMemo(() => {
         const profesoresMap = new Map();
-
         clasesPracticas.forEach((clase) => {
             if (clase.id_profesor && clase.profesor_nombre) {
                 profesoresMap.set(clase.id_profesor, {
@@ -231,30 +211,25 @@ const VistaAgenda = ({ cambiarVista }) => {
                 });
             }
         });
-
+        clasesTeoricas.forEach((clase) => {
+            if (clase.profesor) {
+                profesoresMap.set(clase.profesor.id_profesor, {
+                    id_profesor: clase.profesor.id_profesor,
+                    nombre: `${clase.profesor.nombre} ${clase.profesor.apellido}`,
+                });
+            }
+        });
         return Array.from(profesoresMap.values());
-    }, [clasesPracticas]);
+    }, [clasesPracticas, clasesTeoricas]);
 
     const eventosSemana = eventosAgenda.filter((evento) => {
         const fechasSemana = diasSemana.map((dia) => dia.fecha);
-
         const coincideSemana = fechasSemana.includes(evento.fecha);
 
-        const coincideTipo =
-            filtroTipo === 'todos' ||
-            evento.tipo === filtroTipo;
-
-        const coincideSede =
-            filtroSede === 'todas' ||
-            evento.sede === filtroSede;
-
-        const coincideProfesor =
-            filtroProfesor === 'todos' ||
-            String(evento.id_profesor) === String(filtroProfesor);
-
-        const coincideEstado =
-            filtroEstado === 'todos' ||
-            normalizarEstado(evento.estado) === filtroEstado;
+        const coincideTipo = filtroTipo === 'todos' || evento.tipo === filtroTipo;
+        const coincideSede = filtroSede === 'todas' || evento.sede === filtroSede;
+        const coincideProfesor = filtroProfesor === 'todos' || String(evento.id_profesor) === String(filtroProfesor);
+        const coincideEstado = filtroEstado === 'todos' || normalizarEstado(evento.estado) === filtroEstado;
 
         return coincideSemana && coincideTipo && coincideSede && coincideProfesor && coincideEstado;
     });
@@ -272,53 +247,39 @@ const VistaAgenda = ({ cambiarVista }) => {
         const estado = normalizarEstado(evento.estado);
 
         if (evento.tipo === 'psicotecnica') {
-            if (estado === 'cancelada') {
-                return 'bg-red-100 text-red-800 border-red-200';
-            }
-
-            if (estado === 'pendiente') {
-                return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-            }
-
+            if (estado === 'cancelada') return 'bg-red-100 text-red-800 border-red-200';
+            if (estado === 'pendiente') return 'bg-yellow-100 text-yellow-800 border-yellow-200';
             return 'bg-violet-100 text-violet-800 border-violet-200';
         }
 
-        if (estado === 'programada') {
-            return 'bg-blue-100 text-blue-800 border-blue-200';
+        if (evento.tipo === 'teorica') {
+            if (estado === 'cancelada') return 'bg-red-100 text-red-800 border-red-200';
+            if (estado === 'realizada') return 'bg-green-100 text-green-800 border-green-200';
+            return 'bg-amber-100 text-amber-800 border-amber-200'; 
         }
 
-        if (estado === 'realizada') {
-            return 'bg-green-100 text-green-800 border-green-200';
-        }
-
-        if (estado === 'cancelada') {
-            return 'bg-red-100 text-red-800 border-red-200';
-        }
-
+        if (estado === 'programada') return 'bg-blue-100 text-blue-800 border-blue-200';
+        if (estado === 'realizada') return 'bg-green-100 text-green-800 border-green-200';
+        if (estado === 'cancelada') return 'bg-red-100 text-red-800 border-red-200';
         return 'bg-slate-100 text-slate-800 border-slate-200';
     };
 
     const manejarClickEvento = (evento) => {
         if (evento.tipo === 'practica') {
             cambiarVista('verClasePracticaAgenda', evento.id_origen);
+        } else if (evento.tipo === 'teorica') {
+            cambiarVista('verClaseTeorica', evento.id_origen);
         }
     };
 
     const totalSemana = eventosSemana.length;
     const totalPracticas = eventosSemana.filter((evento) => evento.tipo === 'practica').length;
+    const totalTeoricas = eventosSemana.filter((evento) => evento.tipo === 'teorica').length;
     const totalPsicotecnicas = eventosSemana.filter((evento) => evento.tipo === 'psicotecnica').length;
 
-    const totalProgramadas = eventosSemana.filter(
-        evento => normalizarEstado(evento.estado) === 'programada'
-    ).length;
-
-    const totalReservadas = eventosSemana.filter(
-        evento => normalizarEstado(evento.estado) === 'reservada'
-    ).length;
-
-    const totalCanceladas = eventosSemana.filter(
-        evento => normalizarEstado(evento.estado) === 'cancelada'
-    ).length;
+    const totalProgramadas = eventosSemana.filter(evento => normalizarEstado(evento.estado) === 'programada').length;
+    const totalReservadas = eventosSemana.filter(evento => normalizarEstado(evento.estado) === 'reservada').length;
+    const totalCanceladas = eventosSemana.filter(evento => normalizarEstado(evento.estado) === 'cancelada').length;
 
     if (cargando) {
         return (
@@ -334,7 +295,6 @@ const VistaAgenda = ({ cambiarVista }) => {
                 <div className="bg-red-50 text-red-700 border border-red-200 p-4 rounded-lg">
                     {error}
                 </div>
-
                 <button
                     onClick={obtenerDatosAgenda}
                     className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 active:scale-95 transition-all"
@@ -348,10 +308,7 @@ const VistaAgenda = ({ cambiarVista }) => {
     return (
         <div className="w-full space-y-6">
             <div className="flex flex-wrap gap-3">
-                <button
-                    type="button"
-                    className="px-5 py-2.5 rounded-xl bg-blue-700 text-white font-bold"
-                >
+                <button type="button" className="px-5 py-2.5 rounded-xl bg-blue-700 text-white font-bold">
                     Semana
                 </button>
 
@@ -362,6 +319,7 @@ const VistaAgenda = ({ cambiarVista }) => {
                 >
                     <option value="todos">Todos los eventos</option>
                     <option value="practica">Clases prácticas</option>
+                    <option value="teorica">Clases teóricas</option>
                     <option value="psicotecnica">Reservas psicotécnicas</option>
                 </select>
 
@@ -372,9 +330,7 @@ const VistaAgenda = ({ cambiarVista }) => {
                 >
                     <option value="todas">Todas las sedes</option>
                     {sedesDisponibles.map((sede) => (
-                        <option key={sede} value={sede}>
-                            {sede}
-                        </option>
+                        <option key={sede} value={sede}>{sede}</option>
                     ))}
                 </select>
 
@@ -417,15 +373,11 @@ const VistaAgenda = ({ cambiarVista }) => {
                 <div className="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 overflow-x-auto">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
                         <div>
-                            <h1 className="text-2xl font-bold text-slate-900">
-                                Agenda general semanal
-                            </h1>
-
+                            <h1 className="text-2xl font-bold text-slate-900">Agenda general semanal</h1>
                             <p className="text-sm text-slate-500 mt-1">
                                 Semana del {formatearFechaVisual(diasSemana[0].fecha)} al {formatearFechaVisual(diasSemana[5].fecha)}
                             </p>
                         </div>
-
                         <div className="flex flex-wrap gap-2">
                             <button
                                 type="button"
@@ -434,7 +386,6 @@ const VistaAgenda = ({ cambiarVista }) => {
                             >
                                 Semana anterior
                             </button>
-
                             <button
                                 type="button"
                                 onClick={() => setFechaBase(obtenerFechaHoy())}
@@ -442,7 +393,6 @@ const VistaAgenda = ({ cambiarVista }) => {
                             >
                                 Semana actual
                             </button>
-
                             <button
                                 type="button"
                                 onClick={() => cambiarSemana(1)}
@@ -455,70 +405,41 @@ const VistaAgenda = ({ cambiarVista }) => {
 
                     <div className="min-w-[1000px] max-h-[620px] overflow-y-auto border border-slate-200 rounded-xl">
                         <div className="grid grid-cols-[110px_repeat(6,1fr)] bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
-                            <div className="p-4 font-bold text-slate-800 text-center">
-                                Hora
-                            </div>
-
+                            <div className="p-4 font-bold text-slate-800 text-center">Hora</div>
                             {diasSemana.map((dia) => (
-                                <div
-                                    key={dia.fecha}
-                                    className="p-4 font-bold text-slate-800 text-center border-l border-slate-200"
-                                >
+                                <div key={dia.fecha} className="p-4 font-bold text-slate-800 text-center border-l border-slate-200">
                                     <p>{dia.nombre}</p>
-                                    <p className="text-xs text-slate-400 font-medium">
-                                        {formatearFechaVisual(dia.fecha)}
-                                    </p>
+                                    <p className="text-xs text-slate-400 font-medium">{formatearFechaVisual(dia.fecha)}</p>
                                 </div>
                             ))}
                         </div>
 
                         {horasAgenda.map((hora) => (
-                            <div
-                                key={hora}
-                                className="grid grid-cols-[110px_repeat(6,1fr)] min-h-[110px] border-b border-slate-200 last:border-b-0"
-                            >
+                            <div key={hora} className="grid grid-cols-[110px_repeat(6,1fr)] min-h-[110px] border-b border-slate-200 last:border-b-0">
                                 <div className="p-4 bg-slate-50 font-bold text-slate-800 text-center border-r border-slate-200">
                                     {hora}
                                 </div>
-
                                 {diasSemana.map((dia) => {
                                     const eventosCelda = obtenerEventosPorCelda(dia.fecha, hora);
-
                                     return (
-                                        <div
-                                            key={`${dia.fecha}-${hora}`}
-                                            className="p-2 border-r border-slate-200 last:border-r-0"
-                                        >
+                                        <div key={`${dia.fecha}-${hora}`} className="p-2 border-r border-slate-200 last:border-r-0">
                                             <div className="space-y-2">
                                                 {eventosCelda.map((evento) => (
                                                     <button
                                                         key={evento.id}
                                                         type="button"
                                                         onClick={() => manejarClickEvento(evento)}
-                                                        className={`w-full text-left p-3 rounded-xl border text-sm transition-all ${evento.vistaDetalle
-                                                                ? 'hover:shadow-sm hover:-translate-y-[1px] cursor-pointer'
-                                                                : 'cursor-default'
-                                                            } ${obtenerClaseEvento(evento)}`}
+                                                        className={`w-full text-left p-3 rounded-xl border text-sm transition-all ${
+                                                            evento.vistaDetalle ? 'hover:shadow-sm hover:-translate-y-[1px] cursor-pointer' : 'cursor-default'
+                                                        } ${obtenerClaseEvento(evento)}`}
                                                     >
-                                                        <p className="font-bold">
-                                                            {evento.titulo}
-                                                        </p>
-
-                                                        <p>
-                                                            {evento.principal}
-                                                        </p>
-
+                                                        <p className="font-bold">{evento.titulo}</p>
+                                                        <p>{evento.principal}</p>
                                                         <p className="text-xs mt-1 opacity-80">
                                                             {formatearHora(evento.hora_inicio)} - {formatearHora(evento.hora_fin)}
                                                         </p>
-
-                                                        <p className="text-xs opacity-80">
-                                                            {evento.detalle}
-                                                        </p>
-
-                                                        <p className="text-[11px] mt-1 font-bold opacity-80">
-                                                            {mostrarEstado(evento.estado)}
-                                                        </p>
+                                                        <p className="text-xs opacity-80">{evento.detalle}</p>
+                                                        <p className="text-[11px] mt-1 font-bold opacity-80">{mostrarEstado(evento.estado)}</p>
                                                     </button>
                                                 ))}
                                             </div>
@@ -532,44 +453,39 @@ const VistaAgenda = ({ cambiarVista }) => {
 
                 <div className="w-full xl:w-[360px]">
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                        <h2 className="text-2xl font-bold text-slate-900 mb-5">
-                            Resumen de la semana
-                        </h2>
-
+                        <h2 className="text-2xl font-bold text-slate-900 mb-5">Resumen de la semana</h2>
                         <div className="space-y-3">
                             <div className="flex justify-between items-center border border-slate-200 rounded-xl p-4">
                                 <span className="text-slate-700">Eventos totales</span>
                                 <span className="font-bold text-slate-900">{totalSemana}</span>
                             </div>
-
                             <div className="flex justify-between items-center border border-slate-200 rounded-xl p-4">
                                 <span className="text-slate-700">Clases prácticas</span>
                                 <span className="font-bold text-blue-700">{totalPracticas}</span>
                             </div>
-
+                            <div className="flex justify-between items-center border border-slate-200 rounded-xl p-4">
+                                <span className="text-slate-700">Clases teóricas</span>
+                                <span className="font-bold text-amber-700">{totalTeoricas}</span>
+                            </div>
                             <div className="flex justify-between items-center border border-slate-200 rounded-xl p-4">
                                 <span className="text-slate-700">Reservas psicotécnicas</span>
                                 <span className="font-bold text-violet-700">{totalPsicotecnicas}</span>
                             </div>
-
                             <div className="flex justify-between items-center border border-slate-200 rounded-xl p-4">
                                 <span className="text-slate-700">Programadas</span>
                                 <span className="font-bold text-blue-700">{totalProgramadas}</span>
                             </div>
-
                             <div className="flex justify-between items-center border border-slate-200 rounded-xl p-4">
                                 <span className="text-slate-700">Reservadas</span>
                                 <span className="font-bold text-violet-700">{totalReservadas}</span>
                             </div>
-
                             <div className="flex justify-between items-center border border-slate-200 rounded-xl p-4">
                                 <span className="text-slate-700">Canceladas</span>
                                 <span className="font-bold text-red-700">{totalCanceladas}</span>
                             </div>
                         </div>
-
                         <p className="text-xs text-slate-400 mt-5">
-                            La agenda integra clases prácticas y reservas de salas psicotécnicas. Las clases prácticas pueden abrirse para ver detalle.
+                            La agenda integra clases prácticas, teóricas y reservas de salas. Dale click a una clase para ver su detalle.
                         </p>
                     </div>
                 </div>
